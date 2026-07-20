@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace Recap.Git;
+namespace Performa.Git;
 
 public sealed class GitException(string message) : Exception(message);
 

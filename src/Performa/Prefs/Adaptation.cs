@@ -1,4 +1,4 @@
-namespace Recap.Prefs;
+namespace Performa.Prefs;
 
 public enum FeedbackAction { Accept, Edit, Reject }
 

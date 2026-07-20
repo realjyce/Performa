@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Recap.Enrich;
+namespace Performa.Enrich;
 
 public static class Ansi
 {

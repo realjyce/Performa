@@ -1,4 +1,4 @@
-namespace Recap.Git;
+namespace Performa.Git;
 
 public static class GitLogParser
 {

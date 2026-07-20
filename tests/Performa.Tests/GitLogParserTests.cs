@@ -1,7 +1,7 @@
-using Recap.Git;
+using Performa.Git;
 using Xunit;
 
-namespace Recap.Tests;
+namespace Performa.Tests;
 
 public class GitLogParserTests
 {

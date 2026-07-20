@@ -1,7 +1,7 @@
-using Recap.Reports;
+using Performa.Reports;
 using Xunit;
 
-namespace Recap.Tests;
+namespace Performa.Tests;
 
 public class ClassificationTests
 {

@@ -1,10 +1,10 @@
-using Recap.Enrich;
-using Recap.Git;
-using Recap.Prefs;
-using Recap.Reports;
+using Performa.Enrich;
+using Performa.Git;
+using Performa.Prefs;
+using Performa.Reports;
 using Xunit;
 
-namespace Recap.Tests;
+namespace Performa.Tests;
 
 public class EnricherTests
 {

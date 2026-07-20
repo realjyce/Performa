@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Recap.Git;
+namespace Performa.Git;
 
 public sealed class RepoQueries(GitRunner git)
 {

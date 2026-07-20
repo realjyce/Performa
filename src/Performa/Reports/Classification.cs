@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using Recap.Git;
+using Performa.Git;
 
-namespace Recap.Reports;
+namespace Performa.Reports;
 
 public enum ChangeKind { Feature, Fix, Refactor, Docs, Chore, Other }
 

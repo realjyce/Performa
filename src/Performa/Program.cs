@@ -1,9 +1,9 @@
 using System.CommandLine;
 using System.Text;
-using Recap.Enrich;
-using Recap.Git;
-using Recap.Prefs;
-using Recap.Reports;
+using Performa.Enrich;
+using Performa.Git;
+using Performa.Prefs;
+using Performa.Reports;
 
 try { Console.OutputEncoding = Encoding.UTF8; }
 catch (IOException) { }
@@ -26,7 +26,7 @@ var noPromptOption = new Option<bool>("--no-prompt")
 };
 
 var root = new RootCommand(
-    "recap: turns your local git history into standups, changelogs, branch summaries, and loose-end reports. Run bare for the dashboard.");
+    "performa: turns your local git history into standups, changelogs, branch summaries, and loose-end reports. Run bare for the dashboard.");
 root.Options.Add(repoOption);
 root.Options.Add(formatOption);
 root.Options.Add(noPromptOption);
@@ -49,7 +49,7 @@ initCommand.SetAction(parseResult =>
     var prefs = store.LoadPrefs();
     RunInit(prefs);
     store.SavePrefs(prefs);
-    Console.Error.WriteLine("recap: preferences saved.");
+    Console.Error.WriteLine("performa: preferences saved.");
     return 0;
 });
 root.Subcommands.Add(initCommand);
@@ -125,19 +125,19 @@ int WithRepo(ParseResult parseResult, Action<CommandContext> run)
     var git = new GitRunner(repoPath);
     if (!Directory.Exists(git.RepoPath))
     {
-        Console.Error.WriteLine($"recap: directory not found: {git.RepoPath}");
+        Console.Error.WriteLine($"performa: directory not found: {git.RepoPath}");
         return 2;
     }
     if (!git.IsRepository())
     {
-        Console.Error.WriteLine($"recap: not a git repository: {git.RepoPath}");
+        Console.Error.WriteLine($"performa: not a git repository: {git.RepoPath}");
         return 2;
     }
 
     var store = new PrefsStore();
     var prefs = store.LoadPrefs();
     if (!prefs.Initialised)
-        Console.Error.WriteLine("recap: using defaults. Run `recap init` once to set preferences.");
+        Console.Error.WriteLine("performa: using defaults. Run `performa init` once to set preferences.");
 
     var format = parseResult.GetValue(formatOption)?.ToLowerInvariant();
     var autoPretty = Ansi.TerminalSupportsStyling();
@@ -161,7 +161,7 @@ int WithRepo(ParseResult parseResult, Action<CommandContext> run)
     }
     catch (GitException e)
     {
-        Console.Error.WriteLine($"recap: {e.Message}");
+        Console.Error.WriteLine($"performa: {e.Message}");
         return 1;
     }
 }
@@ -187,8 +187,8 @@ string RenderDashboard(CommandContext ctx, StandupFacts standup, LooseEndsFacts 
     var branch = ctx.Repo.CurrentBranch();
     var p = ctx.Pretty;
 
-    if (p) sb.AppendLine($"{Ansi.Bold}{Ansi.Cyan}recap{Ansi.Reset}{Ansi.Dim} · {standup.RepoName} · {branch}{Ansi.Reset}");
-    else sb.AppendLine($"# recap · {standup.RepoName} · {branch}");
+    if (p) sb.AppendLine($"{Ansi.Bold}{Ansi.Cyan}performa{Ansi.Reset}{Ansi.Dim} · {standup.RepoName} · {branch}{Ansi.Reset}");
+    else sb.AppendLine($"# performa · {standup.RepoName} · {branch}");
     if (p) sb.AppendLine($"{Ansi.Dim}{new string('─', 44)}{Ansi.Reset}");
     sb.AppendLine();
 
@@ -212,8 +212,8 @@ string RenderDashboard(CommandContext ctx, StandupFacts standup, LooseEndsFacts 
     if (!any) Line("none");
     sb.AppendLine();
 
-    if (p) sb.AppendLine($"{Ansi.Dim}recap standup · changelog · summary <branch> · loose-ends{Ansi.Reset}");
-    else sb.AppendLine("Commands: recap standup | changelog | summary <branch> | loose-ends");
+    if (p) sb.AppendLine($"{Ansi.Dim}performa standup · changelog · summary <branch> · loose-ends{Ansi.Reset}");
+    else sb.AppendLine("Commands: performa standup | changelog | summary <branch> | loose-ends");
     return sb.ToString();
 
     void Section(string title, string? note)
@@ -247,7 +247,7 @@ DateTimeOffset ResolveSince(string? since, RepoQueries repo, StateFile state)
 
 void RunInit(Preferences prefs)
 {
-    Console.Error.WriteLine("recap setup. Enter to keep the [default].");
+    Console.Error.WriteLine("performa setup. Enter to keep the [default].");
     prefs.Format = Ask("Output format", ("md", OutputFormat.Markdown), ("text", OutputFormat.Text));
     prefs.Verbosity = Ask("Verbosity", ("normal", Verbosity.Normal), ("terse", Verbosity.Terse), ("detailed", Verbosity.Detailed));
     prefs.Grouping = Ask("Group commits by", ("area", Grouping.Area), ("kind", Grouping.Kind), ("flat", Grouping.Flat));

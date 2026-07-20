@@ -1,7 +1,7 @@
-using Recap.Git;
-using Recap.Prefs;
+using Performa.Git;
+using Performa.Prefs;
 
-namespace Recap.Reports;
+namespace Performa.Reports;
 
 public static class FactBuilders
 {

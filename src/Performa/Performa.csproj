@@ -8,8 +8,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <InvariantGlobalization>true</InvariantGlobalization>
     <PublishAot>true</PublishAot>
-    <AssemblyName>recap</AssemblyName>
-    <RootNamespace>Recap</RootNamespace>
+    <AssemblyName>performa</AssemblyName>
+    <RootNamespace>Performa</RootNamespace>
     <Version>0.1.0</Version>
   </PropertyGroup>
 

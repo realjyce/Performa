@@ -1,7 +1,7 @@
-using Recap.Prefs;
-using Recap.Reports;
+using Performa.Prefs;
+using Performa.Reports;
 
-namespace Recap.Enrich;
+namespace Performa.Enrich;
 
 /// <summary>
 /// The single seam between structured git facts and rendered prose.

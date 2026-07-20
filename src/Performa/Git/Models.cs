@@ -1,4 +1,4 @@
-namespace Recap.Git;
+namespace Performa.Git;
 
 public sealed record Commit(
     string Sha,

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Recap.Prefs;
+namespace Performa.Prefs;
 
 public enum OutputFormat { Markdown, Text }
 public enum Verbosity { Terse, Normal, Detailed }
@@ -25,4 +25,4 @@ public sealed class StateFile
 [JsonSourceGenerationOptions(WriteIndented = true, UseStringEnumConverter = true)]
 [JsonSerializable(typeof(Preferences))]
 [JsonSerializable(typeof(StateFile))]
-public sealed partial class RecapJsonContext : JsonSerializerContext;
+public sealed partial class PerformaJsonContext : JsonSerializerContext;

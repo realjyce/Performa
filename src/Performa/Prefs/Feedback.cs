@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Recap.Prefs;
+namespace Performa.Prefs;
 
 public static class Feedback
 {
@@ -21,15 +21,15 @@ public static class Feedback
                 var note = Adaptation.Apply(
                     prefs, FeedbackAction.Edit, output.Length, edited.Length);
                 store.SavePrefs(prefs);
-                if (note is not null) Console.Error.WriteLine($"recap: {note}");
+                if (note is not null) Console.Error.WriteLine($"performa: {note}");
                 return (edited, FeedbackAction.Edit);
 
             case 'r':
                 var rejectNote = Adaptation.Apply(prefs, FeedbackAction.Reject);
                 store.SavePrefs(prefs);
                 Console.Error.WriteLine(rejectNote is not null
-                    ? $"recap: {rejectNote} Run the command again to regenerate."
-                    : "recap: noted.");
+                    ? $"performa: {rejectNote} Run the command again to regenerate."
+                    : "performa: noted.");
                 return (output, FeedbackAction.Reject);
 
             default:
@@ -41,7 +41,7 @@ public static class Feedback
 
     private static string EditInEditor(string content)
     {
-        var path = Path.Combine(Path.GetTempPath(), $"recap-{Guid.NewGuid():N}.md");
+        var path = Path.Combine(Path.GetTempPath(), $"performa-{Guid.NewGuid():N}.md");
         File.WriteAllText(path, content);
         var editor = Environment.GetEnvironmentVariable("EDITOR")
             ?? (OperatingSystem.IsWindows() ? "notepad" : "nano");

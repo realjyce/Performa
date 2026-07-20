@@ -28,7 +28,7 @@ One decision or lesson per entry. Newest last.
   two consecutive rejects cycle grouping; accept resets streaks. All in
   Adaptation.Apply, fully unit-tested.
 
-- **JSON via source generation** (RecapJsonContext) because reflection-based
+- **JSON via source generation** (PerformaJsonContext) because reflection-based
   System.Text.Json doesn't survive Native AOT.
 
 - **Integration tests build a throwaway real repo** in temp with pinned
@@ -56,6 +56,6 @@ One decision or lesson per entry. Newest last.
   sees escape codes. Console.OutputEncoding must be forced to UTF-8 on
   Windows or the glyphs mojibake.
 
-- **Bare `recap` is the dashboard**: repo stamp, today's commits since the
+- **Bare `performa` is the dashboard**: repo stamp, today's commits since the
   standup watermark, loose ends, command hints. This is the "combined"
   productivity-manager face; the subcommands stay single-purpose.

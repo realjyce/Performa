@@ -1,7 +1,7 @@
-using Recap.Prefs;
+using Performa.Prefs;
 using Xunit;
 
-namespace Recap.Tests;
+namespace Performa.Tests;
 
 public class AdaptationTests
 {

@@ -1,9 +1,9 @@
-using Recap.Git;
-using Recap.Prefs;
-using Recap.Reports;
+using Performa.Git;
+using Performa.Prefs;
+using Performa.Reports;
 using Xunit;
 
-namespace Recap.Tests;
+namespace Performa.Tests;
 
 /// <summary>
 /// Builds a real git repository in a temp directory and runs the full
@@ -17,12 +17,12 @@ public sealed class IntegrationTests : IDisposable
 
     public IntegrationTests()
     {
-        _dir = Path.Combine(Path.GetTempPath(), $"recap-test-{Guid.NewGuid():N}");
+        _dir = Path.Combine(Path.GetTempPath(), $"performa-test-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_dir);
         _git = new GitRunner(_dir);
         _git.Run("init", "-q", "-b", "main");
-        _git.Run("config", "user.email", "test@recap.local");
-        _git.Run("config", "user.name", "Recap Test");
+        _git.Run("config", "user.email", "test@performa.local");
+        _git.Run("config", "user.name", "Performa Test");
 
         CommitFile("src/engine.js", "core", "feat: add game engine core", "2026-07-10T10:00:00");
         CommitFile("src/battle.js", "battle", "feat: add battle system", "2026-07-15T10:00:00");

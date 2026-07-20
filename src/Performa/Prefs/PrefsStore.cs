@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Recap.Prefs;
+namespace Performa.Prefs;
 
 public sealed class PrefsStore
 {
@@ -9,7 +9,7 @@ public sealed class PrefsStore
     public PrefsStore(string? baseDir = null)
     {
         _dir = baseDir ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "recap");
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "performa");
         Directory.CreateDirectory(_dir);
     }
 
@@ -17,18 +17,18 @@ public sealed class PrefsStore
     private string StatePath => Path.Combine(_dir, "state.json");
 
     public Preferences LoadPrefs()
-        => Load(PrefsPath, RecapJsonContext.Default.Preferences) ?? new Preferences();
+        => Load(PrefsPath, PerformaJsonContext.Default.Preferences) ?? new Preferences();
 
     public void SavePrefs(Preferences prefs)
         => File.WriteAllText(PrefsPath,
-            JsonSerializer.Serialize(prefs, RecapJsonContext.Default.Preferences));
+            JsonSerializer.Serialize(prefs, PerformaJsonContext.Default.Preferences));
 
     public StateFile LoadState()
-        => Load(StatePath, RecapJsonContext.Default.StateFile) ?? new StateFile();
+        => Load(StatePath, PerformaJsonContext.Default.StateFile) ?? new StateFile();
 
     public void SaveState(StateFile state)
         => File.WriteAllText(StatePath,
-            JsonSerializer.Serialize(state, RecapJsonContext.Default.StateFile));
+            JsonSerializer.Serialize(state, PerformaJsonContext.Default.StateFile));
 
     private static T? Load<T>(string path, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo)
         where T : class

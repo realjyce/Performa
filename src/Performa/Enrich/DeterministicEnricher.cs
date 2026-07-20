@@ -1,9 +1,9 @@
 using System.Text;
-using Recap.Git;
-using Recap.Prefs;
-using Recap.Reports;
+using Performa.Git;
+using Performa.Prefs;
+using Performa.Reports;
 
-namespace Recap.Enrich;
+namespace Performa.Enrich;
 
 public sealed class DeterministicEnricher(bool pretty = false) : IEnricher
 {
@@ -19,7 +19,7 @@ public sealed class DeterministicEnricher(bool pretty = false) : IEnricher
     public string RenderStandup(StandupFacts f, Preferences prefs)
     {
         var sb = new StringBuilder();
-        Stamp(sb, $"recap · {f.RepoName}");
+        Stamp(sb, $"performa · {f.RepoName}");
         var heading = prefs.Tone == Tone.Friendly
             ? $"Standup for {f.Now:ddd d MMM} (here's what you shipped since {f.Since:ddd d MMM})"
             : $"Standup - {f.Now:ddd d MMM} (since {f.Since:ddd d MMM})";

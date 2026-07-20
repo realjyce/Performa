@@ -1,6 +1,6 @@
-using Recap.Git;
+using Performa.Git;
 
-namespace Recap.Reports;
+namespace Performa.Reports;
 
 public sealed record ReportGroup(string Title, IReadOnlyList<Commit> Commits);
 

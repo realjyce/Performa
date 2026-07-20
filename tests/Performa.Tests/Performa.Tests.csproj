@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Recap\Recap.csproj" />
+    <ProjectReference Include="..\..\src\Performa\Performa.csproj" />
   </ItemGroup>
 
 </Project>
