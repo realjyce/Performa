@@ -1,10 +1,13 @@
-# performa
+# Performa
 
-A local-first developer chief of staff. `performa` reads your project's git
-history and writes the things you'd otherwise write by hand: standup updates,
-changelogs, branch summaries, and a list of loose ends. Everything is
-generated deterministically from git on your machine. No server, no network
-calls, no AI.
+Let yourself be managed. A helper, a summariser, a standup scribe, a
+changelog keeper, a catcher of loose ends. An all-rounder by your side,
+working from what your git history already knows.
+
+`performa` reads your project's git history and writes the things you'd
+otherwise write by hand: standups, changelogs, branch summaries, loose-end
+reports. Everything is generated deterministically from git on your machine.
+No server, no cloud, no AI. Just your commits.
 
 ## Install
 
