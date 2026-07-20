@@ -24,7 +24,9 @@ macOS builds work the same way with `-r linux-x64` / `-r osx-arm64`.
 ## Commands
 
 ```
-performa                               dashboard: today + loose ends at a glance
+performa                               dashboard. With a workspace configured:
+                                       every repo's today, loose ends, and your
+                                       week's velocity in one screen
 performa init                          set your preferences (once)
 performa standup                       what you did since your last standup
 performa standup --since 2026-07-18    ...or since a date, ref, or "yesterday"
@@ -45,8 +47,8 @@ PR description and it's already clean.
 
 ## How it adapts
 
-First run of `performa init` asks four questions: format, verbosity, grouping,
-tone. After that, every generated report ends with an
+First run of `performa init` asks four questions plus an optional workspace
+folder to scan for repositories (that powers the multi-repo dashboard). After that, every generated report ends with an
 `[a]ccept / [e]dit / [r]eject` prompt (skipped when piping). Your actions
 refine the stored preferences with plain rules, no ML:
 

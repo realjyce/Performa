@@ -15,6 +15,7 @@ public sealed class Preferences
     public Grouping Grouping { get; set; } = Grouping.Area;
     public Tone Tone { get; set; } = Tone.Plain;
     public int RejectStreak { get; set; }
+    public string? WorkspacePath { get; set; }
 }
 
 public sealed class StateFile

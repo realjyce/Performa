@@ -59,3 +59,13 @@ One decision or lesson per entry. Newest last.
 - **Bare `performa` is the dashboard**: repo stamp, today's commits since the
   standup watermark, loose ends, command hints. This is the "combined"
   productivity-manager face; the subcommands stay single-purpose.
+
+- **Workspace dashboard scans one folder, depth one.** A repo is any direct
+  child with a .git directory. No recursive crawl, no registry of paths to
+  maintain. Velocity (week-over-week commits, day streak, busiest repo) comes
+  from a dates-only git log per repo, so the whole scan stays fast.
+
+- **Parallel tests must not share GIT_AUTHOR_DATE.** Two suites that set the
+  process-global env vars raced and backdated each other's commits. Both now
+  sit in one xUnit collection so they serialize. Env vars are global state;
+  test suites forget that.

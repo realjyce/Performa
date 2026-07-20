@@ -31,6 +31,16 @@ public sealed class RepoQueries(GitRunner git)
 
     public List<Commit> CommitsInRange(string range) => Log([range]);
 
+    public List<DateTimeOffset> CommitDatesSince(DateTimeOffset since, bool onlyMine)
+    {
+        var args = new List<string> { "log", "--format=%aI", $"--since={since:O}" };
+        if (onlyMine && UserEmail() is { Length: > 0 } email)
+            args.Add($"--author={email}");
+        var raw = Git.TryRun([.. args]) ?? "";
+        return [.. raw.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => DateTimeOffset.Parse(line.Trim()))];
+    }
+
     public string? LastTag()
         => Git.TryRun("describe", "--tags", "--abbrev=0")?.Trim();
 

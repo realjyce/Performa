@@ -9,6 +9,7 @@ namespace Performa.Tests;
 /// Builds a real git repository in a temp directory and runs the full
 /// pipeline against it. Requires git on PATH, same as the tool itself.
 /// </summary>
+[Collection("git-environment")]
 public sealed class IntegrationTests : IDisposable
 {
     private readonly string _dir;

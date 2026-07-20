@@ -31,8 +31,26 @@ root.Options.Add(repoOption);
 root.Options.Add(formatOption);
 root.Options.Add(noPromptOption);
 
-root.SetAction(parseResult => WithRepo(parseResult, ctx =>
+root.SetAction(parseResult =>
 {
+    var wsStore = new PrefsStore();
+    var wsPrefs = wsStore.LoadPrefs();
+    var explicitRepo = parseResult.GetValue(repoOption) is { } rp && rp != ".";
+    if (wsPrefs.WorkspacePath is { Length: > 0 } ws && Directory.Exists(ws) && !explicitRepo)
+    {
+        var autoPretty = Ansi.TerminalSupportsStyling();
+        var pretty = parseResult.GetValue(formatOption)?.ToLowerInvariant() switch
+        {
+            "pretty" => true,
+            "md" or "markdown" or "text" or "txt" => false,
+            _ => autoPretty,
+        };
+        var facts = WorkspaceBuilder.Build(ws, DateTimeOffset.Now);
+        Console.Write(WorkspaceRenderer.Render(facts, pretty));
+        return 0;
+    }
+    return WithRepo(parseResult, ctx =>
+    {
     var state = ctx.Store.LoadState();
     var since = state.LastStandup.TryGetValue(ctx.Repo.Git.RepoPath, out var last)
         ? last
@@ -40,7 +58,8 @@ root.SetAction(parseResult => WithRepo(parseResult, ctx =>
     var standup = FactBuilders.BuildStandup(ctx.Repo, ctx.Prefs, since, DateTimeOffset.Now);
     var loose = FactBuilders.BuildLooseEnds(ctx.Repo);
     Console.Write(RenderDashboard(ctx, standup, loose, since));
-}));
+    });
+});
 
 var initCommand = new Command("init", "Answer a few questions to set your output preferences.");
 initCommand.SetAction(parseResult =>
@@ -252,6 +271,12 @@ void RunInit(Preferences prefs)
     prefs.Verbosity = Ask("Verbosity", ("normal", Verbosity.Normal), ("terse", Verbosity.Terse), ("detailed", Verbosity.Detailed));
     prefs.Grouping = Ask("Group commits by", ("area", Grouping.Area), ("kind", Grouping.Kind), ("flat", Grouping.Flat));
     prefs.Tone = Ask("Tone", ("plain", Tone.Plain), ("friendly", Tone.Friendly));
+    Console.Error.Write("Workspace folder to scan for repos (blank to skip): ");
+    var ws = Console.ReadLine()?.Trim() ?? "";
+    if (ws.Length > 0 && Directory.Exists(ws))
+        prefs.WorkspacePath = Path.GetFullPath(ws);
+    else if (ws.Length > 0)
+        Console.Error.WriteLine($"performa: folder not found, skipping: {ws}");
     prefs.Initialised = true;
 }
 
