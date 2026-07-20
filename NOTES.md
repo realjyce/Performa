@@ -49,3 +49,13 @@ One decision or lesson per entry. Newest last.
 - **Classifier: "Update README.md" is Docs, not Other.** Real commit subjects
   are verb-first ("Update", "Edit"), so the docs rule also matches any
   subject containing "readme".
+
+- **Two-face output, decided at the TTY boundary.** Pretty ANSI (hand-rolled,
+  ~40 lines, no Spectre dependency) when stdout is a terminal; clean markdown
+  when piped. Editing always operates on the markdown render so notepad never
+  sees escape codes. Console.OutputEncoding must be forced to UTF-8 on
+  Windows or the glyphs mojibake.
+
+- **Bare `recap` is the dashboard**: repo stamp, today's commits since the
+  standup watermark, loose ends, command hints. This is the "combined"
+  productivity-manager face; the subcommands stay single-purpose.

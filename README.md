@@ -21,6 +21,7 @@ macOS builds work the same way with `-r linux-x64` / `-r osx-arm64`.
 ## Commands
 
 ```
+recap                               dashboard: today + loose ends at a glance
 recap init                          set your preferences (once)
 recap standup                       what you did since your last standup
 recap standup --since 2026-07-18    ...or since a date, ref, or "yesterday"
@@ -33,7 +34,11 @@ recap loose-ends                    stale branches, unpushed commits,
 ```
 
 Global options: `--repo <path>` (default: current directory),
-`--format md|text`, `--no-prompt`.
+`--format md|text|pretty`, `--no-prompt`.
+
+Output has two faces: styled and colored when you're looking at a terminal,
+plain markdown the moment it's piped or redirected. Paste into Slack or a
+PR description and it's already clean.
 
 ## How it adapts
 

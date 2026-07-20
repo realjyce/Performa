@@ -1,14 +1,25 @@
 using System.Text;
+using Recap.Git;
 using Recap.Prefs;
 using Recap.Reports;
 
 namespace Recap.Enrich;
 
-public sealed class DeterministicEnricher : IEnricher
+public sealed class DeterministicEnricher(bool pretty = false) : IEnricher
 {
+    private static readonly Dictionary<string, string> SectionColors = new()
+    {
+        ["Added"] = Ansi.Green,
+        ["Fixed"] = Ansi.Yellow,
+        ["Changed"] = Ansi.Cyan,
+        ["Docs"] = Ansi.Blue,
+        ["Internal"] = Ansi.Magenta,
+    };
+
     public string RenderStandup(StandupFacts f, Preferences prefs)
     {
         var sb = new StringBuilder();
+        Stamp(sb, $"recap · {f.RepoName}");
         var heading = prefs.Tone == Tone.Friendly
             ? $"Standup for {f.Now:ddd d MMM} (here's what you shipped since {f.Since:ddd d MMM})"
             : $"Standup - {f.Now:ddd d MMM} (since {f.Since:ddd d MMM})";
@@ -34,7 +45,7 @@ public sealed class DeterministicEnricher : IEnricher
         if (loose.Count > 0)
         {
             sb.AppendLine();
-            sb.AppendLine($"Loose ends: {string.Join(", ", loose)}");
+            Warn(sb, $"Loose ends: {string.Join(", ", loose)}");
         }
         else if (prefs.Tone == Tone.Friendly && f.Groups.Count > 0)
         {
@@ -56,10 +67,10 @@ public sealed class DeterministicEnricher : IEnricher
             H2(sb, section, prefs);
             foreach (var c in commits)
             {
-                var line = $"- {Classification.CleanSubject(c.Subject)}";
-                if (prefs.Verbosity == Verbosity.Detailed)
-                    line += $" ({c.Sha[..7]})";
-                sb.AppendLine(line);
+                var suffix = prefs.Verbosity == Verbosity.Detailed
+                    ? DimText($" ({c.Sha[..7]})")
+                    : "";
+                Bullet(sb, Classification.CleanSubject(c.Subject) + suffix);
             }
             sb.AppendLine();
         }
@@ -70,7 +81,7 @@ public sealed class DeterministicEnricher : IEnricher
     {
         var sb = new StringBuilder();
         H1(sb, $"What changed on {f.Target} (vs {f.BaseRef})", prefs);
-        sb.AppendLine($"{f.Files} file(s) changed, +{f.Insertions}/-{f.Deletions}");
+        sb.AppendLine(DimText($"{f.Files} file(s) changed, +{f.Insertions}/-{f.Deletions}"));
         sb.AppendLine();
 
         foreach (var group in f.Groups)
@@ -86,7 +97,7 @@ public sealed class DeterministicEnricher : IEnricher
             if (f.Reasons.Count == 0)
                 sb.AppendLine("No rationale recorded in commit messages.");
             foreach (var reason in f.Reasons)
-                sb.AppendLine($"- {reason}");
+                Bullet(sb, reason);
         }
         return sb.ToString().TrimEnd() + Environment.NewLine;
     }
@@ -109,33 +120,36 @@ public sealed class DeterministicEnricher : IEnricher
         if (f.Working.Total > 0)
         {
             H2(sb, "Uncommitted work", prefs);
-            sb.AppendLine($"- {f.Working.Staged} staged, {f.Working.Unstaged} modified, {f.Working.Untracked} untracked");
+            if (pretty)
+                Warn(sb, $"{f.Working.Staged} staged, {f.Working.Unstaged} modified, {f.Working.Untracked} untracked");
+            else
+                Bullet(sb, $"{f.Working.Staged} staged, {f.Working.Unstaged} modified, {f.Working.Untracked} untracked");
         }
         if (f.UnpushedBranches.Count > 0)
         {
             H2(sb, "Unpushed", prefs);
             foreach (var b in f.UnpushedBranches)
-                sb.AppendLine(b.Upstream is null
-                    ? $"- {b.Name}: no upstream set"
-                    : $"- {b.Name}: {b.Ahead} commit(s) ahead of {b.Upstream}");
+                Bullet(sb, b.Upstream is null
+                    ? $"{b.Name}: no upstream set"
+                    : $"{b.Name}: {b.Ahead} commit(s) ahead of {b.Upstream}");
         }
         if (f.StaleBranches.Count > 0)
         {
             H2(sb, "Stale branches", prefs);
             foreach (var b in f.StaleBranches)
-                sb.AppendLine($"- {b.Name}: last commit {b.LastCommit:yyyy-MM-dd}");
+                Bullet(sb, $"{b.Name}: last commit {b.LastCommit:yyyy-MM-dd}");
         }
         if (f.TodoTotal > 0)
         {
             H2(sb, $"Markers ({f.TodoTotal} total)", prefs);
             foreach (var t in f.Todos)
-                sb.AppendLine($"- {t.File}:{t.Line} {t.Text}");
+                Bullet(sb, $"{DimText($"{t.File}:{t.Line}")} {t.Text}");
         }
         return sb.ToString().TrimEnd() + Environment.NewLine;
     }
 
-    private static void RenderCommitBullets(
-        StringBuilder sb, IReadOnlyList<Git.Commit> commits, Preferences prefs)
+    private void RenderCommitBullets(
+        StringBuilder sb, IReadOnlyList<Commit> commits, Preferences prefs)
     {
         if (prefs.Verbosity == Verbosity.Terse)
         {
@@ -145,34 +159,72 @@ public sealed class DeterministicEnricher : IEnricher
                 .ToList();
             var line = string.Join("; ", subjects);
             if (commits.Count > 3) line += $"; +{commits.Count - 3} more";
-            sb.AppendLine($"- {line} ({commits.Count} commit(s))");
+            Bullet(sb, $"{line} {DimText($"({commits.Count} commit(s))")}");
             return;
         }
 
         foreach (var c in commits)
         {
-            sb.AppendLine($"- {Classification.CleanSubject(c.Subject)}");
+            Bullet(sb, Classification.CleanSubject(c.Subject));
             if (prefs.Verbosity == Verbosity.Detailed && c.Body.Length > 0)
             {
                 var first = c.Body.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[0];
-                sb.AppendLine($"  {first}");
+                sb.AppendLine($"  {DimText(first)}");
             }
         }
         sb.AppendLine();
     }
 
-    private static void H1(StringBuilder sb, string text, Preferences prefs)
+    private void Stamp(StringBuilder sb, string text)
     {
-        if (prefs.Format == OutputFormat.Markdown) sb.AppendLine($"# {text}");
-        else { sb.AppendLine(text); sb.AppendLine(new string('=', Math.Min(text.Length, 60))); }
+        if (!pretty) return;
+        sb.AppendLine($"{Ansi.Dim}{text}{Ansi.Reset}");
+    }
+
+    private void H1(StringBuilder sb, string text, Preferences prefs)
+    {
+        if (pretty)
+        {
+            sb.AppendLine($"{Ansi.Bold}{Ansi.Cyan}{text}{Ansi.Reset}");
+            sb.AppendLine($"{Ansi.Dim}{new string('─', Math.Min(text.Length, 60))}{Ansi.Reset}");
+        }
+        else if (prefs.Format == OutputFormat.Markdown)
+        {
+            sb.AppendLine($"# {text}");
+        }
+        else
+        {
+            sb.AppendLine(text);
+            sb.AppendLine(new string('=', Math.Min(text.Length, 60)));
+        }
         sb.AppendLine();
     }
 
-    private static void H2(StringBuilder sb, string text, Preferences prefs)
+    private void H2(StringBuilder sb, string text, Preferences prefs)
     {
-        if (prefs.Format == OutputFormat.Markdown) sb.AppendLine($"## {text}");
-        else sb.AppendLine($"{text}:");
+        if (pretty)
+        {
+            var color = SectionColors.GetValueOrDefault(text, "");
+            sb.AppendLine($"{Ansi.Bold}{color}{text}{Ansi.Reset}");
+        }
+        else if (prefs.Format == OutputFormat.Markdown)
+        {
+            sb.AppendLine($"## {text}");
+        }
+        else
+        {
+            sb.AppendLine($"{text}:");
+        }
     }
+
+    private void Bullet(StringBuilder sb, string text)
+        => sb.AppendLine(pretty ? $"  {Ansi.Cyan}•{Ansi.Reset} {text}" : $"- {text}");
+
+    private void Warn(StringBuilder sb, string text)
+        => sb.AppendLine(pretty ? $"  {Ansi.Yellow}! {text}{Ansi.Reset}" : text);
+
+    private string DimText(string text)
+        => pretty ? $"{Ansi.Dim}{text}{Ansi.Reset}" : text;
 
     private static string Capitalize(string s)
         => s.Length > 0 ? char.ToUpperInvariant(s[0]) + s[1..] : s;
