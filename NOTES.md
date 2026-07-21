@@ -112,3 +112,14 @@ One decision or lesson per entry. Newest last.
   summary <repo>, loose, repos, help, clear. Claude-Code-style, so the CLI is
   always one keystroke away without leaving the app. ConsoleViewModel parses
   and dispatches; output is mono text.
+
+- **Two-list nav clobbered itself.** Both sidebar lists (main + utility) bound
+  SelectedItem to one Selected property; selecting a utility item made the main
+  list clear and write null back, blanking the page. Fix: ignore null writes in
+  the Selected setter. This is why Settings navigated to an empty page. Also
+  moved the settings folder-picker button off runtime FindControl onto a XAML
+  Click handler so ViewLocator rebuilds can't NRE it.
+
+- **Console auto-focuses now.** When the drawer opens, the input takes focus
+  (PropertyChanged -> Dispatcher.Post -> Focus), and clicking anywhere in the
+  drawer focuses it too. No more hunting for the transparent textbox.

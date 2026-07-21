@@ -45,6 +45,16 @@ var window = new MainWindow
 };
 window.Show();
 
+// Optional: navigate AFTER show, mimicking a real sidebar click (rebuilds the
+// view via the ViewLocator, which the initial render does not exercise).
+if (args.Length > 5 && args[5].StartsWith("navto:"))
+{
+    var idx = int.Parse(args[5]["navto:".Length..]);
+    Dispatcher.UIThread.RunJobs();
+    Thread.Sleep(400);
+    vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(idx);
+}
+
 // Pump the UI + let the async git load settle before capturing.
 var deadline = DateTime.Now.AddSeconds(8);
 while (DateTime.Now < deadline)

@@ -19,7 +19,7 @@
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,4,0,0">
             <TextBox Grid.Column="0" Text="{Binding WorkspacePath}"
                      Watermark="C:\path\to\your\repos" />
-            <Button Grid.Column="1" Name="BrowseBtn" Classes="accent" Content="Choose folder…" />
+            <Button Grid.Column="1" Classes="accent" Content="Choose folder…" Click="OnBrowse" />
           </Grid>
         </StackPanel>
       </Border>

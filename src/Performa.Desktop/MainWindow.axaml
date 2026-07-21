@@ -107,7 +107,7 @@
           </TransitioningContentControl.PageTransition>
         </TransitioningContentControl>
 
-        <Border Grid.Row="1" Height="270" IsVisible="{Binding IsConsoleOpen}"
+        <Border Grid.Row="1" Name="ConsoleDrawer" Height="270" IsVisible="{Binding IsConsoleOpen}"
                 Background="{DynamicResource BgInsetBrush}"
                 BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,1,0,0">
           <DockPanel>
@@ -129,7 +129,7 @@
               <TextBlock Grid.Column="0" Text="›" FontFamily="{DynamicResource MonoFont}"
                          FontSize="14" Foreground="{DynamicResource AccentBrightBrush}"
                          VerticalAlignment="Center" Margin="0,0,8,0" />
-              <TextBox Grid.Column="1" Text="{Binding Console.Input}"
+              <TextBox Grid.Column="1" Name="ConsoleInput" Text="{Binding Console.Input}"
                        FontFamily="{DynamicResource MonoFont}" FontSize="13"
                        Watermark="standup · changelog · summary &lt;repo&gt; · loose · help"
                        Background="Transparent" BorderThickness="0" Padding="0">

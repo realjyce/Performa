@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Performa.Desktop.ViewModels;
@@ -7,13 +8,9 @@ namespace Performa.Desktop.Views;
 
 public partial class SettingsView : UserControl
 {
-    public SettingsView()
-    {
-        AvaloniaXamlLoader.Load(this);
-        this.FindControl<Button>("BrowseBtn")!.Click += OnBrowse;
-    }
+    public SettingsView() => AvaloniaXamlLoader.Load(this);
 
-    private async void OnBrowse(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void OnBrowse(object? sender, RoutedEventArgs e)
     {
         var top = TopLevel.GetTopLevel(this);
         if (top is null || DataContext is not SettingsViewModel vm) return;

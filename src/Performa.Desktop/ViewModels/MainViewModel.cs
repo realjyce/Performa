@@ -21,6 +21,10 @@ public sealed class MainViewModel : ObservableObject
         get => _selected;
         set
         {
+            // Two sidebar lists bind to this one property; the non-owning list
+            // clears itself and writes null back. Ignore that so the real
+            // selection survives.
+            if (value is null) return;
             if (SetProperty(ref _selected, value))
                 OnPropertyChanged(nameof(CurrentPage));
         }
