@@ -144,3 +144,17 @@ One decision or lesson per entry. Newest last.
 - **Carbon is a weave, not just a tone.** An 8px PNG tile (offset light/dark
   dots at very low alpha) tiled 1:1 as an ImageBrush over the sidebar, title
   bar, and content backdrop. Cards keep solid fills so they read forward.
+
+- **Google sign-in uses loopback + PKCE**, the flow Google recommends for
+  installed apps. A TcpListener on a random loopback port catches the redirect
+  (deliberately not HttpListener, which wants a URL ACL / admin on Windows).
+  Scopes are calendar.readonly and gmail.readonly, nothing writable. Tokens go
+  to %APPDATA%/performa/google.json; the client secret stays in prefs. Refresh
+  happens automatically two minutes before expiry.
+
+- **Depth pass.** BoxShadow on cards (heavier on hover). Note BoxShadow lives
+  on Border, not Button, so the quick-action buttons keep border+hover instead.
+
+- **GitHub list alignment.** The action column is a fixed 86px with
+  right-aligned content, so "on disk" and Clone line up regardless of repo
+  name length; names ellipsise rather than pushing the column.

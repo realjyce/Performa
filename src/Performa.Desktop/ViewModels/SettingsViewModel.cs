@@ -35,9 +35,74 @@ public sealed class SettingsViewModel : ObservableObject
         ScanGitHubCommand = new RelayCommand(() => _ = ScanGitHubAsync());
         AutoDetectCommand = new RelayCommand(AutoDetectLocal);
         CloneCommand = new RelayCommand<GitHubRepoRow>(row => { if (row is not null) Clone(row); });
+
+        _googleClientId = engine.Prefs.GoogleClientId ?? "";
+        _googleClientSecret = engine.Prefs.GoogleClientSecret ?? "";
+        GoogleSignInCommand = new RelayCommand(() => _ = GoogleSignInAsync());
+        GoogleSignOutCommand = new RelayCommand(GoogleSignOut);
+        RefreshGoogleStatus();
     }
 
     private readonly GitHubService _github = new();
+    private readonly GoogleAuthService _google = new();
+
+    private string _googleClientId;
+    public string GoogleClientId
+    {
+        get => _googleClientId;
+        set => SetProperty(ref _googleClientId, value);
+    }
+
+    private string _googleClientSecret;
+    public string GoogleClientSecret
+    {
+        get => _googleClientSecret;
+        set => SetProperty(ref _googleClientSecret, value);
+    }
+
+    private string _googleStatus = "";
+    public string GoogleStatus { get => _googleStatus; set => SetProperty(ref _googleStatus, value); }
+
+    private bool _googleConnected;
+    public bool GoogleConnected
+    {
+        get => _googleConnected;
+        set => SetProperty(ref _googleConnected, value);
+    }
+
+    public RelayCommand GoogleSignInCommand { get; }
+    public RelayCommand GoogleSignOutCommand { get; }
+
+    private void RefreshGoogleStatus()
+    {
+        GoogleConnected = _google.IsSignedIn;
+        GoogleStatus = GoogleConnected
+            ? "Connected. Calendar and Gmail are readable."
+            : "Not connected.";
+    }
+
+    private void SaveGoogleCredentials()
+    {
+        _engine.Prefs.GoogleClientId =
+            string.IsNullOrWhiteSpace(GoogleClientId) ? null : GoogleClientId.Trim();
+        _engine.Prefs.GoogleClientSecret =
+            string.IsNullOrWhiteSpace(GoogleClientSecret) ? null : GoogleClientSecret.Trim();
+        _engine.SavePrefs();
+    }
+
+    private async Task GoogleSignInAsync()
+    {
+        SaveGoogleCredentials();
+        GoogleStatus = "Opening your browser…";
+        GoogleStatus = await _google.SignInAsync(GoogleClientId.Trim(), GoogleClientSecret.Trim());
+        GoogleConnected = _google.IsSignedIn;
+    }
+
+    private void GoogleSignOut()
+    {
+        _google.SignOut();
+        RefreshGoogleStatus();
+    }
 
     public ObservableCollection<GitHubRepoRow> GitHubRepos { get; } = [];
 

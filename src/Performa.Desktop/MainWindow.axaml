@@ -130,15 +130,16 @@
               </Button>
             </Grid>
 
-            <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*" Margin="16,6,16,12"
-                  VerticalAlignment="Center">
+            <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*" Margin="16,4,16,10"
+                  Height="34">
               <TextBlock Grid.Column="0" Text="›" FontFamily="{DynamicResource MonoFont}"
                          FontSize="14" Foreground="{DynamicResource AccentBrightBrush}"
                          VerticalAlignment="Center" Margin="0,0,8,0" />
               <TextBox Grid.Column="1" Name="ConsoleInput" Text="{Binding Console.Input}"
                        FontFamily="{DynamicResource MonoFont}" FontSize="13"
                        Watermark="standup · changelog · summary &lt;repo&gt; · loose · help"
-                       Background="Transparent" BorderThickness="0" Padding="0">
+                       Background="Transparent" BorderThickness="0" Padding="0"
+                       VerticalAlignment="Stretch" VerticalContentAlignment="Center">
                 <TextBox.KeyBindings>
                   <KeyBinding Gesture="Enter" Command="{Binding Console.RunCommand}" />
                 </TextBox.KeyBindings>

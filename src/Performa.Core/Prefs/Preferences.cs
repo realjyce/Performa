@@ -17,9 +17,11 @@ public sealed class Preferences
     public int RejectStreak { get; set; }
     public string? WorkspacePath { get; set; }
 
-    // Stored only. The CLI never reads it; the desktop uses it for the optional
-    // GitHub remote-data calls. Core makes no network requests.
+    // Stored only. The CLI never reads these; the desktop uses them for the
+    // optional GitHub and Google calls. Core makes no network requests.
     public string? GitHubToken { get; set; }
+    public string? GoogleClientId { get; set; }
+    public string? GoogleClientSecret { get; set; }
 }
 
 public sealed class StateFile

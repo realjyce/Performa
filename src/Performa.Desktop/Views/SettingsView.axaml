@@ -48,27 +48,63 @@
               <ItemsControl ItemsSource="{Binding GitHubRepos}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:GitHubRepoRow">
-                    <Grid ColumnDefinitions="*,Auto" Margin="10,7">
-                      <StackPanel Grid.Column="0" Spacing="1">
+                    <Grid ColumnDefinitions="*,86" Margin="10,7">
+                      <StackPanel Grid.Column="0" Spacing="1" Margin="0,0,10,0">
                         <TextBlock Text="{Binding Name}"
                                    Foreground="{DynamicResource TextPrimaryBrush}"
-                                   FontSize="13" />
-                        <TextBlock Text="{Binding Meta}" Classes="faint" FontSize="11" />
+                                   FontSize="13" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding Meta}" Classes="faint" FontSize="11"
+                                   TextTrimming="CharacterEllipsis" />
                         <TextBlock Text="{Binding Status}" Classes="faint" FontSize="11"
-                                   Foreground="{DynamicResource AccentBrightBrush}" />
+                                   Foreground="{DynamicResource AccentBrightBrush}"
+                                   TextTrimming="CharacterEllipsis" />
                       </StackPanel>
                       <Button Grid.Column="1" Classes="ghost" Content="Clone"
-                              VerticalAlignment="Center" IsVisible="{Binding CanClone}"
+                              HorizontalAlignment="Right" VerticalAlignment="Center"
+                              IsVisible="{Binding CanClone}"
                               Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).CloneCommand}"
                               CommandParameter="{Binding}" />
                       <TextBlock Grid.Column="1" Text="on disk" Classes="faint"
-                                 VerticalAlignment="Center" IsVisible="{Binding IsLocal}" />
+                                 HorizontalAlignment="Right" VerticalAlignment="Center"
+                                 IsVisible="{Binding IsLocal}" />
                     </Grid>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
             </ScrollViewer>
           </Border>
+        </StackPanel>
+      </Border>
+
+      <!-- Google -->
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="GOOGLE" Classes="label" VerticalAlignment="Center" />
+            <Border Grid.Column="1" Classes="chip" IsVisible="{Binding GoogleConnected}"
+                    Background="{DynamicResource AccentSoftBrush}"
+                    BorderBrush="{DynamicResource AccentBrush}">
+              <TextBlock Text="connected" FontSize="10.5"
+                         Foreground="{DynamicResource AccentBrightBrush}" />
+            </Border>
+          </Grid>
+          <TextBlock Classes="faint" TextWrapping="Wrap"
+                     Text="Read-only access to your Calendar and Gmail. Create a Desktop OAuth client in Google Cloud Console, then paste its ID and secret here. Both stay on this machine." />
+
+          <StackPanel Spacing="8" Margin="0,4,0,0">
+            <TextBox Text="{Binding GoogleClientId}"
+                     Watermark="Client ID  (…apps.googleusercontent.com)" />
+            <TextBox Text="{Binding GoogleClientSecret}" PasswordChar="•"
+                     Watermark="Client secret  (GOCSPX-…)" />
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Classes="accent" Content="Sign in with Google"
+                    Command="{Binding GoogleSignInCommand}" />
+            <Button Classes="ghost" Content="Disconnect" IsVisible="{Binding GoogleConnected}"
+                    Command="{Binding GoogleSignOutCommand}" />
+          </StackPanel>
+          <TextBlock Text="{Binding GoogleStatus}" Classes="faint" TextWrapping="Wrap" />
         </StackPanel>
       </Border>
 
