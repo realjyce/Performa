@@ -16,11 +16,17 @@ public sealed class ReportsViewModel : ObservableObject
     public ReportsViewModel(PerformaEngine engine)
     {
         _engine = engine;
-        foreach (var path in engine.DiscoverRepos())
-            Repos.Add(new RepoRef(System.IO.Path.GetFileName(path), path));
-        _selectedRepo = Repos.FirstOrDefault();
-
+        RefreshRepos();
         GenerateCommand = new RelayCommand(() => _ = GenerateAsync());
+        engine.WorkspaceChanged += RefreshRepos;
+    }
+
+    public void RefreshRepos()
+    {
+        Repos.Clear();
+        foreach (var path in _engine.DiscoverRepos())
+            Repos.Add(new RepoRef(System.IO.Path.GetFileName(path), path));
+        SelectedRepo = Repos.FirstOrDefault();
     }
 
     public ObservableCollection<RepoRef> Repos { get; } = [];

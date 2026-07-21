@@ -28,8 +28,22 @@ public sealed class MainViewModel : ObservableObject
 
     public ObservableObject CurrentPage => Selected.Page;
 
+    public ConsoleViewModel Console { get; }
+
+    private bool _isConsoleOpen;
+    public bool IsConsoleOpen
+    {
+        get => _isConsoleOpen;
+        set => SetProperty(ref _isConsoleOpen, value);
+    }
+
+    public RelayCommand ToggleConsoleCommand { get; }
+
     public MainViewModel()
     {
+        Console = new ConsoleViewModel(Engine);
+        ToggleConsoleCommand = new RelayCommand(() => IsConsoleOpen = !IsConsoleOpen);
+
         var dashboard = new DashboardViewModel(Engine, HandleQuickAction);
         var daily = new DailyViewModel(Engine);
         _reports = new ReportsViewModel(Engine);

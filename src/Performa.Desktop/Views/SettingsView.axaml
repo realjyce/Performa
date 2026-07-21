@@ -16,8 +16,11 @@
         <StackPanel Spacing="8">
           <TextBlock Text="WORKSPACE FOLDER" Classes="label" />
           <TextBlock Text="Performa scans this folder for git repositories." Classes="faint" />
-          <TextBox Text="{Binding WorkspacePath}" Watermark="C:\path\to\your\repos"
-                   Margin="0,4,0,0" />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,4,0,0">
+            <TextBox Grid.Column="0" Text="{Binding WorkspacePath}"
+                     Watermark="C:\path\to\your\repos" />
+            <Button Grid.Column="1" Name="BrowseBtn" Classes="accent" Content="Choose folder…" />
+          </Grid>
         </StackPanel>
       </Border>
 

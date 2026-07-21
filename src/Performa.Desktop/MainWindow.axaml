@@ -24,6 +24,11 @@
                    VerticalAlignment="Center" />
       </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <Button Classes="wbtn" Command="{Binding ToggleConsoleCommand}"
+                ToolTip.Tip="Console (embedded CLI)">
+          <Path Data="{DynamicResource IconTerminal}" Fill="{DynamicResource TextMutedBrush}"
+                Width="15" Height="15" Stretch="Uniform" />
+        </Button>
         <Button Name="MinBtn" Classes="wbtn">
           <Rectangle Width="10" Height="1" Fill="{DynamicResource TextMutedBrush}" />
         </Button>
@@ -94,12 +99,55 @@
         </DockPanel>
       </Border>
 
-      <!-- Content host -->
-      <TransitioningContentControl Grid.Column="1" Content="{Binding CurrentPage}">
-        <TransitioningContentControl.PageTransition>
-          <CrossFade Duration="0:0:0.18" />
-        </TransitioningContentControl.PageTransition>
-      </TransitioningContentControl>
+      <!-- Content + console drawer -->
+      <Grid Grid.Column="1" RowDefinitions="*,Auto">
+        <TransitioningContentControl Grid.Row="0" Content="{Binding CurrentPage}">
+          <TransitioningContentControl.PageTransition>
+            <CrossFade Duration="0:0:0.18" />
+          </TransitioningContentControl.PageTransition>
+        </TransitioningContentControl>
+
+        <Border Grid.Row="1" Height="270" IsVisible="{Binding IsConsoleOpen}"
+                Background="{DynamicResource BgInsetBrush}"
+                BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,1,0,0">
+          <DockPanel>
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="16,9,8,6">
+              <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Path Data="{DynamicResource IconTerminal}" Width="13" Height="13"
+                      Stretch="Uniform" Fill="{DynamicResource AccentBrightBrush}" />
+                <TextBlock Text="CONSOLE" Classes="label" />
+                <TextBlock Text="performa CLI, embedded" Classes="faint" />
+              </StackPanel>
+              <Button Grid.Column="1" Classes="wbtn" Command="{Binding ToggleConsoleCommand}">
+                <Path Data="M0,0 L8,8 M8,0 L0,8" Stroke="{DynamicResource TextMutedBrush}"
+                      StrokeThickness="1.2" />
+              </Button>
+            </Grid>
+
+            <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*" Margin="16,6,16,12"
+                  VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Text="›" FontFamily="{DynamicResource MonoFont}"
+                         FontSize="14" Foreground="{DynamicResource AccentBrightBrush}"
+                         VerticalAlignment="Center" Margin="0,0,8,0" />
+              <TextBox Grid.Column="1" Text="{Binding Console.Input}"
+                       FontFamily="{DynamicResource MonoFont}" FontSize="13"
+                       Watermark="standup · changelog · summary &lt;repo&gt; · loose · help"
+                       Background="Transparent" BorderThickness="0" Padding="0">
+                <TextBox.KeyBindings>
+                  <KeyBinding Gesture="Enter" Command="{Binding Console.RunCommand}" />
+                </TextBox.KeyBindings>
+              </TextBox>
+            </Grid>
+
+            <ScrollViewer Margin="16,0" Name="ConsoleScroll">
+              <SelectableTextBlock Text="{Binding Console.Output}"
+                                   FontFamily="{DynamicResource MonoFont}" FontSize="12.5"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   TextWrapping="Wrap" LineHeight="19" />
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
+      </Grid>
 
     </Grid>
   </Grid>

@@ -101,3 +101,14 @@ One decision or lesson per entry. Newest last.
   (standup/changelog/recap/loose) call back into MainViewModel, which selects
   the right page and presets it, rather than re-implementing report logic on
   the dashboard.
+
+- **Workspace is pickable and live now.** Settings has a native folder picker
+  (Avalonia StorageProvider, in view code-behind where TopLevel is available).
+  Changing it calls engine.SetWorkspace, which raises WorkspaceChanged; the
+  dashboard, reports, and loose-ends pages subscribe and reload. No restart.
+
+- **Embedded CLI console.** A terminal drawer (toggle in the title bar, one
+  click) runs the same engine as the `performa` binary: standup, changelog,
+  summary <repo>, loose, repos, help, clear. Claude-Code-style, so the CLI is
+  always one keystroke away without leaving the app. ConsoleViewModel parses
+  and dispatches; output is mono text.

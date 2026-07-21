@@ -29,6 +29,14 @@ if (args.Length > 4 && vm.Selected.Page is AssistantViewModel assistant)
 if (args.Length > 4 && args[4].StartsWith("quick:") && vm.Selected.Page is DashboardViewModel dash)
     dash.QuickCommand.Execute(args[4]["quick:".Length..]);
 
+// Optional: open the console and run a command (e.g. "console:standup Performa").
+if (args.Length > 4 && args[4].StartsWith("console:"))
+{
+    vm.IsConsoleOpen = true;
+    vm.Console.Input = args[4]["console:".Length..];
+    vm.Console.RunCommand.Execute(null);
+}
+
 var window = new MainWindow
 {
     DataContext = vm,

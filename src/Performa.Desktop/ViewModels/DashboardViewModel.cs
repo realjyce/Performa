@@ -59,6 +59,7 @@ public sealed class DashboardViewModel : ObservableObject
         _engine = engine;
         _onQuickAction = onQuickAction;
         QuickCommand = new RelayCommand<string>(c => { if (c is not null) _onQuickAction(c); });
+        engine.WorkspaceChanged += () => _ = LoadAsync();
         _ = LoadAsync();
     }
 

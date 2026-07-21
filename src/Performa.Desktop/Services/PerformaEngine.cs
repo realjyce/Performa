@@ -22,11 +22,16 @@ public sealed class PerformaEngine
 
     public string? WorkspacePath => Prefs.WorkspacePath;
 
+    /// <summary>Raised when the workspace folder changes so pages can reload.</summary>
+    public event Action? WorkspaceChanged;
+
     public void SetWorkspace(string path)
     {
+        var changed = !string.Equals(Prefs.WorkspacePath, path, StringComparison.OrdinalIgnoreCase);
         Prefs.WorkspacePath = path;
         Prefs.Initialised = true;
         _store.SavePrefs(Prefs);
+        if (changed) WorkspaceChanged?.Invoke();
     }
 
     public void SavePrefs() => _store.SavePrefs(Prefs);

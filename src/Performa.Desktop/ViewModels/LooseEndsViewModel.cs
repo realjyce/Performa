@@ -18,6 +18,7 @@ public sealed class LooseEndsViewModel : ObservableObject
     public LooseEndsViewModel(PerformaEngine engine)
     {
         _engine = engine;
+        engine.WorkspaceChanged += () => _ = LoadAsync();
         _ = LoadAsync();
     }
 

@@ -51,18 +51,36 @@ public sealed class SettingsViewModel : ObservableObject
 
     public RelayCommand SaveCommand { get; }
 
+    /// <summary>Applies a picked folder immediately and reloads the pages.</summary>
+    public void ApplyWorkspace(string path)
+    {
+        WorkspacePath = path;
+        if (Directory.Exists(path))
+        {
+            _engine.SetWorkspace(path);
+            SavedNote = "Workspace updated. Your pages just reloaded.";
+        }
+        else
+        {
+            SavedNote = "That folder was not found.";
+        }
+    }
+
     private void Save()
     {
-        if (Directory.Exists(WorkspacePath))
-            _engine.Prefs.WorkspacePath = WorkspacePath;
         _engine.Prefs.GitHubToken = string.IsNullOrWhiteSpace(GitHubToken) ? null : GitHubToken.Trim();
         _engine.Prefs.Verbosity = Enum.Parse<Performa.Prefs.Verbosity>(_verbosity);
         _engine.Prefs.Grouping = Enum.Parse<Performa.Prefs.Grouping>(_grouping);
         _engine.Prefs.Tone = Enum.Parse<Performa.Prefs.Tone>(_tone);
         _engine.Prefs.Initialised = true;
-        _engine.SavePrefs();
+
+        if (Directory.Exists(WorkspacePath))
+            _engine.SetWorkspace(WorkspacePath); // saves prefs + raises reload
+        else
+            _engine.SavePrefs();
+
         SavedNote = Directory.Exists(WorkspacePath)
-            ? "Saved. Reopen a page to see the change."
-            : "Saved preferences. Workspace path not found, left unchanged.";
+            ? "Saved."
+            : "Saved. Workspace folder not found, left unchanged.";
     }
 }
