@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.InboxView"
+             x:DataType="vm:InboxViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="34,26,34,34" Spacing="18">
+
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Spacing="3">
+          <TextBlock Text="Inbox" Classes="h1" />
+          <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap" MaxWidth="700"
+                     HorizontalAlignment="Left" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="ghost" Content="Refresh" VerticalAlignment="Center"
+                Command="{Binding RefreshCommand}" />
+      </Grid>
+
+      <ItemsControl ItemsSource="{Binding Mail}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:MailCard">
+            <Border Classes="card hover" Margin="0,0,0,12">
+              <StackPanel Spacing="10">
+
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock Text="{Binding Subject}" Classes="h2" FontSize="15"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding From}" Classes="muted" FontSize="12.5" />
+                  </StackPanel>
+                  <TextBlock Grid.Column="1" Text="{Binding When}" Classes="faint"
+                             VerticalAlignment="Top" />
+                </Grid>
+
+                <StackPanel Spacing="5" IsVisible="{Binding HasActions}">
+                  <TextBlock Text="ASKS" Classes="label" />
+                  <ItemsControl ItemsSource="{Binding Actions}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,1">
+                          <Ellipse Width="4" Height="4" VerticalAlignment="Center"
+                                   Fill="{DynamicResource WarningBrush}" />
+                          <TextBlock Text="{Binding}" Classes="muted" FontSize="12.5"
+                                     TextWrapping="Wrap" MaxWidth="620" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+
+                <StackPanel Spacing="5" IsVisible="{Binding HasDates}">
+                  <TextBlock Text="DATES &amp; TIMES" Classes="label" />
+                  <ItemsControl ItemsSource="{Binding Dates}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Border Classes="chip" Margin="0,0,6,6">
+                          <TextBlock Text="{Binding}" Classes="mono" FontSize="11" />
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+
+                <StackPanel Spacing="5" IsVisible="{Binding HasAmounts}">
+                  <TextBlock Text="AMOUNTS" Classes="label" />
+                  <ItemsControl ItemsSource="{Binding Amounts}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Border Classes="chip" Margin="0,0,6,6">
+                          <TextBlock Text="{Binding}" Classes="mono" FontSize="11"
+                                     Foreground="{DynamicResource PositiveBrush}" />
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+
+                <StackPanel Spacing="5" IsVisible="{Binding HasLinks}">
+                  <TextBlock Text="LINKS" Classes="label" />
+                  <ItemsControl ItemsSource="{Binding Links}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" Classes="mono" FontSize="11"
+                                   Foreground="{DynamicResource InfoBrush}"
+                                   TextTrimming="CharacterEllipsis" MaxWidth="640" Margin="0,1" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+
+                <Button Classes="ghost" Content="{Binding ToggleLabel}"
+                        HorizontalAlignment="Left" FontSize="12"
+                        Command="{Binding $parent[ItemsControl].((vm:InboxViewModel)DataContext).ToggleCommand}"
+                        CommandParameter="{Binding}" />
+
+                <Border IsVisible="{Binding Expanded}" Background="{DynamicResource BgInsetBrush}"
+                        CornerRadius="8" Padding="14" MaxHeight="320">
+                  <ScrollViewer>
+                    <SelectableTextBlock Text="{Binding FullBody}" Classes="mono"
+                                         FontSize="12" TextWrapping="Wrap" LineHeight="18" />
+                  </ScrollViewer>
+                </Border>
+
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -158,3 +158,20 @@ One decision or lesson per entry. Newest last.
 - **GitHub list alignment.** The action column is a fixed 86px with
   right-aligned content, so "on disk" and Clone line up regardless of repo
   name length; names ellipsise rather than pushing the column.
+
+- **Credentials ship with the app, not with the user.** GoogleCredentialStore
+  resolves: prefs override (dev) -> file next to the binary (product) ->
+  AppData (this machine). The file is gitignored and verified with
+  git check-ignore, because the repo is public. For installed apps Google
+  treats the client secret as non-secret; PKCE is the real protection.
+
+- **Commercial blocker worth remembering:** gmail.readonly is a RESTRICTED
+  scope. Shipping it to real users needs Google verification plus a CASA
+  security assessment (thousands of dollars, months). calendar.readonly is
+  only "sensitive", far lighter. Testing mode is free but expires refresh
+  tokens weekly.
+
+- **Email digest is extraction, not summarisation.** Asks, dates, amounts and
+  links are pulled out with regex and listed verbatim; the untouched body sits
+  behind "Read original". That is the only honest way to claim no information
+  is lost, since summarising is lossy by definition.

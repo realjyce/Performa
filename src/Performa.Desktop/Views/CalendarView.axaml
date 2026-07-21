@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.CalendarView"
+             x:DataType="vm:CalendarViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="34,26,34,34" Spacing="18">
+
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Spacing="3">
+          <TextBlock Text="Calendar" Classes="h1" />
+          <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="ghost" Content="Refresh" VerticalAlignment="Center"
+                Command="{Binding RefreshCommand}" />
+      </Grid>
+
+      <ItemsControl ItemsSource="{Binding Events}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:EventCard">
+            <Border Classes="card hover" Margin="0,0,0,10" Padding="0">
+              <Grid ColumnDefinitions="4,*">
+                <!-- colour node straight from your Google calendar -->
+                <Border Grid.Column="0" Background="{Binding Colour}"
+                        CornerRadius="12,0,0,12" />
+                <Grid Grid.Column="1" ColumnDefinitions="118,*" Margin="16,14">
+                  <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock Text="{Binding Day}"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Time}" Classes="mono" FontSize="12" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBlock Text="{Binding Title}" Classes="h2" FontSize="15"
+                               TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                               Fill="{Binding Colour}" />
+                      <TextBlock Text="{Binding Calendar}" Classes="faint" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding Location}" Classes="faint"
+                               IsVisible="{Binding HasLocation}" TextWrapping="Wrap" />
+                  </StackPanel>
+                </Grid>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

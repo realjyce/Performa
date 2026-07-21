@@ -52,6 +52,8 @@ public sealed class MainViewModel : ObservableObject
         var daily = new DailyViewModel(Engine);
         _reports = new ReportsViewModel(Engine);
         var loose = new LooseEndsViewModel(Engine);
+        var calendar = new CalendarViewModel(Engine);
+        var inbox = new InboxViewModel(Engine);
         var streams = new StreamsViewModel();
         var assistant = new AssistantViewModel(Engine);
         var settings = new SettingsViewModel(Engine);
@@ -65,6 +67,8 @@ public sealed class MainViewModel : ObservableObject
             new NavItem("Daily", "IconDaily", daily),
             _reportsNav,
             _looseNav,
+            new NavItem("Calendar", "IconDaily", calendar),
+            new NavItem("Inbox", "IconReports", inbox),
             new NavItem("Assistant", "IconAssistant", assistant),
             new NavItem("Streams", "IconStreams", streams, dormant: true),
         ];
