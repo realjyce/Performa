@@ -13,7 +13,7 @@
   <Grid RowDefinitions="36,*">
 
     <!-- Title bar -->
-    <Grid Grid.Row="0" Name="TitleBar" Background="Transparent"
+    <Grid Grid.Row="0" Name="TitleBar" Background="{DynamicResource CarbonWeave}"
           ColumnDefinitions="*,Auto">
       <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
                   Margin="14,0">
@@ -49,6 +49,8 @@
       <!-- Sidebar -->
       <Border Grid.Column="0" Background="{DynamicResource BgSidebarBrush}"
               BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,1,0">
+        <Grid>
+        <Border Background="{DynamicResource CarbonWeave}" IsHitTestVisible="False" />
         <DockPanel Margin="14,6,14,16">
 
           <StackPanel DockPanel.Dock="Top" Margin="4,10,4,18">
@@ -97,10 +99,13 @@
           </ListBox>
 
         </DockPanel>
+        </Grid>
       </Border>
 
       <!-- Content + console drawer -->
       <Border Grid.Column="1" Background="{DynamicResource BgContentBackdrop}">
+      <Grid>
+      <Border Background="{DynamicResource CarbonWeave}" IsHitTestVisible="False" />
       <Grid RowDefinitions="*,Auto">
         <TransitioningContentControl Grid.Row="0" Content="{Binding CurrentPage}">
           <TransitioningContentControl.PageTransition>
@@ -148,6 +153,7 @@
             </ScrollViewer>
           </DockPanel>
         </Border>
+      </Grid>
       </Grid>
       </Border>
 

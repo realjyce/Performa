@@ -135,3 +135,12 @@ One decision or lesson per entry. Newest last.
   GitHub token lists every repo you can see including private, with one-click
   clone into the workspace. Clone uses git's own credential helper so no token
   is ever written into .git/config.
+
+- **Console windows were flashing on every git call.** GitRunner's
+  ProcessStartInfo never set CreateNoWindow/UseShellExecute, so each git
+  invocation spawned a console — dozens per workspace scan in a GUI. Fixed at
+  the source in Core, so the CLI benefits too.
+
+- **Carbon is a weave, not just a tone.** An 8px PNG tile (offset light/dark
+  dots at very low alpha) tiled 1:1 as an ImageBrush over the sidebar, title
+  bar, and content backdrop. Cards keep solid fills so they read forward.

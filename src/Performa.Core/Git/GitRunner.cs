@@ -21,6 +21,10 @@ public sealed class GitRunner(string repoPath)
             RedirectStandardError = true,
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
+            // Without these a console window flashes for every git call, which
+            // in a GUI means dozens of popups on each workspace scan.
+            UseShellExecute = false,
+            CreateNoWindow = true,
         };
         foreach (var a in args) psi.ArgumentList.Add(a);
 

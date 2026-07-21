@@ -60,6 +60,12 @@
     <GradientStop Offset="1" Color="#B06CE0" />
   </LinearGradientBrush>
 
+  <!-- Carbon weave: an 8px tile of offset light/dark dots, tiled at 1:1 -->
+  <ImageBrush x:Key="CarbonWeave"
+              Source="avares://Performa.Desktop/Assets/carbon.png"
+              TileMode="Tile" Stretch="None"
+              DestinationRect="0,0,8,8" />
+
   <FontFamily x:Key="MonoFont">Cascadia Code,Consolas,Menlo,monospace</FontFamily>
 
 </ResourceDictionary>
