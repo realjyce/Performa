@@ -1,19 +1,19 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <!-- Surfaces -->
-  <Color x:Key="BgBase">#16171B</Color>
-  <Color x:Key="BgSidebar">#1B1C21</Color>
-  <Color x:Key="BgCard">#212228</Color>
-  <Color x:Key="BgCardHover">#282932</Color>
-  <Color x:Key="BgInset">#131418</Color>
-  <Color x:Key="BorderSoft">#2C2E37</Color>
-  <Color x:Key="BorderStrong">#3A3D48</Color>
+  <!-- Carbon surfaces: lifted off pure black, faintly cool -->
+  <Color x:Key="BgBase">#1C1E22</Color>
+  <Color x:Key="BgSidebar">#212429</Color>
+  <Color x:Key="BgCard">#262931</Color>
+  <Color x:Key="BgCardHover">#2E313A</Color>
+  <Color x:Key="BgInset">#17191D</Color>
+  <Color x:Key="BorderSoft">#33363F</Color>
+  <Color x:Key="BorderStrong">#434753</Color>
 
   <!-- Text -->
-  <Color x:Key="TextPrimary">#ECECEF</Color>
-  <Color x:Key="TextMuted">#9698A2</Color>
-  <Color x:Key="TextFaint">#616470</Color>
+  <Color x:Key="TextPrimary">#ECEDF0</Color>
+  <Color x:Key="TextMuted">#9A9DA8</Color>
+  <Color x:Key="TextFaint">#666A76</Color>
 
   <!-- Accent + semantics -->
   <Color x:Key="Accent">#7C6CF0</Color>
@@ -40,6 +40,20 @@
   <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}" />
   <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource Info}" />
   <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource Accent}" Opacity="0.16" />
+
+  <!-- App backdrop: carbon with a soft diagonal lift, echoing the site hero -->
+  <LinearGradientBrush x:Key="BgBackdrop" StartPoint="0%,0%" EndPoint="80%,100%">
+    <GradientStop Offset="0" Color="#24262D" />
+    <GradientStop Offset="0.45" Color="#1E2025" />
+    <GradientStop Offset="1" Color="#191B1F" />
+  </LinearGradientBrush>
+
+  <!-- Content backdrop: a touch lighter than the shell so panels read forward -->
+  <LinearGradientBrush x:Key="BgContentBackdrop" StartPoint="0%,0%" EndPoint="100%,100%">
+    <GradientStop Offset="0" Color="#212429" />
+    <GradientStop Offset="0.6" Color="#1D1F24" />
+    <GradientStop Offset="1" Color="#1B1D21" />
+  </LinearGradientBrush>
 
   <LinearGradientBrush x:Key="AccentGradient" StartPoint="0%,0%" EndPoint="100%,100%">
     <GradientStop Offset="0" Color="#7C6CF0" />

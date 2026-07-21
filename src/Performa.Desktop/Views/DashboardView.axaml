@@ -8,23 +8,31 @@
     <StackPanel Margin="34,26,34,34" Spacing="22">
 
       <!-- Header -->
-      <StackPanel Spacing="3">
-        <TextBlock Text="Dashboard" Classes="h1" />
-        <TextBlock Classes="muted">
-          <Run Text="Workspace" />
-          <Run Text="{Binding WorkspaceName}" Foreground="{DynamicResource TextPrimaryBrush}" />
-          <Run Text="·" />
-          <Run Text="{Binding RepoCount}" />
-          <Run Text="repositories" />
-        </TextBlock>
-      </StackPanel>
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Spacing="3">
+          <TextBlock Text="Dashboard" Classes="h1" />
+          <TextBlock Classes="muted">
+            <Run Text="Workspace" />
+            <Run Text="{Binding WorkspaceName}" Foreground="{DynamicResource TextPrimaryBrush}" />
+            <Run Text="·" />
+            <Run Text="{Binding RepoCount}" />
+            <Run Text="repositories" />
+          </TextBlock>
+        </StackPanel>
+        <Button Grid.Column="1" Classes="ghost" Content="Rescan" VerticalAlignment="Center"
+                Command="{Binding RescanCommand}" IsVisible="{Binding HasWorkspace}" />
+      </Grid>
 
       <!-- No workspace state -->
       <Border Classes="card" IsVisible="{Binding !HasWorkspace}" Padding="26">
-        <StackPanel Spacing="8" HorizontalAlignment="Center">
-          <TextBlock Text="No workspace set" Classes="h2" HorizontalAlignment="Center" />
-          <TextBlock Classes="muted" HorizontalAlignment="Center"
-                     Text="Point Performa at the folder that holds your repos in Settings." />
+        <StackPanel Spacing="12" HorizontalAlignment="Center">
+          <TextBlock Text="No repositories found" Classes="h2" HorizontalAlignment="Center" />
+          <TextBlock Classes="muted" HorizontalAlignment="Center" TextWrapping="Wrap"
+                     Text="Let Performa look through the usual dev folders, or choose one yourself in Settings." />
+          <Button Classes="accent" Content="Scan for repositories" HorizontalAlignment="Center"
+                  Command="{Binding DetectCommand}" />
+          <TextBlock Text="{Binding ScanNote}" Classes="faint" HorizontalAlignment="Center"
+                     TextWrapping="Wrap" />
         </StackPanel>
       </Border>
 

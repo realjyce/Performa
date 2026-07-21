@@ -18,6 +18,66 @@ public sealed class PerformaEngine
     public PerformaEngine()
     {
         Prefs = _store.LoadPrefs();
+        EnsureWorkspace();
+    }
+
+    /// <summary>Auto-picks a workspace when none is set or the set one holds no repos.</summary>
+    private void EnsureWorkspace()
+    {
+        var ws = Prefs.WorkspacePath;
+        var valid = ws is { Length: > 0 } && Directory.Exists(ws)
+            && WorkspaceBuilder.DiscoverRepos(ws).Count > 0;
+        if (valid) return;
+
+        var detected = WorkspaceBuilder.AutoDetectWorkspace();
+        if (detected is null) return;
+        Prefs.WorkspacePath = detected;
+        Prefs.Initialised = true;
+        _store.SavePrefs(Prefs);
+    }
+
+    /// <summary>Re-detects the best workspace and applies it. True if one was found.</summary>
+    public bool AutoDetect()
+    {
+        var detected = WorkspaceBuilder.AutoDetectWorkspace();
+        if (detected is null) return false;
+        SetWorkspace(detected);
+        return true;
+    }
+
+    /// <summary>Re-scans the current workspace and reloads every page.</summary>
+    public void Rescan() => WorkspaceChanged?.Invoke();
+
+    public IReadOnlySet<string> LocalRepoNames()
+        => DiscoverRepos()
+            .Select(p => System.IO.Path.GetFileName(p))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Clones a repo into the workspace. Uses git's own credential helper for
+    /// private repos so no token is ever written into .git/config.
+    /// </summary>
+    public string Clone(string cloneUrl, string name)
+    {
+        var ws = Prefs.WorkspacePath;
+        if (ws is not { Length: > 0 } || !Directory.Exists(ws))
+            return "Set a workspace folder first.";
+
+        var target = System.IO.Path.Combine(ws, name);
+        if (Directory.Exists(target)) return "Already on disk.";
+
+        try
+        {
+            new GitRunner(ws).Run("clone", cloneUrl, target);
+            WorkspaceChanged?.Invoke();
+            return "Cloned.";
+        }
+        catch (GitException e)
+        {
+            return e.Message.Contains("Authentication", StringComparison.OrdinalIgnoreCase)
+                ? "Clone failed: git could not authenticate. Sign in via Git Credential Manager."
+                : "Clone failed: " + e.Message;
+        }
     }
 
     public string? WorkspacePath => Prefs.WorkspacePath;

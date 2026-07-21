@@ -123,3 +123,15 @@ One decision or lesson per entry. Newest last.
 - **Console auto-focuses now.** When the drawer opens, the input takes focus
   (PropertyChanged -> Dispatcher.Post -> Focus), and clicking anywhere in the
   drawer focuses it too. No more hunting for the transparent textbox.
+
+- **Carbon theme.** Surfaces lifted off near-black to a cool carbon (#1C1E22
+  base) with two soft gradients: a diagonal backdrop for the shell and a
+  lighter one behind content so panels read forward. Echoes the portfolio
+  hero without its contrast.
+
+- **Repos come from two sources now.** Local: auto-detect on launch when the
+  workspace is unset or empty (scans the usual dev folders and picks the one
+  with the most repos), plus Change/Auto-detect/Rescan buttons. Remote: a
+  GitHub token lists every repo you can see including private, with one-click
+  clone into the workspace. Clone uses git's own credential helper so no token
+  is ever written into .git/config.

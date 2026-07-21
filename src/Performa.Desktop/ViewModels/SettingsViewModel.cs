@@ -1,8 +1,23 @@
+using System.Collections.ObjectModel;
 using Performa.Desktop.Infrastructure;
 using Performa.Desktop.Services;
 using Performa.Prefs;
 
 namespace Performa.Desktop.ViewModels;
+
+public sealed class GitHubRepoRow : ObservableObject
+{
+    public required string Name { get; init; }
+    public required string Meta { get; init; }
+    public required string CloneUrl { get; init; }
+
+    private bool _isLocal;
+    public bool IsLocal { get => _isLocal; set { SetProperty(ref _isLocal, value); OnPropertyChanged(nameof(CanClone)); } }
+    public bool CanClone => !_isLocal;
+
+    private string _status = "";
+    public string Status { get => _status; set => SetProperty(ref _status, value); }
+}
 
 public sealed class SettingsViewModel : ObservableObject
 {
@@ -17,6 +32,88 @@ public sealed class SettingsViewModel : ObservableObject
         _grouping = engine.Prefs.Grouping.ToString();
         _tone = engine.Prefs.Tone.ToString();
         SaveCommand = new RelayCommand(Save);
+        ScanGitHubCommand = new RelayCommand(() => _ = ScanGitHubAsync());
+        AutoDetectCommand = new RelayCommand(AutoDetectLocal);
+        CloneCommand = new RelayCommand<GitHubRepoRow>(row => { if (row is not null) Clone(row); });
+    }
+
+    private readonly GitHubService _github = new();
+
+    public ObservableCollection<GitHubRepoRow> GitHubRepos { get; } = [];
+
+    public RelayCommand ScanGitHubCommand { get; }
+    public RelayCommand AutoDetectCommand { get; }
+    public RelayCommand<GitHubRepoRow> CloneCommand { get; }
+
+    private string _gitHubNote = "";
+    public string GitHubNote { get => _gitHubNote; set => SetProperty(ref _gitHubNote, value); }
+
+    private string _localNote = "";
+    public string LocalNote { get => _localNote; set => SetProperty(ref _localNote, value); }
+
+    private bool _scanning;
+    public bool Scanning { get => _scanning; set => SetProperty(ref _scanning, value); }
+
+    private void AutoDetectLocal()
+    {
+        if (_engine.AutoDetect())
+        {
+            WorkspacePath = _engine.WorkspacePath ?? "";
+            LocalNote = $"Found {_engine.DiscoverRepos().Count} repositories in {WorkspacePath}";
+        }
+        else
+        {
+            LocalNote = "No git repositories found in the usual dev folders.";
+        }
+    }
+
+    private async Task ScanGitHubAsync()
+    {
+        var token = GitHubToken.Trim();
+        if (token.Length == 0)
+        {
+            GitHubNote = "Paste a GitHub token above first, then scan.";
+            return;
+        }
+
+        Scanning = true;
+        GitHubNote = "Asking GitHub…";
+        GitHubRepos.Clear();
+
+        var repos = await _github.GetUserReposAsync(token);
+        if (repos is null)
+        {
+            GitHubNote = "GitHub refused that token. Check it has repo read access.";
+            Scanning = false;
+            return;
+        }
+
+        var local = _engine.LocalRepoNames();
+        foreach (var r in repos)
+        {
+            var bits = new List<string> { r.IsPrivate ? "private" : "public" };
+            if (r.Language is { Length: > 0 }) bits.Add(r.Language);
+            if (r.PushedAt is { } p) bits.Add($"pushed {p:yyyy-MM-dd}");
+            GitHubRepos.Add(new GitHubRepoRow
+            {
+                Name = r.Name,
+                Meta = string.Join(" · ", bits),
+                CloneUrl = r.CloneUrl,
+                IsLocal = local.Contains(r.Name),
+            });
+        }
+
+        var missing = GitHubRepos.Count(r => !r.IsLocal);
+        GitHubNote = $"{GitHubRepos.Count} repositories on GitHub · {missing} not on this machine";
+        Scanning = false;
+    }
+
+    private void Clone(GitHubRepoRow row)
+    {
+        row.Status = "Cloning…";
+        var result = _engine.Clone(row.CloneUrl, row.Name);
+        row.Status = result;
+        if (result == "Cloned.") row.IsLocal = true;
     }
 
     private string _workspacePath;
@@ -78,6 +175,9 @@ public sealed class SettingsViewModel : ObservableObject
             _engine.SetWorkspace(WorkspacePath); // saves prefs + raises reload
         else
             _engine.SavePrefs();
+
+        // Token or output changes should take effect without a restart.
+        _engine.Rescan();
 
         SavedNote = Directory.Exists(WorkspacePath)
             ? "Saved."

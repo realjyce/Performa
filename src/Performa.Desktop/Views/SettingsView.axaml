@@ -5,35 +5,74 @@
              x:DataType="vm:SettingsViewModel">
 
   <ScrollViewer>
-    <StackPanel Margin="34,26,34,34" Spacing="20" MaxWidth="560" HorizontalAlignment="Left">
+    <StackPanel Margin="34,26,34,34" Spacing="18" MaxWidth="640" HorizontalAlignment="Left">
 
       <StackPanel Spacing="3">
         <TextBlock Text="Settings" Classes="h1" />
-        <TextBlock Text="Where your repos live and how reports read." Classes="muted" />
+        <TextBlock Text="Where your repos come from and how reports read." Classes="muted" />
       </StackPanel>
 
+      <!-- Local repositories -->
       <Border Classes="card">
-        <StackPanel Spacing="8">
-          <TextBlock Text="WORKSPACE FOLDER" Classes="label" />
+        <StackPanel Spacing="10">
+          <TextBlock Text="LOCAL REPOSITORIES" Classes="label" />
           <TextBlock Text="Performa scans this folder for git repositories." Classes="faint" />
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,4,0,0">
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="0,4,0,0">
             <TextBox Grid.Column="0" Text="{Binding WorkspacePath}"
                      Watermark="C:\path\to\your\repos" />
-            <Button Grid.Column="1" Classes="accent" Content="Choose folder…" Click="OnBrowse" />
+            <Button Grid.Column="1" Classes="ghost" Content="Change…" Click="OnBrowse" />
+            <Button Grid.Column="2" Classes="accent" Content="Auto-detect"
+                    Command="{Binding AutoDetectCommand}" />
           </Grid>
+          <TextBlock Text="{Binding LocalNote}" Classes="faint" TextWrapping="Wrap" />
         </StackPanel>
       </Border>
 
+      <!-- GitHub -->
       <Border Classes="card">
-        <StackPanel Spacing="8">
-          <TextBlock Text="GITHUB TOKEN (OPTIONAL)" Classes="label" />
+        <StackPanel Spacing="10">
+          <TextBlock Text="GITHUB" Classes="label" />
           <TextBlock Classes="faint" TextWrapping="Wrap"
-                     Text="For remote data on the dashboard. Public repos work without one; a token raises the rate limit and reaches private repos. Generate a free token at github.com/settings/tokens (read-only). Stored locally, never shared." />
-          <TextBox Text="{Binding GitHubToken}" PasswordChar="•"
-                   Watermark="ghp_… (leave blank for public only)" Margin="0,4,0,0" />
+                     Text="A token lets Performa list every repo you can see, including private ones, and clone the ones missing here. Generate a read-only token at github.com/settings/tokens. Stored locally, never shared." />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+            <TextBox Grid.Column="0" Text="{Binding GitHubToken}" PasswordChar="•"
+                     Watermark="ghp_… (blank = public repos only)" />
+            <Button Grid.Column="1" Classes="accent" Content="Scan GitHub"
+                    Command="{Binding ScanGitHubCommand}" />
+          </Grid>
+          <TextBlock Text="{Binding GitHubNote}" Classes="faint" TextWrapping="Wrap" />
+
+          <Border IsVisible="{Binding GitHubRepos.Count}" MaxHeight="260"
+                  Background="{DynamicResource BgInsetBrush}" CornerRadius="8" Padding="4">
+            <ScrollViewer>
+              <ItemsControl ItemsSource="{Binding GitHubRepos}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:GitHubRepoRow">
+                    <Grid ColumnDefinitions="*,Auto" Margin="10,7">
+                      <StackPanel Grid.Column="0" Spacing="1">
+                        <TextBlock Text="{Binding Name}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontSize="13" />
+                        <TextBlock Text="{Binding Meta}" Classes="faint" FontSize="11" />
+                        <TextBlock Text="{Binding Status}" Classes="faint" FontSize="11"
+                                   Foreground="{DynamicResource AccentBrightBrush}" />
+                      </StackPanel>
+                      <Button Grid.Column="1" Classes="ghost" Content="Clone"
+                              VerticalAlignment="Center" IsVisible="{Binding CanClone}"
+                              Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).CloneCommand}"
+                              CommandParameter="{Binding}" />
+                      <TextBlock Grid.Column="1" Text="on disk" Classes="faint"
+                                 VerticalAlignment="Center" IsVisible="{Binding IsLocal}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Border>
         </StackPanel>
       </Border>
 
+      <!-- Output -->
       <Border Classes="card">
         <StackPanel Spacing="14">
           <TextBlock Text="OUTPUT" Classes="label" />

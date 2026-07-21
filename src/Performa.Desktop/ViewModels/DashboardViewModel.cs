@@ -59,6 +59,8 @@ public sealed class DashboardViewModel : ObservableObject
         _engine = engine;
         _onQuickAction = onQuickAction;
         QuickCommand = new RelayCommand<string>(c => { if (c is not null) _onQuickAction(c); });
+        RescanCommand = new RelayCommand(() => _ = LoadAsync());
+        DetectCommand = new RelayCommand(Detect);
         engine.WorkspaceChanged += () => _ = LoadAsync();
         _ = LoadAsync();
     }
@@ -74,6 +76,18 @@ public sealed class DashboardViewModel : ObservableObject
     ];
 
     public RelayCommand<string> QuickCommand { get; }
+    public RelayCommand RescanCommand { get; }
+    public RelayCommand DetectCommand { get; }
+
+    private string _scanNote = "";
+    public string ScanNote { get => _scanNote; set => SetProperty(ref _scanNote, value); }
+
+    private void Detect()
+    {
+        ScanNote = _engine.AutoDetect()
+            ? $"Found repositories in {_engine.WorkspacePath}"
+            : "No git repositories found in the usual places. Pick a folder in Settings.";
+    }
 
     private bool _isLoading = true;
     public bool IsLoading { get => _isLoading; set => SetProperty(ref _isLoading, value); }

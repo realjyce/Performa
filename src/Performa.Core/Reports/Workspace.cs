@@ -24,9 +24,53 @@ public sealed record WorkspaceFacts(
 public static class WorkspaceBuilder
 {
     public static List<string> DiscoverRepos(string root)
-        => [.. Directory.EnumerateDirectories(root)
-            .Where(d => Directory.Exists(Path.Combine(d, ".git")))
-            .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)];
+    {
+        if (!Directory.Exists(root)) return [];
+        var repos = new List<string>();
+
+        // The workspace folder itself may be a single repo.
+        if (Directory.Exists(Path.Combine(root, ".git")))
+            repos.Add(root);
+
+        foreach (var dir in SafeSubdirs(root))
+            if (Directory.Exists(Path.Combine(dir, ".git")))
+                repos.Add(dir);
+
+        return [.. repos.OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)];
+    }
+
+    private static IEnumerable<string> SafeSubdirs(string root)
+    {
+        try { return Directory.EnumerateDirectories(root); }
+        catch (UnauthorizedAccessException) { return []; }
+        catch (IOException) { return []; }
+    }
+
+    /// <summary>
+    /// Finds the best workspace when none is set: the common dev folder under
+    /// the user profile holding the most git repositories.
+    /// </summary>
+    public static string? AutoDetectWorkspace()
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string[] candidates =
+        [
+            "IdeaProjects", "source/repos", "source", "repos", "Projects", "GitHub",
+            "Documents/GitHub", "dev", "code", "src", "work", "Documents", home,
+        ];
+
+        string? best = null;
+        var bestCount = 0;
+        foreach (var rel in candidates)
+        {
+            var dir = rel == home ? home
+                : Path.Combine(home, rel.Replace('/', Path.DirectorySeparatorChar));
+            if (!Directory.Exists(dir)) continue;
+            var count = DiscoverRepos(dir).Count;
+            if (count > bestCount) { bestCount = count; best = dir; }
+        }
+        return best;
+    }
 
     public static WorkspaceFacts Build(string root, DateTimeOffset now)
     {
