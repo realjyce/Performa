@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Performa\Performa.csproj" />
+    <ProjectReference Include="..\..\src\Performa.Core\Performa.Core.csproj" />
   </ItemGroup>
 
 </Project>

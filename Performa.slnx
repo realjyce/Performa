@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Performa/Performa.csproj" />
+    <Project Path="src/Performa.Core/Performa.Core.csproj" />
+    <Project Path="src/Performa.Cli/Performa.Cli.csproj" />
+    <Project Path="src/Performa.Desktop/Performa.Desktop.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Performa.Tests/Performa.Tests.csproj" />
