@@ -21,7 +21,7 @@
             <TextBlock Text="TASKS" Classes="label" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
               <TextBox Grid.Column="0" Text="{Binding NewTaskText}"
-                       Watermark="Add a task and press Enter…">
+                       PlaceholderText="Add a task and press Enter…">
                 <TextBox.KeyBindings>
                   <KeyBinding Gesture="Enter" Command="{Binding AddTaskCommand}" />
                 </TextBox.KeyBindings>
@@ -46,7 +46,7 @@
           <DockPanel>
             <TextBlock DockPanel.Dock="Top" Text="NOTES" Classes="label" Margin="0,0,0,10" />
             <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap"
-                     Watermark="Jot down anything about today…"
+                     PlaceholderText="Jot down anything about today…"
                      Background="Transparent" BorderThickness="0"
                      VerticalAlignment="Stretch" VerticalContentAlignment="Top" />
           </DockPanel>

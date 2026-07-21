@@ -23,6 +23,10 @@ public sealed class Preferences
     // Stored only. The CLI never reads these; the desktop uses them for the
     // optional GitHub and Google calls. Core makes no network requests.
     public string? GitHubToken { get; set; }
+
+    /// <summary>OAuth App client id for GitHub's device flow. No secret needed,
+    /// which is why the device flow is used rather than the web flow.</summary>
+    public string? GitHubClientId { get; set; }
     public string? GoogleClientId { get; set; }
     public string? GoogleClientSecret { get; set; }
 

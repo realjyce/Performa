@@ -44,10 +44,110 @@ public sealed class SettingsViewModel : ObservableObject
         GoogleSignInCommand = new RelayCommand(() => _ = GoogleSignInAsync());
         GoogleSignOutCommand = new RelayCommand(GoogleSignOut);
         RefreshGoogleStatus();
+
+        _gitHubClientId = engine.Prefs.GitHubClientId ?? "";
+        GitHubSignInCommand = new RelayCommand(() => _ = GitHubSignInAsync());
+        GitHubSignOutCommand = new RelayCommand(GitHubSignOut);
+        RefreshGitHubStatus();
     }
 
     private readonly GitHubService _github = new();
     private readonly GoogleAuthService _google = new();
+    private readonly GitHubAuthService _gitHubAuth = new();
+
+    private string _gitHubClientId;
+    public string GitHubClientId
+    {
+        get => _gitHubClientId;
+        set => SetProperty(ref _gitHubClientId, value);
+    }
+
+    private bool _gitHubConnected;
+    public bool GitHubConnected
+    {
+        get => _gitHubConnected;
+        set => SetProperty(ref _gitHubConnected, value);
+    }
+
+    private string _deviceCode = "";
+    public string DeviceCode
+    {
+        get => _deviceCode;
+        set { if (SetProperty(ref _deviceCode, value)) OnPropertyChanged(nameof(HasDeviceCode)); }
+    }
+
+    public bool HasDeviceCode => _deviceCode.Length > 0;
+
+    private bool _showGitHubAdvanced;
+    public bool ShowGitHubAdvanced
+    {
+        get => _showGitHubAdvanced;
+        set => SetProperty(ref _showGitHubAdvanced, value);
+    }
+
+    public RelayCommand ToggleGitHubAdvancedCommand => new(() => ShowGitHubAdvanced = !ShowGitHubAdvanced);
+
+    public RelayCommand GitHubSignInCommand { get; }
+    public RelayCommand GitHubSignOutCommand { get; }
+
+    private void RefreshGitHubStatus()
+    {
+        GitHubConnected = _gitHubAuth.IsSignedIn;
+        if (GitHubConnected)
+        {
+            GitHubNote = "Signed in to GitHub.";
+            return;
+        }
+        GitHubNote = _engine.GitHubAccessToken is null
+            ? "Not connected. Public repositories only."
+            : "Using the personal token below.";
+    }
+
+    /// <summary>
+    /// Device flow: GitHub gives a short code, the user types it on github.com,
+    /// and we poll until they approve. No client secret is involved.
+    /// </summary>
+    private async Task GitHubSignInAsync()
+    {
+        var clientId = GitHubClientId.Trim();
+        if (clientId.Length == 0)
+        {
+            GitHubNote = "Add an OAuth App client id under Advanced first.";
+            ShowGitHubAdvanced = true;
+            return;
+        }
+
+        _engine.Prefs.GitHubClientId = clientId;
+        _engine.SavePrefs();
+
+        GitHubNote = "Asking GitHub for a code…";
+        var prompt = await _gitHubAuth.StartAsync(clientId);
+        if (prompt is null)
+        {
+            GitHubNote = "GitHub would not start the sign-in. Check the client id.";
+            return;
+        }
+
+        DeviceCode = prompt.UserCode;
+        GitHubNote = $"Enter this code at {prompt.VerificationUri} — your browser should already be open.";
+
+        var result = await _gitHubAuth.CompleteAsync(clientId);
+        DeviceCode = "";
+        GitHubNote = result;
+        GitHubConnected = _gitHubAuth.IsSignedIn;
+        if (GitHubConnected)
+        {
+            _engine.NotifyGitHubChanged();
+            await ScanGitHubAsync();
+        }
+    }
+
+    private void GitHubSignOut()
+    {
+        _gitHubAuth.SignOut();
+        GitHubRepos.Clear();
+        RefreshGitHubStatus();
+    }
 
     private string _googleClientId;
     public string GoogleClientId
@@ -160,10 +260,12 @@ public sealed class SettingsViewModel : ObservableObject
 
     private async Task ScanGitHubAsync()
     {
-        var token = GitHubToken.Trim();
-        if (token.Length == 0)
+        // A device-flow sign-in is preferred; the pasted token still works.
+        var typed = GitHubToken.Trim();
+        var token = _gitHubAuth.LoadToken() ?? (typed.Length > 0 ? typed : null);
+        if (token is null)
         {
-            GitHubNote = "Paste a GitHub token above first, then scan.";
+            GitHubNote = "Sign in with GitHub, or paste a token below, then scan.";
             return;
         }
 
@@ -174,7 +276,7 @@ public sealed class SettingsViewModel : ObservableObject
         var repos = await _github.GetUserReposAsync(token);
         if (repos is null)
         {
-            GitHubNote = "GitHub refused that token. Check it has repo read access.";
+            GitHubNote = "GitHub refused that credential. Check it has repo read access.";
             Scanning = false;
             return;
         }
@@ -269,6 +371,8 @@ public sealed class SettingsViewModel : ObservableObject
         _engine.Prefs.GeminiApiKey = string.IsNullOrWhiteSpace(GeminiKey) ? null : GeminiKey.Trim();
         _engine.Prefs.AiEnabled = AiEnabled;
         _engine.Prefs.GitHubToken = string.IsNullOrWhiteSpace(GitHubToken) ? null : GitHubToken.Trim();
+        _engine.Prefs.GitHubClientId =
+            string.IsNullOrWhiteSpace(GitHubClientId) ? null : GitHubClientId.Trim();
         _engine.Prefs.Verbosity = Enum.Parse<Performa.Prefs.Verbosity>(_verbosity);
         _engine.Prefs.Grouping = Enum.Parse<Performa.Prefs.Grouping>(_grouping);
         _engine.Prefs.Tone = Enum.Parse<Performa.Prefs.Tone>(_tone);

@@ -17,7 +17,7 @@
           <TextBlock Text="YOUR NAME" Classes="label" />
           <TextBlock Classes="faint" TextWrapping="Wrap"
                      Text="What Performa calls you. Set here rather than taken from a Google profile." />
-          <TextBox Text="{Binding UserName}" Watermark="e.g. Jason" Margin="0,4,0,0" />
+          <TextBox Text="{Binding UserName}" PlaceholderText="e.g. Jason" Margin="0,4,0,0" />
         </StackPanel>
       </Border>
 
@@ -28,7 +28,7 @@
           <TextBlock Text="Performa scans this folder for git repositories." Classes="faint" />
           <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="0,4,0,0">
             <TextBox Grid.Column="0" Text="{Binding WorkspacePath}"
-                     Watermark="C:\path\to\your\repos" />
+                     PlaceholderText="C:\path\to\your\repos" />
             <Button Grid.Column="1" Classes="ghost" Content="Change…" Click="OnBrowse" />
             <Button Grid.Column="2" Classes="accent" Content="Auto-detect"
                     Command="{Binding AutoDetectCommand}" />
@@ -40,16 +40,52 @@
       <!-- GitHub -->
       <Border Classes="card">
         <StackPanel Spacing="10">
-          <TextBlock Text="GITHUB" Classes="label" />
-          <TextBlock Classes="faint" TextWrapping="Wrap"
-                     Text="A token lets Performa list every repo you can see, including private ones, and clone the ones missing here. Generate a read-only token at github.com/settings/tokens. Stored locally, never shared." />
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
-            <TextBox Grid.Column="0" Text="{Binding GitHubToken}" PasswordChar="•"
-                     Watermark="ghp_… (blank = public repos only)" />
-            <Button Grid.Column="1" Classes="accent" Content="Scan GitHub"
-                    Command="{Binding ScanGitHubCommand}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="GITHUB" Classes="label" VerticalAlignment="Center" />
+            <Border Grid.Column="1" Classes="chip" IsVisible="{Binding GitHubConnected}"
+                    Background="{DynamicResource AccentSoftBrush}"
+                    BorderBrush="{DynamicResource AccentBrush}">
+              <TextBlock Text="connected" FontSize="10.5"
+                         Foreground="{DynamicResource AccentBrightBrush}" />
+            </Border>
           </Grid>
+          <TextBlock Classes="faint" TextWrapping="Wrap"
+                     Text="Lists every repo you can see, including private ones, and clones the ones missing here. Signing in uses GitHub's device flow: you approve a short code on github.com and Performa never handles your password." />
+
+          <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4,0,0">
+            <Button Classes="accent" Content="Sign in with GitHub"
+                    Command="{Binding GitHubSignInCommand}" />
+            <Button Classes="ghost" Content="Scan repositories"
+                    Command="{Binding ScanGitHubCommand}" />
+            <Button Classes="ghost" Content="Disconnect" IsVisible="{Binding GitHubConnected}"
+                    Command="{Binding GitHubSignOutCommand}" />
+          </StackPanel>
+
+          <!-- The code GitHub wants typed into the browser. -->
+          <Border IsVisible="{Binding HasDeviceCode}" CornerRadius="8" Padding="14,12"
+                  Background="{DynamicResource AccentSoftBrush}"
+                  BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
+            <StackPanel Spacing="5">
+              <TextBlock Text="ENTER THIS CODE ON GITHUB" Classes="label"
+                         Foreground="{DynamicResource AccentBrightBrush}" />
+              <SelectableTextBlock Text="{Binding DeviceCode}" Classes="mono" FontSize="24"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" />
+              <TextBlock Text="Waiting for you to approve it…" Classes="faint" FontSize="11" />
+            </StackPanel>
+          </Border>
+
           <TextBlock Text="{Binding GitHubNote}" Classes="faint" TextWrapping="Wrap" />
+
+          <Button Classes="ghost" Content="Advanced: client id and personal token"
+                  HorizontalAlignment="Left" FontSize="12"
+                  Command="{Binding ToggleGitHubAdvancedCommand}" />
+          <StackPanel Spacing="8" IsVisible="{Binding ShowGitHubAdvanced}">
+            <TextBlock Classes="faint" TextWrapping="Wrap"
+                       Text="Register a free OAuth App at github.com/settings/developers with device flow enabled, then paste its client id. A personal token works instead if you would rather not register one." />
+            <TextBox Text="{Binding GitHubClientId}" PlaceholderText="OAuth App client id  (Iv1.…  or  Ov23…)" />
+            <TextBox Text="{Binding GitHubToken}" PasswordChar="•"
+                     PlaceholderText="Personal token  (ghp_… — optional fallback)" />
+          </StackPanel>
 
           <Border IsVisible="{Binding GitHubRepos.Count}" MaxHeight="260"
                   Background="{DynamicResource BgInsetBrush}" CornerRadius="8" Padding="4">
@@ -115,9 +151,9 @@
             <TextBlock Classes="faint" TextWrapping="Wrap"
                        Text="Only needed if you want Performa to use your own Google Cloud project instead of the built-in one." />
             <TextBox Text="{Binding GoogleClientId}"
-                     Watermark="Client ID  (…apps.googleusercontent.com)" />
+                     PlaceholderText="Client ID  (…apps.googleusercontent.com)" />
             <TextBox Text="{Binding GoogleClientSecret}" PasswordChar="•"
-                     Watermark="Client secret  (GOCSPX-…)" />
+                     PlaceholderText="Client secret  (GOCSPX-…)" />
           </StackPanel>
         </StackPanel>
       </Border>
@@ -132,7 +168,7 @@
             <TextBlock Text="Enable AI prose" Foreground="{DynamicResource TextPrimaryBrush}" />
           </CheckBox>
           <TextBox Text="{Binding GeminiKey}" PasswordChar="•"
-                   Watermark="Gemini API key (free tier at aistudio.google.com)" />
+                   PlaceholderText="Gemini API key (free tier at aistudio.google.com)" />
         </StackPanel>
       </Border>
 

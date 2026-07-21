@@ -55,7 +55,7 @@
 
     <!-- Input -->
     <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-      <TextBox Grid.Column="0" Text="{Binding Input}" Watermark="Ask about your work…">
+      <TextBox Grid.Column="0" Text="{Binding Input}" PlaceholderText="Ask about your work…">
         <TextBox.KeyBindings>
           <KeyBinding Gesture="Enter" Command="{Binding SendCommand}" />
         </TextBox.KeyBindings>

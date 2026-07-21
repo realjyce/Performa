@@ -7,7 +7,7 @@
         Width="1200" Height="780"
         MinWidth="920" MinHeight="620"
         Background="{DynamicResource BgBackdrop}"
-        SystemDecorations="None"
+        WindowDecorations="None"
         CanResize="True">
 
   <Grid>
@@ -172,7 +172,7 @@
                          VerticalAlignment="Center" Margin="0,0,8,0" />
               <TextBox Grid.Column="1" Name="ConsoleInput" Text="{Binding Console.Input}"
                        FontFamily="{DynamicResource MonoFont}" FontSize="13"
-                       Watermark="standup · changelog · summary &lt;repo&gt; · loose · help"
+                       PlaceholderText="standup · changelog · summary &lt;repo&gt; · loose · help"
                        Background="Transparent" BorderThickness="0" Padding="0"
                        VerticalAlignment="Stretch" VerticalContentAlignment="Center">
                 <TextBox.KeyBindings>
@@ -204,7 +204,7 @@
         <TextBlock Text="Welcome to Performa" Classes="h1" FontSize="22" />
         <TextBlock Classes="muted" TextWrapping="Wrap"
                    Text="What should I call you? This stays on your machine and is never taken from a sign-in." />
-        <TextBox Text="{Binding NameEntry}" Watermark="Your name">
+        <TextBox Text="{Binding NameEntry}" PlaceholderText="Your name">
           <TextBox.KeyBindings>
             <KeyBinding Gesture="Enter" Command="{Binding SaveNameCommand}" />
           </TextBox.KeyBindings>

@@ -210,3 +210,24 @@ One decision or lesson per entry. Newest last.
 - **Assistant is now the one premium surface**: violet gradient card above the
   Settings container, taller, with an "AI arriving soon" pill. The greeting
   ("Hello, name") shares the quiet container with Settings at small size.
+
+- **GitHub sign-in uses the device flow, not the web flow.** The web flow needs
+  a client secret, and a secret shipped inside a distributed desktop build is
+  not a secret. The device flow needs only a client id: GitHub returns a short
+  code, the user approves it on github.com, and Performa polls for the token.
+  Nothing worth stealing is embedded in the binary. The token lands in
+  %APPDATA%/performa/github.json, never in the repo.
+
+- **One place decides which GitHub credential to use.** PerformaEngine
+  .GitHubAccessToken prefers a device-flow sign-in and falls back to a pasted
+  personal token, so the dashboard and the settings scan can never disagree
+  about who is signed in.
+
+- **Preferences are round-trip tested.** They serialise through a source
+  generator, and a property the generator does not see is dropped silently on
+  save. That reads to the user as "my token never saved", so every stored field
+  is asserted rather than trusted.
+
+- **Obsolete Avalonia APIs cleared.** Watermark to PlaceholderText and
+  SystemDecorations to WindowDecorations. The build is warning-free again, so a
+  real warning stays visible instead of hiding in the noise.

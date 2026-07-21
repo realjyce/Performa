@@ -158,7 +158,7 @@ public sealed class DashboardViewModel : ObservableObject
 
     private async Task LoadRemotesAsync()
     {
-        var token = _engine.Prefs.GitHubToken;
+        var token = _engine.GitHubAccessToken;
         foreach (var card in Repos)
         {
             var slug = _engine.RemoteSlug(card.Path);

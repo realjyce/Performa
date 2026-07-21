@@ -13,7 +13,23 @@ namespace Performa.Desktop.Services;
 public sealed class PerformaEngine
 {
     private readonly PrefsStore _store = new();
+    private readonly GitHubAuthService _gitHubAuth = new();
     public Preferences Prefs { get; private set; }
+
+    /// <summary>
+    /// The token to talk to GitHub with. A device-flow sign-in wins; a pasted
+    /// personal token is the fallback so the app still works without one.
+    /// </summary>
+    public string? GitHubAccessToken
+        => _gitHubAuth.LoadToken()
+           ?? (string.IsNullOrWhiteSpace(Prefs.GitHubToken) ? null : Prefs.GitHubToken.Trim());
+
+    public bool GitHubSignedIn => _gitHubAuth.IsSignedIn;
+
+    /// <summary>Raised when GitHub sign-in succeeds so pages can pull remote data.</summary>
+    public event Action? GitHubSignedInChanged;
+
+    public void NotifyGitHubChanged() => GitHubSignedInChanged?.Invoke();
 
     public PerformaEngine()
     {

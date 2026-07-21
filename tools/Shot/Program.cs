@@ -29,6 +29,16 @@ if (args.Length > 4 && vm.Selected.Page is AssistantViewModel assistant)
 if (args.Length > 4 && args[4].StartsWith("quick:") && vm.Selected.Page is DashboardViewModel dash)
     dash.QuickCommand.Execute(args[4]["quick:".Length..]);
 
+// Optional: "gh:code" puts Settings into the mid-device-flow state so the code
+// panel and the advanced fields can be seen without a real GitHub round trip.
+if (args.Length > 4 && args[4] == "gh:code" && vm.Selected.Page is SettingsViewModel settings)
+{
+    settings.DeviceCode = "F4C2-9K7L";
+    settings.ShowGitHubAdvanced = true;
+    settings.GitHubNote = "Enter this code at https://github.com/login/device — "
+        + "your browser should already be open.";
+}
+
 // Optional: open the console and run a command (e.g. "console:standup Performa").
 if (args.Length > 4 && args[4].StartsWith("console:"))
 {
