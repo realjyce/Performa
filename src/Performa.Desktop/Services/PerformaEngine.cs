@@ -85,6 +85,11 @@ public sealed class PerformaEngine
     /// <summary>Raised when the workspace folder changes so pages can reload.</summary>
     public event Action? WorkspaceChanged;
 
+    /// <summary>Raised the moment Google sign-in succeeds so pages can pull data.</summary>
+    public event Action? GoogleSignedIn;
+
+    public void NotifyGoogleSignedIn() => GoogleSignedIn?.Invoke();
+
     public void SetWorkspace(string path)
     {
         var changed = !string.Equals(Prefs.WorkspacePath, path, StringComparison.OrdinalIgnoreCase);

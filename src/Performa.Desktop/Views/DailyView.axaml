@@ -11,7 +11,7 @@
       <TextBlock Text="{Binding Today}" Classes="muted" />
     </StackPanel>
 
-    <Grid Grid.Row="1" ColumnDefinitions="*,320" ColumnSpacing="18">
+    <Grid Grid.Row="1" ColumnDefinitions="*,360" ColumnSpacing="18">
 
       <!-- Left: tasks + notes -->
       <Grid Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="16">
@@ -34,7 +34,7 @@
                 <DataTemplate x:DataType="vm:TaskRow">
                   <CheckBox IsChecked="{Binding Done}" Margin="0,3">
                     <TextBlock Text="{Binding Text}" Foreground="{DynamicResource TextPrimaryBrush}"
-                               VerticalAlignment="Center" />
+                               VerticalAlignment="Center" TextWrapping="Wrap" />
                   </CheckBox>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
@@ -54,32 +54,72 @@
 
       </Grid>
 
-      <!-- Right: today's commit timeline -->
-      <Border Grid.Column="1" Classes="card">
-        <DockPanel>
-          <TextBlock DockPanel.Dock="Top" Text="TODAY'S COMMITS" Classes="label"
-                     Margin="0,0,0,14" />
-          <TextBlock DockPanel.Dock="Top" Text="{Binding TimelineEmpty}" Classes="muted"
-                     IsVisible="{Binding TimelineEmpty, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-          <ScrollViewer>
-            <ItemsControl ItemsSource="{Binding Timeline}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:TimelineRow">
-                  <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,14">
-                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                      <TextBlock Text="{Binding Time}" Classes="mono" FontSize="12"
-                                 Foreground="{DynamicResource AccentBrightBrush}" />
-                      <TextBlock Text="{Binding Repo}" Classes="faint" FontSize="10" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="1" Text="{Binding Subject}" Classes="muted"
-                               FontSize="12.5" TextWrapping="Wrap" />
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </ScrollViewer>
-        </DockPanel>
-      </Border>
+      <!-- Right: schedule + commits -->
+      <ScrollViewer Grid.Column="1">
+        <StackPanel Spacing="16">
+
+          <Border Classes="card">
+            <StackPanel Spacing="12">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="SCHEDULE" Classes="label"
+                           VerticalAlignment="Center" />
+                <Button Grid.Column="1" Classes="ghost" Content="Refresh" FontSize="11"
+                        Padding="9,4" IsVisible="{Binding GoogleConnected}"
+                        Command="{Binding RefreshCalendarCommand}" />
+              </Grid>
+
+              <TextBlock Text="{Binding CalendarStatus}" Classes="faint" TextWrapping="Wrap"
+                         IsVisible="{Binding CalendarStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+              <ItemsControl ItemsSource="{Binding Events}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:EventCard">
+                    <Grid ColumnDefinitions="3,*" Margin="0,0,0,12">
+                      <!-- colour node from your own Google palette -->
+                      <Border Grid.Column="0" Background="{Binding Colour}" CornerRadius="2" />
+                      <StackPanel Grid.Column="1" Spacing="2" Margin="11,0,0,0">
+                        <TextBlock Text="{Binding Title}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontSize="13" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                          <TextBlock Text="{Binding Day}" Classes="faint" FontSize="11" />
+                          <TextBlock Text="{Binding Time}" Classes="mono" FontSize="11" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding Location}" Classes="faint" FontSize="11"
+                                   IsVisible="{Binding HasLocation}" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card">
+            <StackPanel Spacing="12">
+              <TextBlock Text="TODAY'S COMMITS" Classes="label" />
+              <TextBlock Text="{Binding TimelineEmpty}" Classes="faint"
+                         IsVisible="{Binding TimelineEmpty, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              <ItemsControl ItemsSource="{Binding Timeline}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:TimelineRow">
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,12">
+                      <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Time}" Classes="mono" FontSize="12"
+                                   Foreground="{DynamicResource AccentBrightBrush}" />
+                        <TextBlock Text="{Binding Repo}" Classes="faint" FontSize="10" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" Text="{Binding Subject}" Classes="muted"
+                                 FontSize="12.5" TextWrapping="Wrap" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+        </StackPanel>
+      </ScrollViewer>
 
     </Grid>
   </Grid>

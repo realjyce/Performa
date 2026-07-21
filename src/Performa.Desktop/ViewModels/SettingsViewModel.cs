@@ -118,6 +118,7 @@ public sealed class SettingsViewModel : ObservableObject
         GoogleStatus = "Opening your browser…";
         GoogleStatus = await _google.SignInAsync(creds.ClientId, creds.ClientSecret);
         GoogleConnected = _google.IsSignedIn;
+        if (GoogleConnected) _engine.NotifyGoogleSignedIn();
     }
 
     private void GoogleSignOut()

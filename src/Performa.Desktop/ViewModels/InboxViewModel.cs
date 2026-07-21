@@ -42,7 +42,7 @@ public sealed class MailCard : ObservableObject
     public string ToggleLabel => _expanded ? "Hide original" : "Read original";
 }
 
-public sealed class InboxViewModel : ObservableObject
+public sealed class InboxViewModel : ObservableObject, IActivatablePage
 {
     private readonly PerformaEngine _engine;
     private readonly GoogleAuthService _auth = new();
@@ -53,7 +53,16 @@ public sealed class InboxViewModel : ObservableObject
         _engine = engine;
         RefreshCommand = new RelayCommand(() => _ = LoadAsync());
         ToggleCommand = new RelayCommand<MailCard>(c => { if (c is not null) c.Expanded = !c.Expanded; });
+        engine.GoogleSignedIn += () => _ = LoadAsync();
         _ = LoadAsync();
+    }
+
+    private bool _loadedOnce;
+
+    /// <summary>Opening the page re-checks sign-in so mail fills itself in.</summary>
+    public void OnActivated()
+    {
+        if (!_loadedOnce && _auth.IsSignedIn) _ = LoadAsync();
     }
 
     public ObservableCollection<MailCard> Mail { get; } = [];
@@ -94,6 +103,7 @@ public sealed class InboxViewModel : ObservableObject
         }
 
         var mail = await _gmail.GetRecentAsync(token);
+        _loadedOnce = true;
         Mail.Clear();
         foreach (var m in mail) Mail.Add(new MailCard(m));
 

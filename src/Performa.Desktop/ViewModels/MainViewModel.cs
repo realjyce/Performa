@@ -26,7 +26,10 @@ public sealed class MainViewModel : ObservableObject
             // selection survives.
             if (value is null) return;
             if (SetProperty(ref _selected, value))
+            {
                 OnPropertyChanged(nameof(CurrentPage));
+                (value.Page as IActivatablePage)?.OnActivated();
+            }
         }
     }
 
@@ -52,7 +55,6 @@ public sealed class MainViewModel : ObservableObject
         var daily = new DailyViewModel(Engine);
         _reports = new ReportsViewModel(Engine);
         var loose = new LooseEndsViewModel(Engine);
-        var calendar = new CalendarViewModel(Engine);
         var inbox = new InboxViewModel(Engine);
         var streams = new StreamsViewModel();
         var assistant = new AssistantViewModel(Engine);
@@ -65,10 +67,9 @@ public sealed class MainViewModel : ObservableObject
         [
             new NavItem("Dashboard", "IconDashboard", dashboard),
             new NavItem("Daily", "IconDaily", daily),
+            new NavItem("Inbox", "IconStreams", inbox),
             _reportsNav,
             _looseNav,
-            new NavItem("Calendar", "IconDaily", calendar),
-            new NavItem("Inbox", "IconReports", inbox),
             new NavItem("Assistant", "IconAssistant", assistant),
             new NavItem("Streams", "IconStreams", streams, dormant: true),
         ];

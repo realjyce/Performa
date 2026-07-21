@@ -175,3 +175,14 @@ One decision or lesson per entry. Newest last.
   links are pulled out with regex and listed verbatim; the untouched body sits
   behind "Read original". That is the only honest way to claim no information
   is lost, since summarising is lossy by definition.
+
+- **Calendar folded into Daily.** One page answers "what does today look like":
+  tasks and notes on the left, schedule and today's commits on the right. The
+  standalone Calendar page and its view model are gone; GoogleCalendarService
+  stayed. Nav order is Dashboard, Daily, Inbox, then the git pages.
+
+- **Pages refresh themselves once Google is connected.** Two triggers: an
+  engine-level GoogleSignedIn event that Settings raises on success, and an
+  IActivatablePage.OnActivated call fired when the sidebar selection changes.
+  So signing in mid-session fills Daily and Inbox without a restart, and
+  opening either page re-checks the session.
