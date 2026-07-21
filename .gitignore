@@ -2,3 +2,7 @@ bin/
 obj/
 
 tools/Shot/*.png
+
+# never commit OAuth client credentials
+google-credentials.json
+**/google-credentials.json

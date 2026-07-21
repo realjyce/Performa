@@ -73,12 +73,26 @@ public sealed class SettingsViewModel : ObservableObject
     public RelayCommand GoogleSignInCommand { get; }
     public RelayCommand GoogleSignOutCommand { get; }
 
+    private bool _showGoogleAdvanced;
+    public bool ShowGoogleAdvanced
+    {
+        get => _showGoogleAdvanced;
+        set => SetProperty(ref _showGoogleAdvanced, value);
+    }
+
+    public RelayCommand ToggleGoogleAdvancedCommand => new(() => ShowGoogleAdvanced = !ShowGoogleAdvanced);
+
     private void RefreshGoogleStatus()
     {
         GoogleConnected = _google.IsSignedIn;
-        GoogleStatus = GoogleConnected
-            ? "Connected. Calendar and Gmail are readable."
-            : "Not connected.";
+        if (GoogleConnected)
+        {
+            GoogleStatus = "Connected. Calendar and Gmail are readable.";
+            return;
+        }
+        GoogleStatus = GoogleCredentialStore.Load(_engine.Prefs) is null
+            ? "No Google client configured. Add one under Advanced."
+            : "Ready to connect.";
     }
 
     private void SaveGoogleCredentials()
@@ -93,8 +107,16 @@ public sealed class SettingsViewModel : ObservableObject
     private async Task GoogleSignInAsync()
     {
         SaveGoogleCredentials();
+
+        var creds = GoogleCredentialStore.Load(_engine.Prefs);
+        if (creds is null)
+        {
+            GoogleStatus = "No Google client configured. Add one under Advanced.";
+            return;
+        }
+
         GoogleStatus = "Opening your browser…";
-        GoogleStatus = await _google.SignInAsync(GoogleClientId.Trim(), GoogleClientSecret.Trim());
+        GoogleStatus = await _google.SignInAsync(creds.ClientId, creds.ClientSecret);
         GoogleConnected = _google.IsSignedIn;
     }
 

@@ -89,22 +89,27 @@
             </Border>
           </Grid>
           <TextBlock Classes="faint" TextWrapping="Wrap"
-                     Text="Read-only access to your Calendar and Gmail. Create a Desktop OAuth client in Google Cloud Console, then paste its ID and secret here. Both stay on this machine." />
+                     Text="Read-only access to your Calendar and Gmail. Performa can never send mail or change your calendar." />
 
-          <StackPanel Spacing="8" Margin="0,4,0,0">
-            <TextBox Text="{Binding GoogleClientId}"
-                     Watermark="Client ID  (…apps.googleusercontent.com)" />
-            <TextBox Text="{Binding GoogleClientSecret}" PasswordChar="•"
-                     Watermark="Client secret  (GOCSPX-…)" />
-          </StackPanel>
-
-          <StackPanel Orientation="Horizontal" Spacing="10">
+          <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4,0,0">
             <Button Classes="accent" Content="Sign in with Google"
                     Command="{Binding GoogleSignInCommand}" />
             <Button Classes="ghost" Content="Disconnect" IsVisible="{Binding GoogleConnected}"
                     Command="{Binding GoogleSignOutCommand}" />
           </StackPanel>
           <TextBlock Text="{Binding GoogleStatus}" Classes="faint" TextWrapping="Wrap" />
+
+          <Button Classes="ghost" Content="Advanced: use my own Google client"
+                  HorizontalAlignment="Left" FontSize="12"
+                  Command="{Binding ToggleGoogleAdvancedCommand}" />
+          <StackPanel Spacing="8" IsVisible="{Binding ShowGoogleAdvanced}">
+            <TextBlock Classes="faint" TextWrapping="Wrap"
+                       Text="Only needed if you want Performa to use your own Google Cloud project instead of the built-in one." />
+            <TextBox Text="{Binding GoogleClientId}"
+                     Watermark="Client ID  (…apps.googleusercontent.com)" />
+            <TextBox Text="{Binding GoogleClientSecret}" PasswordChar="•"
+                     Watermark="Client secret  (GOCSPX-…)" />
+          </StackPanel>
         </StackPanel>
       </Border>
 
