@@ -69,3 +69,23 @@ One decision or lesson per entry. Newest last.
   process-global env vars raced and backdated each other's commits. Both now
   sit in one xUnit collection so they serialize. Env vars are global state;
   test suites forget that.
+
+- **Desktop = Avalonia over the same Core.** Split into Performa.Core (engine),
+  Performa.Cli, and Performa.Desktop so the GUI and CLI share one code path.
+  Hand-rolled MVVM (ObservableObject + RelayCommand + a ViewLocator), no MVVM
+  framework dependency. Custom dark chrome via SystemDecorations=None; nav is
+  two ListBoxes both bound to one Selected property, which cross-clears cleanly.
+
+- **Verify the UI like the web work.** tools/Shot is an Avalonia.Headless + Skia
+  harness that renders any page to PNG (and can drive the assistant) so the GUI
+  is checked by screenshot, not by assertion. Same discipline as the puppeteer
+  shots.
+
+- **Force InvariantCulture in App.Initialize.** The machine locale rendered the
+  Daily date in Japanese; pinning culture fixes date formatting app-wide without
+  touching each call site.
+
+- **Avalonia 12 clipboard API churned** (DataObject/DataFormats obsolete, text
+  methods moved). Not worth chasing for v1 — report text sits in a
+  SelectableTextBlock, so native Ctrl+C works. Revisit if a Copy button earns
+  its place.

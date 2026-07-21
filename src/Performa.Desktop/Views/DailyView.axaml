@@ -3,8 +3,84 @@
              xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
              x:Class="Performa.Desktop.Views.DailyView"
              x:DataType="vm:DailyViewModel">
-  <StackPanel Margin="34,26" Spacing="3">
-    <TextBlock Text="Daily" Classes="h1" />
-    <TextBlock Text="Today's timeline, tasks, and notes." Classes="muted" />
-  </StackPanel>
+
+  <Grid Margin="34,26,34,34" RowDefinitions="Auto,*">
+
+    <StackPanel Grid.Row="0" Spacing="3" Margin="0,0,0,20">
+      <TextBlock Text="Daily" Classes="h1" />
+      <TextBlock Text="{Binding Today}" Classes="muted" />
+    </StackPanel>
+
+    <Grid Grid.Row="1" ColumnDefinitions="*,320" ColumnSpacing="18">
+
+      <!-- Left: tasks + notes -->
+      <Grid Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="16">
+
+        <Border Grid.Row="0" Classes="card">
+          <StackPanel Spacing="12">
+            <TextBlock Text="TASKS" Classes="label" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBox Grid.Column="0" Text="{Binding NewTaskText}"
+                       Watermark="Add a task and press Enter…">
+                <TextBox.KeyBindings>
+                  <KeyBinding Gesture="Enter" Command="{Binding AddTaskCommand}" />
+                </TextBox.KeyBindings>
+              </TextBox>
+              <Button Grid.Column="1" Classes="accent" Content="Add"
+                      Command="{Binding AddTaskCommand}" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding Tasks}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:TaskRow">
+                  <CheckBox IsChecked="{Binding Done}" Margin="0,3">
+                    <TextBlock Text="{Binding Text}" Foreground="{DynamicResource TextPrimaryBrush}"
+                               VerticalAlignment="Center" />
+                  </CheckBox>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1" Classes="card">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Text="NOTES" Classes="label" Margin="0,0,0,10" />
+            <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap"
+                     Watermark="Jot down anything about today…"
+                     Background="Transparent" BorderThickness="0"
+                     VerticalAlignment="Stretch" VerticalContentAlignment="Top" />
+          </DockPanel>
+        </Border>
+
+      </Grid>
+
+      <!-- Right: today's commit timeline -->
+      <Border Grid.Column="1" Classes="card">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="TODAY'S COMMITS" Classes="label"
+                     Margin="0,0,0,14" />
+          <TextBlock DockPanel.Dock="Top" Text="{Binding TimelineEmpty}" Classes="muted"
+                     IsVisible="{Binding TimelineEmpty, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Timeline}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:TimelineRow">
+                  <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,14">
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                      <TextBlock Text="{Binding Time}" Classes="mono" FontSize="12"
+                                 Foreground="{DynamicResource AccentBrightBrush}" />
+                      <TextBlock Text="{Binding Repo}" Classes="faint" FontSize="10" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding Subject}" Classes="muted"
+                               FontSize="12.5" TextWrapping="Wrap" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </DockPanel>
+      </Border>
+
+    </Grid>
+  </Grid>
 </UserControl>

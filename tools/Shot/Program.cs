@@ -21,6 +21,10 @@ AppBuilder.Configure<App>()
 var vm = new MainViewModel();
 vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(pageIndex);
 
+// Optional: drive the assistant with a question so the shot shows a real answer.
+if (args.Length > 4 && vm.Selected.Page is AssistantViewModel assistant)
+    assistant.AskSuggestionCommand.Execute(args[4]);
+
 var window = new MainWindow
 {
     DataContext = vm,

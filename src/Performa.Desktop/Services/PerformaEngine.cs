@@ -71,4 +71,17 @@ public sealed class PerformaEngine
 
     public string CurrentBranch(string repoPath)
         => Repo(repoPath).Git.TryRun("rev-parse", "--abbrev-ref", "HEAD")?.Trim() ?? "?";
+
+    public List<(string Repo, DateTimeOffset When, string Subject)> TodayCommits()
+    {
+        var midnight = new DateTimeOffset(DateTimeOffset.Now.Date, DateTimeOffset.Now.Offset);
+        var result = new List<(string, DateTimeOffset, string)>();
+        foreach (var path in DiscoverRepos())
+        {
+            var repo = Repo(path);
+            foreach (var c in repo.CommitsSince(midnight, onlyMine: true))
+                result.Add((repo.RepoName, c.Date, Classification.CleanSubject(c.Subject)));
+        }
+        return [.. result.OrderByDescending(x => x.Item2)];
+    }
 }

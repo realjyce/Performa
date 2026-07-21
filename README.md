@@ -66,6 +66,20 @@ single deterministic implementation. A future AI-backed enricher can replace
 it behind the same interface without touching git parsing, fact building, or
 the CLI. That is the only extension point, by design.
 
+## Desktop app
+
+Performa also ships a desktop companion (`src/Performa.Desktop`, Avalonia) that
+puts the same engine behind a UI: a multi-repo dashboard with velocity, a Daily
+view (tasks, notes, today's commit timeline), a report generator, a workspace
+loose-ends scan, a deterministic assistant, and honest "coming later" tiles for
+the streams that plug into the same seam. Run it with:
+
+```
+dotnet run --project src/Performa.Desktop
+```
+
+The CLI and desktop share `Performa.Core`; neither touches the network.
+
 ## Development
 
 ```
