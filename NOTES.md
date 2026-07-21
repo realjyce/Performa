@@ -239,3 +239,36 @@ One decision or lesson per entry. Newest last.
   gemini-3.1-flash-lite behind it, because the "latest" alias returns 503 under
   load often enough to be worth a fallback. Lesson: read which metric the quota
   error names before blaming the credential.
+
+- **Fluent resource keys beat Style setters.** Setting Background on a TextBox
+  or Button does nothing on hover, focus or press, because the control template
+  paints from its own resource lookup. That is why the fields kept flashing a
+  dark well and the accent buttons stayed system blue while every token said
+  violet. The fix belongs at the key (TextControlBackgroundFocused,
+  ComboBoxDropDownBackground) or on /template/ ContentPresenter, not the selector.
+
+- **Two themes, one token layer.** Tokens.axaml is now ThemeDictionaries and
+  every view already reached its brushes through DynamicResource, so the switch
+  re-themes a live window with no reload and no per-view work. Paper darkens the
+  accent because the dark-theme violet fails contrast on white, and gets its own
+  weave tile with the light/dark roles swapped.
+
+- **Inputs are a bare caret.** No box, no border, nothing that lights up. The
+  card is the container; a second container inside it was the noise.
+
+- **Dropdown popups are pinned to the button width** so a long option cannot
+  make the list wider than the control it drops out of. Options trim instead of
+  wrapping, which keeps every row one line tall.
+
+- **The thinking mark is drawn, not composed.** Three dots wave, gather into a
+  rotating prism, collapse into one breathing circle, then split back. Keyframes
+  on separate elements drift at the seams; one clock driving one Render cannot.
+  Growth is held back until the dots have nearly met, and shrink runs ahead of
+  separation, otherwise the halfway frames read as a lumpy blob. Verified as a
+  filmstrip of real frames rather than assumed.
+
+- **Zero-setup credentials.** AppCredentialStore resolves the GitHub client id
+  and the Gemini key the same way Google's already worked: prefs override, then
+  a file beside the binary, then AppData. The GitHub client id is public by
+  design in the device flow. The Gemini key is not, and shipping it is a
+  testing-phase compromise, recorded as such in the code.

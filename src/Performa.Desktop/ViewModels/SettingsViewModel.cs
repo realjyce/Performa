@@ -109,16 +109,23 @@ public sealed class SettingsViewModel : ObservableObject
     /// </summary>
     private async Task GitHubSignInAsync()
     {
-        var clientId = GitHubClientId.Trim();
-        if (clientId.Length == 0)
+        // The shipped build carries its own client id, so this is one click for
+        // an end user. Typing one in Settings is only for pointing the app at
+        // your own OAuth App.
+        var typed = GitHubClientId.Trim();
+        if (typed.Length > 0)
         {
-            GitHubNote = "Add an OAuth App client id under Advanced first.";
+            _engine.Prefs.GitHubClientId = typed;
+            _engine.SavePrefs();
+        }
+
+        var clientId = AppCredentialStore.GitHubClientId(_engine.Prefs);
+        if (clientId is null)
+        {
+            GitHubNote = "No GitHub client configured. Add one under Advanced.";
             ShowGitHubAdvanced = true;
             return;
         }
-
-        _engine.Prefs.GitHubClientId = clientId;
-        _engine.SavePrefs();
 
         GitHubNote = "Asking GitHub for a code…";
         var prompt = await _gitHubAuth.StartAsync(clientId);
@@ -344,6 +351,27 @@ public sealed class SettingsViewModel : ObservableObject
 
     private string _tone;
     public string Tone { get => _tone; set => SetProperty(ref _tone, value); }
+
+    /// <summary>
+    /// Applies immediately rather than on Save. A theme you cannot see until you
+    /// press a button is a theme you cannot judge.
+    /// </summary>
+    public bool IsLightTheme
+    {
+        get => _engine.Prefs.Theme == AppTheme.Light;
+        set
+        {
+            var theme = value ? AppTheme.Light : AppTheme.Dark;
+            if (_engine.Prefs.Theme == theme) return;
+            _engine.Prefs.Theme = theme;
+            _engine.SavePrefs();
+            App.ApplyTheme(theme);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ThemeLabel));
+        }
+    }
+
+    public string ThemeLabel => IsLightTheme ? "Paper" : "Carbon";
 
     private string _savedNote = "";
     public string SavedNote { get => _savedNote; set => SetProperty(ref _savedNote, value); }

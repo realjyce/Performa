@@ -7,6 +7,9 @@ public enum Verbosity { Terse, Normal, Detailed }
 public enum Grouping { Area, Kind, Flat }
 public enum Tone { Plain, Friendly }
 
+/// <summary>Carbon is the identity, so it stays the default.</summary>
+public enum AppTheme { Dark, Light }
+
 public sealed class Preferences
 {
     public bool Initialised { get; set; }
@@ -17,6 +20,7 @@ public sealed class Preferences
     public Verbosity Verbosity { get; set; } = Verbosity.Normal;
     public Grouping Grouping { get; set; } = Grouping.Area;
     public Tone Tone { get; set; } = Tone.Plain;
+    public AppTheme Theme { get; set; } = AppTheme.Dark;
     public int RejectStreak { get; set; }
     public string? WorkspacePath { get; set; }
 

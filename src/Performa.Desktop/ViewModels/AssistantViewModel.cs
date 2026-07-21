@@ -59,7 +59,7 @@ public sealed class AssistantViewModel : ObservableObject
         // Deterministic facts first: they are the ground truth either way.
         var facts = await Task.Run(() => Answer(question.ToLowerInvariant()));
 
-        var key = _engine.Prefs.GeminiApiKey;
+        var key = AppCredentialStore.GeminiKey(_engine.Prefs);
         if (_engine.Prefs.AiEnabled && !string.IsNullOrWhiteSpace(key))
         {
             var context = await Task.Run(BuildContext);

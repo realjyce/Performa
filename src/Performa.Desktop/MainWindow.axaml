@@ -197,7 +197,7 @@
   </Grid>
 
   <!-- First run: ask once, so nothing is inherited from an SSO profile -->
-  <Border IsVisible="{Binding NeedsName}" Background="#CC15171A">
+  <Border IsVisible="{Binding NeedsName}" Background="{DynamicResource ScrimBrush}">
     <Border Classes="card" Width="420" Padding="28" VerticalAlignment="Center"
             HorizontalAlignment="Center">
       <StackPanel Spacing="14">

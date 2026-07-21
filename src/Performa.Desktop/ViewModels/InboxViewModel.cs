@@ -120,7 +120,7 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
     /// </summary>
     private async Task SummariseAsync()
     {
-        var key = _engine.Prefs.GeminiApiKey;
+        var key = AppCredentialStore.GeminiKey(_engine.Prefs);
         if (!_engine.Prefs.AiEnabled || string.IsNullOrWhiteSpace(key)) return;
 
         foreach (var card in Mail.Take(6))

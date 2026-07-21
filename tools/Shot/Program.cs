@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Performa.Desktop;
 using Performa.Desktop.ViewModels;
 
@@ -9,16 +10,77 @@ using Performa.Desktop.ViewModels;
 // the UI can be verified visually, the way puppeteer shots verify the web work.
 
 var outFile = args.Length > 0 ? args[0] : "shot.png";
-var pageIndex = args.Length > 1 ? int.Parse(args[1]) : 0;
-var width = args.Length > 2 ? int.Parse(args[2]) : 1200;
-var height = args.Length > 3 ? int.Parse(args[3]) : 780;
+var pageIndex = args.Length > 1 && int.TryParse(args[1], out var pi) ? pi : 0;
+var width = args.Length > 2 && int.TryParse(args[2], out var wd) ? wd : 1200;
+var height = args.Length > 3 && int.TryParse(args[3], out var ht) ? ht : 780;
 
 AppBuilder.Configure<App>()
     .UseSkia()
     .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
     .SetupWithoutStarting();
 
+// "dots" mode: a filmstrip of the thinking mark, so the whole loop can be seen
+// as stills instead of trusted. Frame count and spacing come from the loop
+// length, and the control drives itself off a real clock, so this waits in real
+// time between captures.
+if (args.Length > 1 && args[1] == "dots")
+{
+    var frames = args.Length > 2 ? int.Parse(args[2]) : 16;
+    var spacingMs = args.Length > 3 ? int.Parse(args[3]) : 400;
+
+    var dots = new Performa.Desktop.Controls.ThinkingDots
+    {
+        Width = 120,
+        Height = 60,
+        IsActive = true,
+        DotBrush = Avalonia.Media.Brushes.White,
+    };
+    var strip = new Window
+    {
+        Width = 120,
+        Height = 60,
+        Background = Avalonia.Media.Brushes.Black,
+        Content = dots,
+        WindowDecorations = WindowDecorations.None,
+    };
+    strip.Show();
+
+    for (var f = 0; f < frames; f++)
+    {
+        var until = DateTime.Now.AddMilliseconds(spacingMs);
+        while (DateTime.Now < until)
+        {
+            Dispatcher.UIThread.RunJobs();
+            Thread.Sleep(8);
+        }
+        // Headless has no render timer driving the control's own invalidation,
+        // so the frame is forced here. The geometry under test is unaffected.
+        dots.InvalidateVisual();
+        Dispatcher.UIThread.RunJobs();
+        var shot = strip.CaptureRenderedFrame();
+        if (shot is null) continue;
+        using var fs = File.Create($"{Path.GetFileNameWithoutExtension(outFile)}-{f:D2}.png");
+        shot.Save(fs);
+    }
+    Console.WriteLine($"saved {frames} frames every {spacingMs}ms");
+    return;
+}
+
 var vm = new MainViewModel();
+
+// Shot builds its own window, so the theme App would normally apply on startup
+// has to be applied here. PERFORMA_SHOT_THEME overrides the stored preference.
+App.ApplyTheme(
+    Environment.GetEnvironmentVariable("PERFORMA_SHOT_THEME")?.ToLowerInvariant() switch
+    {
+        "light" => Performa.Prefs.AppTheme.Light,
+        "dark" => Performa.Prefs.AppTheme.Dark,
+        _ => vm.Engine.Prefs.Theme,
+    });
+
+// The first-run overlay scrims the whole window, which hides whatever is being
+// checked. Cleared in the view model only, so no name is written to preferences.
+vm.NeedsName = false;
 
 // The assistant sits outside both nav lists, so -1 reaches it.
 if (pageIndex < 0)
@@ -68,6 +130,16 @@ if (args.Length > 5 && args[5].StartsWith("navto:"))
     Dispatcher.UIThread.RunJobs();
     Thread.Sleep(400);
     vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(idx);
+}
+
+// Optional: "combo" opens the first dropdown so the popup itself can be checked.
+if (args.Length > 4 && args[4] == "combo")
+{
+    Dispatcher.UIThread.RunJobs();
+    Thread.Sleep(600);
+    Dispatcher.UIThread.RunJobs();
+    var combo = window.GetVisualDescendants().OfType<ComboBox>().FirstOrDefault();
+    if (combo is not null) combo.IsDropDownOpen = true;
 }
 
 // Pump the UI + let the async git load settle before capturing. A network

@@ -86,8 +86,21 @@
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="Cursor" Value="Hand" />
   </Style>
+  <!--
+    Fluent's button template paints the ContentPresenter from its own resource,
+    which beats Background set on the button. Without these the accent buttons
+    silently fall back to the system blue instead of Performa's violet.
+  -->
+  <Style Selector="Button.accent /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
   <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AccentBrightBrush}" />
+  </Style>
+  <Style Selector="Button.accent:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
   </Style>
 
   <Style Selector="Button.ghost">
@@ -121,52 +134,68 @@
     <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
   </Style>
 
-  <!-- Inputs: seamless, part of the card rather than a dark well -->
+  <!--
+    Inputs are a bare caret on the card, the way a terminal prompt is: no box,
+    no border, nothing that lights up on hover or focus. The card around them
+    is the container, so a second container inside it is just noise.
+  -->
   <Style Selector="TextBox">
-    <Setter Property="Background" Value="{DynamicResource BgCardHoverBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource BorderSoftBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="8" />
-    <Setter Property="Padding" Value="12,8" />
-    <Setter Property="MinHeight" Value="38" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MinHeight" Value="30" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource AccentSoftBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource AccentBrightBrush}" />
   </Style>
-  <Style Selector="TextBox:focus">
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+
+  <!-- Fluent draws focus as a thick accent underline inside the template. -->
+  <Style Selector="TextBox /template/ Border#PART_BorderElement">
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="Transparent" />
   </Style>
 
-  <!-- Dropdowns: same carbon, rounded, list wraps instead of stretching -->
+  <!--
+    Dropdowns: the popup is pinned to the button's own width so a long option
+    can never make the list wider than the control it drops out of. Options
+    trim rather than wrap, which keeps every row one line tall.
+  -->
   <Style Selector="ComboBox">
-    <Setter Property="Background" Value="{DynamicResource BgCardHoverBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource BorderSoftBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="8" />
-    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="Padding" Value="12,7" />
     <Setter Property="MinHeight" Value="38" />
-    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
-  <Style Selector="ComboBox:focus">
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+
+  <Style Selector="ComboBox /template/ Border#Background">
+    <Setter Property="CornerRadius" Value="8" />
   </Style>
+
+  <Style Selector="ComboBox /template/ Border#PopupBorder">
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="3" />
+    <Setter Property="Margin" Value="0,4,0,0" />
+  </Style>
+
+  <Style Selector="ComboBox /template/ Popup#PART_Popup">
+    <Setter Property="Width" Value="{Binding $parent[ComboBox].Bounds.Width}" />
+  </Style>
+
   <Style Selector="ComboBoxItem">
-    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="Padding" Value="10,7" />
     <Setter Property="CornerRadius" Value="6" />
-    <Setter Property="Margin" Value="3,1" />
-    <Setter Property="HorizontalContentAlignment" Value="Left" />
-    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="Margin" Value="0,1" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
   </Style>
+
   <Style Selector="ComboBoxItem TextBlock">
-    <Setter Property="TextWrapping" Value="Wrap" />
-  </Style>
-  <Style Selector="ComboBoxItem:pointerover">
-    <Setter Property="Background" Value="{DynamicResource BgCardHoverBrush}" />
-  </Style>
-  <Style Selector="ComboBoxItem:selected">
-    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+    <Setter Property="TextWrapping" Value="NoWrap" />
+    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
   </Style>
 
   <!-- Featured nav item (Assistant): lifted above the rest -->

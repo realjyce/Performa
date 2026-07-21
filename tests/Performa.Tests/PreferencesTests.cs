@@ -50,6 +50,7 @@ public class PreferencesTests
             Grouping = Grouping.Kind,
             Tone = Tone.Friendly,
             Format = OutputFormat.Text,
+            Theme = AppTheme.Light,
         });
 
         Assert.True(back.Initialised);
@@ -59,7 +60,12 @@ public class PreferencesTests
         Assert.Equal(Grouping.Kind, back.Grouping);
         Assert.Equal(Tone.Friendly, back.Tone);
         Assert.Equal(OutputFormat.Text, back.Format);
+        Assert.Equal(AppTheme.Light, back.Theme);
     }
+
+    [Fact]
+    public void Carbon_is_the_default_theme()
+        => Assert.Equal(AppTheme.Dark, new Preferences().Theme);
 
     [Fact]
     public void Ai_is_off_and_no_credentials_exist_by_default()

@@ -76,15 +76,15 @@
 
           <TextBlock Text="{Binding GitHubNote}" Classes="faint" TextWrapping="Wrap" />
 
-          <Button Classes="ghost" Content="Advanced: client id and personal token"
+          <Button Classes="ghost" Content="Advanced: use my own GitHub app"
                   HorizontalAlignment="Left" FontSize="12"
                   Command="{Binding ToggleGitHubAdvancedCommand}" />
           <StackPanel Spacing="8" IsVisible="{Binding ShowGitHubAdvanced}">
             <TextBlock Classes="faint" TextWrapping="Wrap"
-                       Text="Register a free OAuth App at github.com/settings/developers with device flow enabled, then paste its client id. A personal token works instead if you would rather not register one." />
-            <TextBox Text="{Binding GitHubClientId}" PlaceholderText="OAuth App client id  (Iv1.…  or  Ov23…)" />
+                       Text="Not needed to sign in. Fill these only to point Performa at your own OAuth App, or to fall back to a personal token." />
+            <TextBox Text="{Binding GitHubClientId}" PlaceholderText="OAuth App client id  (Ov23…)" />
             <TextBox Text="{Binding GitHubToken}" PasswordChar="•"
-                     PlaceholderText="Personal token  (ghp_… — optional fallback)" />
+                     PlaceholderText="Personal token  (ghp_…)" />
           </StackPanel>
 
           <Border IsVisible="{Binding GitHubRepos.Count}" MaxHeight="260"
@@ -167,8 +167,27 @@
           <CheckBox IsChecked="{Binding AiEnabled}" Margin="0,4,0,0">
             <TextBlock Text="Enable AI prose" Foreground="{DynamicResource TextPrimaryBrush}" />
           </CheckBox>
+          <TextBlock Classes="faint" TextWrapping="Wrap" FontSize="11"
+                     Text="This build ships with a shared key, so leave the field empty unless you want your own quota. Your own key always wins." />
           <TextBox Text="{Binding GeminiKey}" PasswordChar="•"
-                   PlaceholderText="Gemini API key (free tier at aistudio.google.com)" />
+                   PlaceholderText="Your own Gemini key (optional)" />
+        </StackPanel>
+      </Border>
+
+      <!-- Appearance -->
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <TextBlock Text="APPEARANCE" Classes="label" />
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+              <TextBlock Text="{Binding ThemeLabel}"
+                         Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" />
+              <TextBlock Classes="faint" FontSize="11" TextWrapping="Wrap"
+                         Text="Carbon is the dark weave. Paper keeps the same texture on a light surface. Applies straight away." />
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsLightTheme}"
+                          OnContent="" OffContent="" VerticalAlignment="Center" />
+          </Grid>
         </StackPanel>
       </Border>
 

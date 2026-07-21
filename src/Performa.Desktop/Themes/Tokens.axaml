@@ -1,76 +1,207 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <!-- Carbon surfaces: lifted off pure black, faintly cool -->
-  <Color x:Key="BgBase">#1C1E22</Color>
-  <Color x:Key="BgSidebar">#212429</Color>
-  <Color x:Key="BgCard">#262931</Color>
-  <Color x:Key="BgCardHover">#2E313A</Color>
-  <Color x:Key="BgInset">#17191D</Color>
-  <Color x:Key="BorderSoft">#33363F</Color>
-  <Color x:Key="BorderStrong">#434753</Color>
+  <!--
+    Every brush exists in both variants under the same key, and every view
+    reaches them through DynamicResource, so flipping the window's theme
+    variant re-themes the whole app with no reload and no per-view work.
+  -->
+  <ResourceDictionary.ThemeDictionaries>
 
-  <!-- Text -->
-  <Color x:Key="TextPrimary">#ECEDF0</Color>
-  <Color x:Key="TextMuted">#9A9DA8</Color>
-  <Color x:Key="TextFaint">#666A76</Color>
+    <!-- ================= CARBON (dark) ================= -->
+    <ResourceDictionary x:Key="Dark">
 
-  <!-- Accent + semantics -->
-  <Color x:Key="Accent">#7C6CF0</Color>
-  <Color x:Key="AccentBright">#9B8BFF</Color>
-  <Color x:Key="Positive">#4FB286</Color>
-  <Color x:Key="Warning">#E0A34E</Color>
-  <Color x:Key="Danger">#E0655E</Color>
-  <Color x:Key="Info">#4AA8E0</Color>
+      <SolidColorBrush x:Key="BgBaseBrush" Color="#1C1E22" />
+      <SolidColorBrush x:Key="BgSidebarBrush" Color="#212429" />
+      <SolidColorBrush x:Key="BgCardBrush" Color="#262931" />
+      <SolidColorBrush x:Key="BgCardHoverBrush" Color="#2E313A" />
+      <SolidColorBrush x:Key="BgInsetBrush" Color="#17191D" />
+      <SolidColorBrush x:Key="BorderSoftBrush" Color="#33363F" />
+      <SolidColorBrush x:Key="BorderStrongBrush" Color="#434753" />
 
-  <SolidColorBrush x:Key="BgBaseBrush" Color="{StaticResource BgBase}" />
-  <SolidColorBrush x:Key="BgSidebarBrush" Color="{StaticResource BgSidebar}" />
-  <SolidColorBrush x:Key="BgCardBrush" Color="{StaticResource BgCard}" />
-  <SolidColorBrush x:Key="BgCardHoverBrush" Color="{StaticResource BgCardHover}" />
-  <SolidColorBrush x:Key="BgInsetBrush" Color="{StaticResource BgInset}" />
-  <SolidColorBrush x:Key="BorderSoftBrush" Color="{StaticResource BorderSoft}" />
-  <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrong}" />
-  <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}" />
-  <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}" />
-  <SolidColorBrush x:Key="TextFaintBrush" Color="{StaticResource TextFaint}" />
-  <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}" />
-  <SolidColorBrush x:Key="AccentBrightBrush" Color="{StaticResource AccentBright}" />
-  <SolidColorBrush x:Key="PositiveBrush" Color="{StaticResource Positive}" />
-  <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource Warning}" />
-  <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}" />
-  <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource Info}" />
-  <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource Accent}" Opacity="0.16" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="TextMutedBrush" Color="#9A9DA8" />
+      <SolidColorBrush x:Key="TextFaintBrush" Color="#666A76" />
 
-  <!-- App backdrop: carbon with a soft diagonal lift, echoing the site hero -->
-  <LinearGradientBrush x:Key="BgBackdrop" StartPoint="0%,0%" EndPoint="80%,100%">
-    <GradientStop Offset="0" Color="#24262D" />
-    <GradientStop Offset="0.45" Color="#1E2025" />
-    <GradientStop Offset="1" Color="#191B1F" />
-  </LinearGradientBrush>
+      <SolidColorBrush x:Key="AccentBrush" Color="#7C6CF0" />
+      <SolidColorBrush x:Key="AccentBrightBrush" Color="#9B8BFF" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#7C6CF0" Opacity="0.16" />
+      <SolidColorBrush x:Key="PositiveBrush" Color="#4FB286" />
+      <SolidColorBrush x:Key="WarningBrush" Color="#E0A34E" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#E0655E" />
+      <SolidColorBrush x:Key="InfoBrush" Color="#4AA8E0" />
 
-  <!-- Content backdrop: a touch lighter than the shell so panels read forward -->
-  <LinearGradientBrush x:Key="BgContentBackdrop" StartPoint="0%,0%" EndPoint="100%,100%">
-    <GradientStop Offset="0" Color="#212429" />
-    <GradientStop Offset="0.6" Color="#1D1F24" />
-    <GradientStop Offset="1" Color="#1B1D21" />
-  </LinearGradientBrush>
+      <!-- App backdrop: carbon with a soft diagonal lift, echoing the site hero -->
+      <LinearGradientBrush x:Key="BgBackdrop" StartPoint="0%,0%" EndPoint="80%,100%">
+        <GradientStop Offset="0" Color="#24262D" />
+        <GradientStop Offset="0.45" Color="#1E2025" />
+        <GradientStop Offset="1" Color="#191B1F" />
+      </LinearGradientBrush>
 
-  <LinearGradientBrush x:Key="AccentGradient" StartPoint="0%,0%" EndPoint="100%,100%">
-    <GradientStop Offset="0" Color="#7C6CF0" />
-    <GradientStop Offset="1" Color="#B06CE0" />
-  </LinearGradientBrush>
+      <!-- Content backdrop: a touch lighter than the shell so panels read forward -->
+      <LinearGradientBrush x:Key="BgContentBackdrop" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#212429" />
+        <GradientStop Offset="0.6" Color="#1D1F24" />
+        <GradientStop Offset="1" Color="#1B1D21" />
+      </LinearGradientBrush>
 
-  <!-- Carbon weave: an 8px tile of offset light/dark dots, tiled at 1:1 -->
-  <ImageBrush x:Key="CarbonWeave"
-              Source="avares://Performa.Desktop/Assets/carbon.png"
-              TileMode="Tile" Stretch="None"
-              DestinationRect="0,0,8,8" />
+      <LinearGradientBrush x:Key="AccentGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#7C6CF0" />
+        <GradientStop Offset="1" Color="#B06CE0" />
+      </LinearGradientBrush>
 
-  <LinearGradientBrush x:Key="AssistantGradient" StartPoint="0%,0%" EndPoint="100%,100%">
-    <GradientStop Offset="0" Color="#6D5BE0" />
-    <GradientStop Offset="0.55" Color="#8158E8" />
-    <GradientStop Offset="1" Color="#A85FD8" />
-  </LinearGradientBrush>
+      <LinearGradientBrush x:Key="AssistantGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#6D5BE0" />
+        <GradientStop Offset="0.55" Color="#8158E8" />
+        <GradientStop Offset="1" Color="#A85FD8" />
+      </LinearGradientBrush>
+
+      <!-- Carbon weave: an 8px tile of offset light/dark dots, tiled at 1:1 -->
+      <ImageBrush x:Key="CarbonWeave"
+                  Source="avares://Performa.Desktop/Assets/carbon.png"
+                  TileMode="Tile" Stretch="None"
+                  DestinationRect="0,0,8,8" />
+
+      <SolidColorBrush x:Key="ScrimBrush" Color="#15171A" Opacity="0.80" />
+
+      <!--
+        Fluent looks these up from inside the control templates on hover and
+        focus, which beats anything a Style setter puts on the control itself.
+        That is why the fields kept flashing a dark well: the fix has to happen
+        at the key, not at the selector.
+      -->
+      <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlForeground" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#666A76" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#666A76" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#7A7F8C" />
+
+      <SolidColorBrush x:Key="ComboBoxBackground" Color="#2E313A" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#343843" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#343843" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundFocused" Color="#343843" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#33363F" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#434753" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#7C6CF0" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushFocused" Color="#7C6CF0" />
+      <SolidColorBrush x:Key="ComboBoxForeground" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="ComboBoxForegroundPointerOver" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="ComboBoxForegroundPressed" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="ComboBoxForegroundFocused" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#262931" />
+      <SolidColorBrush x:Key="ComboBoxDropDownForeground" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#434753" />
+      <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#2E313A" />
+      <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#332F55" />
+      <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#3A3563" />
+      <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#ECEDF0" />
+      <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#ECEDF0" />
+    </ResourceDictionary>
+
+    <!-- ================= PAPER (light) ================= -->
+    <ResourceDictionary x:Key="Light">
+
+      <SolidColorBrush x:Key="BgBaseBrush" Color="#F2F3F6" />
+      <SolidColorBrush x:Key="BgSidebarBrush" Color="#E9EAEF" />
+      <SolidColorBrush x:Key="BgCardBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="BgCardHoverBrush" Color="#F6F7FA" />
+      <SolidColorBrush x:Key="BgInsetBrush" Color="#ECEDF2" />
+      <SolidColorBrush x:Key="BorderSoftBrush" Color="#DCDEE6" />
+      <SolidColorBrush x:Key="BorderStrongBrush" Color="#C2C5D0" />
+
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1A1C22" />
+      <SolidColorBrush x:Key="TextMutedBrush" Color="#565B67" />
+      <SolidColorBrush x:Key="TextFaintBrush" Color="#868B98" />
+
+      <!-- Accent darkens on paper: the dark-theme violet fails contrast on white. -->
+      <SolidColorBrush x:Key="AccentBrush" Color="#5B4BD6" />
+      <SolidColorBrush x:Key="AccentBrightBrush" Color="#4534C0" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#5B4BD6" Opacity="0.10" />
+      <SolidColorBrush x:Key="PositiveBrush" Color="#2C7F59" />
+      <SolidColorBrush x:Key="WarningBrush" Color="#9C6B18" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#BE3F38" />
+      <SolidColorBrush x:Key="InfoBrush" Color="#20729F" />
+
+      <LinearGradientBrush x:Key="BgBackdrop" StartPoint="0%,0%" EndPoint="80%,100%">
+        <GradientStop Offset="0" Color="#F7F8FB" />
+        <GradientStop Offset="0.45" Color="#F1F2F6" />
+        <GradientStop Offset="1" Color="#EAECF1" />
+      </LinearGradientBrush>
+
+      <LinearGradientBrush x:Key="BgContentBackdrop" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#FAFBFD" />
+        <GradientStop Offset="0.6" Color="#F4F5F8" />
+        <GradientStop Offset="1" Color="#F0F1F5" />
+      </LinearGradientBrush>
+
+      <LinearGradientBrush x:Key="AccentGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#6355D8" />
+        <GradientStop Offset="1" Color="#9455C8" />
+      </LinearGradientBrush>
+
+      <LinearGradientBrush x:Key="AssistantGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#6355D8" />
+        <GradientStop Offset="0.55" Color="#7A52E0" />
+        <GradientStop Offset="1" Color="#9C55CE" />
+      </LinearGradientBrush>
+
+      <!-- Same weave geometry, inverted weights so paper still reads as paper. -->
+      <ImageBrush x:Key="CarbonWeave"
+                  Source="avares://Performa.Desktop/Assets/carbon-light.png"
+                  TileMode="Tile" Stretch="None"
+                  DestinationRect="0,0,8,8" />
+
+      <SolidColorBrush x:Key="ScrimBrush" Color="#2A2D36" Opacity="0.45" />
+
+      <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="TextControlForeground" Color="#1A1C22" />
+      <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#1A1C22" />
+      <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#1A1C22" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#868B98" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#868B98" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#767B88" />
+
+      <SolidColorBrush x:Key="ComboBoxBackground" Color="#F6F7FA" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#EDEEF3" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#EDEEF3" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundFocused" Color="#EDEEF3" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#DCDEE6" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#C2C5D0" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#5B4BD6" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushFocused" Color="#5B4BD6" />
+      <SolidColorBrush x:Key="ComboBoxForeground" Color="#1A1C22" />
+      <SolidColorBrush x:Key="ComboBoxForegroundPointerOver" Color="#1A1C22" />
+      <SolidColorBrush x:Key="ComboBoxForegroundPressed" Color="#1A1C22" />
+      <SolidColorBrush x:Key="ComboBoxForegroundFocused" Color="#1A1C22" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxDropDownForeground" Color="#1A1C22" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#C2C5D0" />
+      <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#F0F1F6" />
+      <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#E6E3FA" />
+      <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#DDD9F7" />
+      <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#1A1C22" />
+      <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#1A1C22" />
+      <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#1A1C22" />
+    </ResourceDictionary>
+
+  </ResourceDictionary.ThemeDictionaries>
 
   <FontFamily x:Key="MonoFont">Cascadia Code,Consolas,Menlo,monospace</FontFamily>
 

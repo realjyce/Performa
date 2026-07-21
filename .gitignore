@@ -6,3 +6,10 @@ tools/Shot/*.png
 # never commit OAuth client credentials
 google-credentials.json
 **/google-credentials.json
+
+# Shipped credentials: never in the public repo
+app-credentials.json
+**/app-credentials.json
+
+# Screenshot harness output
+.shots/
