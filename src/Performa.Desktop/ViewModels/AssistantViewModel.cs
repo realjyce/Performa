@@ -18,6 +18,7 @@ public sealed class ChatMessage(bool isUser, string text)
 public sealed class AssistantViewModel : ObservableObject
 {
     private readonly PerformaEngine _engine;
+    private readonly GeminiService _gemini = new();
 
     public AssistantViewModel(PerformaEngine engine)
     {
@@ -54,9 +55,49 @@ public sealed class AssistantViewModel : ObservableObject
     private async Task AnswerAsync(string question)
     {
         Thinking = true;
-        var answer = await Task.Run(() => Answer(question.ToLowerInvariant()));
-        Messages.Add(new ChatMessage(false, answer));
+
+        // Deterministic facts first: they are the ground truth either way.
+        var facts = await Task.Run(() => Answer(question.ToLowerInvariant()));
+
+        var key = _engine.Prefs.GeminiApiKey;
+        if (_engine.Prefs.AiEnabled && !string.IsNullOrWhiteSpace(key))
+        {
+            var context = await Task.Run(BuildContext);
+            var prose = await _gemini.AskAsync(key, context, question);
+            if (prose is { Length: > 0 })
+            {
+                Messages.Add(new ChatMessage(false, prose));
+                Thinking = false;
+                return;
+            }
+        }
+
+        Messages.Add(new ChatMessage(false, facts));
         Thinking = false;
+    }
+
+    /// <summary>Only real git facts go to the model; it is never asked to invent.</summary>
+    private string BuildContext()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("You are Performa, a developer's assistant. Facts about their work:");
+
+        var today = _engine.TodayCommits();
+        sb.AppendLine($"Commits today: {today.Count}");
+        foreach (var (repo, when, subject) in today.Take(15))
+            sb.AppendLine($"- {when:HH:mm} [{repo}] {subject}");
+
+        try
+        {
+            var facts = _engine.BuildWorkspace();
+            var v = facts.Velocity;
+            sb.AppendLine($"This week: {v.ThisWeek} commits, last week {v.LastWeek}, streak {v.StreakDays} days.");
+            foreach (var r in facts.Repos)
+                sb.AppendLine($"- {r.Name} on {r.Branch}: {r.UncommittedFiles} uncommitted, {r.UnpushedCommits} unpushed");
+        }
+        catch (Exception) { }
+
+        return sb.ToString();
     }
 
     private string Answer(string q)

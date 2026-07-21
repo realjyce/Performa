@@ -25,6 +25,12 @@ public sealed class Preferences
     public string? GitHubToken { get; set; }
     public string? GoogleClientId { get; set; }
     public string? GoogleClientSecret { get; set; }
+
+    /// <summary>Gemini key for the optional AI enricher. Free tier, user supplied.</summary>
+    public string? GeminiApiKey { get; set; }
+
+    /// <summary>Opt-in: nothing leaves the machine unless this is true.</summary>
+    public bool AiEnabled { get; set; }
 }
 
 public sealed class StateFile

@@ -122,6 +122,20 @@
         </StackPanel>
       </Border>
 
+      <!-- AI -->
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <TextBlock Text="AI (GEMINI)" Classes="label" />
+          <TextBlock Classes="faint" TextWrapping="Wrap"
+                     Text="Adds prose on top of the facts: a readable answer in the Assistant and a short read of each email. The extracted facts never go away, so turning this off loses nothing. When enabled, commit subjects and email text are sent to Google's Gemini API." />
+          <CheckBox IsChecked="{Binding AiEnabled}" Margin="0,4,0,0">
+            <TextBlock Text="Enable AI prose" Foreground="{DynamicResource TextPrimaryBrush}" />
+          </CheckBox>
+          <TextBox Text="{Binding GeminiKey}" PasswordChar="•"
+                   Watermark="Gemini API key (free tier at aistudio.google.com)" />
+        </StackPanel>
+      </Border>
+
       <!-- Output -->
       <Border Classes="card">
         <StackPanel Spacing="14">

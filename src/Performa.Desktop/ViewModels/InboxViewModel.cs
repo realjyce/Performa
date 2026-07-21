@@ -29,6 +29,10 @@ public sealed class MailCard : ObservableObject
     public IReadOnlyList<string> Actions { get; }
     public string FullBody { get; }
     public string? Html { get; }
+
+    private string _aiSummary = "";
+    public string AiSummary { get => _aiSummary; set { SetProperty(ref _aiSummary, value); OnPropertyChanged(nameof(HasAiSummary)); } }
+    public bool HasAiSummary => _aiSummary.Length > 0;
     public bool HasHtml => !string.IsNullOrWhiteSpace(Html);
 
     public bool HasDates => Dates.Count > 0;
@@ -51,6 +55,7 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
     private readonly PerformaEngine _engine;
     private readonly GoogleAuthService _auth = new();
     private readonly GmailService _gmail = new();
+    private readonly GeminiService _gemini = new();
 
     public InboxViewModel(PerformaEngine engine)
     {
@@ -109,6 +114,23 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
     private bool _connected;
     public bool Connected { get => _connected; set => SetProperty(ref _connected, value); }
 
+    /// <summary>
+    /// Adds prose on top of the extraction. The facts already on the card are
+    /// never removed, so a failed or skipped call costs nothing.
+    /// </summary>
+    private async Task SummariseAsync()
+    {
+        var key = _engine.Prefs.GeminiApiKey;
+        if (!_engine.Prefs.AiEnabled || string.IsNullOrWhiteSpace(key)) return;
+
+        foreach (var card in Mail.Take(6))
+        {
+            var prose = await _gemini.SummariseEmailAsync(
+                key, card.From, card.Subject, card.FullBody);
+            if (prose is { Length: > 0 }) card.AiSummary = prose;
+        }
+    }
+
     public async Task LoadAsync()
     {
         Connected = _auth.IsSignedIn;
@@ -137,6 +159,8 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
         _loadedOnce = true;
         Mail.Clear();
         foreach (var m in mail) Mail.Add(new MailCard(m));
+
+        _ = SummariseAsync();
 
         Status = mail.Count == 0
             ? "Nothing new in the last three days."

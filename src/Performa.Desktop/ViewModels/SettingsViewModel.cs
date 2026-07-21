@@ -27,6 +27,8 @@ public sealed class SettingsViewModel : ObservableObject
     {
         _engine = engine;
         _userName = engine.Prefs.UserName ?? "";
+        _geminiKey = engine.Prefs.GeminiApiKey ?? "";
+        _aiEnabled = engine.Prefs.AiEnabled;
         _workspacePath = engine.WorkspacePath ?? "";
         _gitHubToken = engine.Prefs.GitHubToken ?? "";
         _verbosity = engine.Prefs.Verbosity.ToString();
@@ -208,6 +210,12 @@ public sealed class SettingsViewModel : ObservableObject
     private string _userName;
     public string UserName { get => _userName; set => SetProperty(ref _userName, value); }
 
+    private string _geminiKey;
+    public string GeminiKey { get => _geminiKey; set => SetProperty(ref _geminiKey, value); }
+
+    private bool _aiEnabled;
+    public bool AiEnabled { get => _aiEnabled; set => SetProperty(ref _aiEnabled, value); }
+
     private string _workspacePath;
     public string WorkspacePath
     {
@@ -258,6 +266,8 @@ public sealed class SettingsViewModel : ObservableObject
     private void Save()
     {
         _engine.Prefs.UserName = string.IsNullOrWhiteSpace(UserName) ? null : UserName.Trim();
+        _engine.Prefs.GeminiApiKey = string.IsNullOrWhiteSpace(GeminiKey) ? null : GeminiKey.Trim();
+        _engine.Prefs.AiEnabled = AiEnabled;
         _engine.Prefs.GitHubToken = string.IsNullOrWhiteSpace(GitHubToken) ? null : GitHubToken.Trim();
         _engine.Prefs.Verbosity = Enum.Parse<Performa.Prefs.Verbosity>(_verbosity);
         _engine.Prefs.Grouping = Enum.Parse<Performa.Prefs.Grouping>(_grouping);

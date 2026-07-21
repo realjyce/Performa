@@ -199,3 +199,14 @@ One decision or lesson per entry. Newest last.
   "Open as Gmail sent it" writes it to a temp file and opens the browser, so
   the original renders exactly as sent rather than as stripped text. Avalonia
   has no HTML renderer, so the browser is the honest route.
+
+- **AI is additive and opt-in.** GeminiService sits behind the same seam as the
+  deterministic enricher. The Assistant computes real git facts first and only
+  then asks the model, passing those facts as context with an instruction never
+  to invent. Email keeps its full structured extraction and gains an "AI READ"
+  block on top. Every failure path returns null, so the deterministic answer is
+  always what ships. Nothing leaves the machine unless AiEnabled is true.
+
+- **Assistant is now the one premium surface**: violet gradient card above the
+  Settings container, taller, with an "AI arriving soon" pill. The greeting
+  ("Hello, name") shares the quiet container with Settings at small size.

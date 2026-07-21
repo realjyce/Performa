@@ -66,6 +66,12 @@
               TileMode="Tile" Stretch="None"
               DestinationRect="0,0,8,8" />
 
+  <LinearGradientBrush x:Key="AssistantGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+    <GradientStop Offset="0" Color="#6D5BE0" />
+    <GradientStop Offset="0.55" Color="#8158E8" />
+    <GradientStop Offset="1" Color="#A85FD8" />
+  </LinearGradientBrush>
+
   <FontFamily x:Key="MonoFont">Cascadia Code,Consolas,Menlo,monospace</FontFamily>
 
 </ResourceDictionary>

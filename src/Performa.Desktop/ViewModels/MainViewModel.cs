@@ -14,6 +14,7 @@ public sealed class MainViewModel : ObservableObject
     private readonly ReportsViewModel _reports;
     private readonly NavItem _reportsNav;
     private readonly NavItem _looseNav;
+    private NavItem _assistantNav = null!;
 
     private NavItem _selected = null!;
     public NavItem Selected
@@ -48,6 +49,7 @@ public sealed class MainViewModel : ObservableObject
     public string Greeting { get => _greeting; set => SetProperty(ref _greeting, value); }
 
     public RelayCommand SaveNameCommand { get; }
+    public RelayCommand OpenAssistantCommand { get; }
 
     private void SaveName()
     {
@@ -73,6 +75,7 @@ public sealed class MainViewModel : ObservableObject
         Console = new ConsoleViewModel(Engine);
         ToggleConsoleCommand = new RelayCommand(() => IsConsoleOpen = !IsConsoleOpen);
         SaveNameCommand = new RelayCommand(SaveName);
+        OpenAssistantCommand = new RelayCommand(() => Selected = _assistantNav);
         _needsName = string.IsNullOrWhiteSpace(Engine.Prefs.UserName);
         _greeting = Engine.Prefs.UserName ?? "";
 
@@ -97,11 +100,8 @@ public sealed class MainViewModel : ObservableObject
             _looseNav,
             new NavItem("Streams", "IconStreams", streams, dormant: true),
         ];
-        UtilityItems =
-        [
-            new NavItem("Assistant", "IconAssistant", assistant, featured: true),
-            new NavItem("Settings", "IconSettings", settings),
-        ];
+        _assistantNav = new NavItem("Assistant", "IconAssistant", assistant);
+        UtilityItems = [new NavItem("Settings", "IconSettings", settings)];
 
         _selected = NavItems[0];
     }

@@ -60,27 +60,56 @@
                        Classes="muted" TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
           </StackPanel>
 
-          <StackPanel DockPanel.Dock="Bottom">
-            <ListBox Classes="nav" ItemsSource="{Binding UtilityItems}"
-                     SelectedItem="{Binding Selected, Mode=TwoWay}">
-              <ListBox.Styles>
-                <Style Selector="ListBoxItem" x:DataType="vm:NavItem">
-                  <Setter Property="Classes.featured" Value="{Binding Featured}" />
-                </Style>
-              </ListBox.Styles>
-              <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="vm:NavItem">
-                  <StackPanel Orientation="Horizontal">
-                    <Path Data="{Binding Icon}" Fill="{DynamicResource TextMutedBrush}"
-                          Width="17" Height="17" Stretch="Uniform"
-                          VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding Title}" Margin="12,0,0,0"
-                               Foreground="{DynamicResource TextPrimaryBrush}"
-                               FontSize="13.5" VerticalAlignment="Center" />
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
+          <StackPanel DockPanel.Dock="Bottom" Spacing="10">
+
+            <!-- Assistant: the premium surface, sized to hint at what lands here -->
+            <Button Classes="assistantcard" Command="{Binding OpenAssistantCommand}">
+              <StackPanel Spacing="7">
+                <StackPanel Orientation="Horizontal" Spacing="9">
+                  <Path Data="{DynamicResource IconAssistant}" Fill="White"
+                        Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center" />
+                  <TextBlock Text="Assistant" Foreground="White" FontSize="14"
+                             FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="Ask about your work" Foreground="#D9CCFF" FontSize="11" />
+                <Border Background="#33FFFFFF" CornerRadius="20" Padding="8,2"
+                        HorizontalAlignment="Left">
+                  <TextBlock Text="AI arriving soon" Foreground="White" FontSize="9.5"
+                             FontWeight="SemiBold" />
+                </Border>
+              </StackPanel>
+            </Button>
+
+            <!-- Greeting sits with Settings in one quiet container -->
+            <Border Background="{DynamicResource BgCardBrush}"
+                    BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1"
+                    CornerRadius="10" Padding="4,6">
+              <StackPanel>
+                <TextBlock Margin="11,2,11,6" FontSize="11"
+                           Foreground="{DynamicResource TextFaintBrush}"
+                           TextTrimming="CharacterEllipsis"
+                           IsVisible="{Binding Greeting, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                  <Run Text="Hello," />
+                  <Run Text="{Binding Greeting}" Foreground="{DynamicResource TextMutedBrush}" />
+                </TextBlock>
+                <ListBox Classes="nav" ItemsSource="{Binding UtilityItems}"
+                         SelectedItem="{Binding Selected, Mode=TwoWay}">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:NavItem">
+                      <StackPanel Orientation="Horizontal">
+                        <Path Data="{Binding Icon}" Fill="{DynamicResource TextMutedBrush}"
+                              Width="16" Height="16" Stretch="Uniform"
+                              VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Title}" Margin="12,0,0,0"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontSize="13" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+            </Border>
+
           </StackPanel>
 
           <ListBox DockPanel.Dock="Top" Classes="nav" ItemsSource="{Binding NavItems}"

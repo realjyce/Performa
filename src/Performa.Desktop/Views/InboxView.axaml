@@ -37,6 +37,17 @@
                              VerticalAlignment="Top" />
                 </Grid>
 
+                <Border IsVisible="{Binding HasAiSummary}" CornerRadius="8" Padding="12,10"
+                        Background="{DynamicResource AccentSoftBrush}"
+                        BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="AI READ" Classes="label"
+                               Foreground="{DynamicResource AccentBrightBrush}" />
+                    <TextBlock Text="{Binding AiSummary}" Classes="muted" FontSize="12.5"
+                               TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
+
                 <StackPanel Spacing="5" IsVisible="{Binding HasActions}">
                   <TextBlock Text="ASKS" Classes="label" />
                   <ItemsControl ItemsSource="{Binding Actions}">

@@ -200,6 +200,21 @@
     </Style.Animations>
   </Style>
 
+  <!-- Assistant: the one premium surface in the sidebar -->
+  <Style Selector="Button.assistantcard">
+    <Setter Property="Background" Value="{DynamicResource AssistantGradient}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="14,13" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="Button.assistantcard:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AssistantGradient}" />
+    <Setter Property="Opacity" Value="0.9" />
+  </Style>
+
   <!-- Pill / chip -->
   <Style Selector="Border.chip">
     <Setter Property="Background" Value="{DynamicResource BgInsetBrush}" />
