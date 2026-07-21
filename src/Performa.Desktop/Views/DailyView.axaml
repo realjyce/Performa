@@ -63,9 +63,13 @@
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Grid.Column="0" Text="SCHEDULE" Classes="label"
                            VerticalAlignment="Center" />
-                <Button Grid.Column="1" Classes="ghost" Content="Refresh" FontSize="11"
-                        Padding="9,4" IsVisible="{Binding GoogleConnected}"
-                        Command="{Binding RefreshCalendarCommand}" />
+                <Button Grid.Column="1" Classes="spin" Classes.busy="{Binding IsRefreshing}"
+                        IsVisible="{Binding GoogleConnected}"
+                        ToolTip.Tip="Refresh (auto every 5 minutes)"
+                        Command="{Binding RefreshCalendarCommand}">
+                  <Path Data="{DynamicResource IconRefresh}" Width="14" Height="14"
+                        Stretch="Uniform" Fill="{DynamicResource TextMutedBrush}" />
+                </Button>
               </Grid>
 
               <TextBlock Text="{Binding CalendarStatus}" Classes="faint" TextWrapping="Wrap"

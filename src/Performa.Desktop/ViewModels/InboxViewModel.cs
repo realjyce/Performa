@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Threading;
 using Performa.Desktop.Infrastructure;
 using Performa.Desktop.Services;
 
@@ -16,6 +17,7 @@ public sealed class MailCard : ObservableObject
         Amounts = d.Amounts;
         Actions = d.Actions;
         FullBody = d.FullBody;
+        Html = d.Html;
     }
 
     public string From { get; }
@@ -26,6 +28,8 @@ public sealed class MailCard : ObservableObject
     public IReadOnlyList<string> Amounts { get; }
     public IReadOnlyList<string> Actions { get; }
     public string FullBody { get; }
+    public string? Html { get; }
+    public bool HasHtml => !string.IsNullOrWhiteSpace(Html);
 
     public bool HasDates => Dates.Count > 0;
     public bool HasLinks => Links.Count > 0;
@@ -53,11 +57,18 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
         _engine = engine;
         RefreshCommand = new RelayCommand(() => _ = LoadAsync());
         ToggleCommand = new RelayCommand<MailCard>(c => { if (c is not null) c.Expanded = !c.Expanded; });
+        OpenOriginalCommand = new RelayCommand<MailCard>(OpenOriginal);
         engine.GoogleSignedIn += () => _ = LoadAsync();
+
+        _timer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
+        _timer.Tick += (_, _) => _ = LoadAsync();
+        _timer.Start();
+
         _ = LoadAsync();
     }
 
     private bool _loadedOnce;
+    private readonly DispatcherTimer _timer;
 
     /// <summary>Opening the page re-checks sign-in so mail fills itself in.</summary>
     public void OnActivated()
@@ -68,6 +79,26 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
     public ObservableCollection<MailCard> Mail { get; } = [];
     public RelayCommand RefreshCommand { get; }
     public RelayCommand<MailCard> ToggleCommand { get; }
+    public RelayCommand<MailCard> OpenOriginalCommand { get; }
+
+    /// <summary>
+    /// Writes the message's own HTML to a temp file and opens it, so the
+    /// original renders exactly as Gmail served it rather than as stripped text.
+    /// </summary>
+    private static void OpenOriginal(MailCard? card)
+    {
+        if (card?.Html is not { Length: > 0 } html) return;
+        try
+        {
+            var path = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"performa-mail-{Guid.NewGuid():N}.html");
+            System.IO.File.WriteAllText(path, html);
+            System.Diagnostics.Process.Start(
+                new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
+        }
+        catch (System.IO.IOException) { }
+        catch (System.ComponentModel.Win32Exception) { }
+    }
 
     private bool _loading;
     public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }

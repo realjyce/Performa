@@ -4,11 +4,14 @@ using Performa.Desktop.Infrastructure;
 
 namespace Performa.Desktop.ViewModels;
 
-public sealed class NavItem(string title, string iconKey, ObservableObject page, bool dormant = false)
+public sealed class NavItem(
+    string title, string iconKey, ObservableObject page,
+    bool dormant = false, bool featured = false)
 {
     public string Title { get; } = title;
     public ObservableObject Page { get; } = page;
     public bool Dormant { get; } = dormant;
+    public bool Featured { get; } = featured;
 
     public Geometry? Icon { get; } = ResolveIcon(iconKey);
 

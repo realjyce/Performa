@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Threading;
 using Performa.Desktop.Infrastructure;
 using Performa.Desktop.Services;
 
@@ -58,6 +59,7 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
     private readonly GoogleCalendarService _calendar = new();
     private bool _loaded;
     private bool _calendarLoaded;
+    private readonly DispatcherTimer _timer;
 
     public DailyViewModel(PerformaEngine engine)
     {
@@ -72,6 +74,12 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         _loaded = true;
 
         engine.GoogleSignedIn += () => _ = LoadCalendarAsync(force: true);
+
+        // Calendars change slowly; five minutes keeps it fresh without
+        // hammering the API or the battery.
+        _timer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
+        _timer.Tick += (_, _) => { _ = LoadTimelineAsync(); _ = LoadCalendarAsync(force: true); };
+        _timer.Start();
 
         _ = LoadTimelineAsync();
         _ = LoadCalendarAsync(force: false);
@@ -95,6 +103,9 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
 
     private string _timelineEmpty = "";
     public string TimelineEmpty { get => _timelineEmpty; set => SetProperty(ref _timelineEmpty, value); }
+
+    private bool _isRefreshing;
+    public bool IsRefreshing { get => _isRefreshing; set => SetProperty(ref _isRefreshing, value); }
 
     private string _calendarStatus = "";
     public string CalendarStatus { get => _calendarStatus; set => SetProperty(ref _calendarStatus, value); }
@@ -159,12 +170,13 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         var creds = GoogleCredentialStore.Load(_engine.Prefs);
         if (creds is null) { CalendarStatus = "No Google client configured."; return; }
 
-        CalendarStatus = "Reading your calendar…";
+        IsRefreshing = true;
         var token = await _auth.GetAccessTokenAsync(creds.ClientId, creds.ClientSecret);
         if (token is null)
         {
             CalendarStatus = "Google sign-in expired. Reconnect in Settings.";
             GoogleConnected = false;
+            IsRefreshing = false;
             return;
         }
 
@@ -173,6 +185,7 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         foreach (var e in events) Events.Add(new EventCard(e));
 
         _calendarLoaded = true;
+        IsRefreshing = false;
         CalendarStatus = events.Count == 0
             ? "Nothing scheduled in the next seven days."
             : "";

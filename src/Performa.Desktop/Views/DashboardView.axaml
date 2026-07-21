@@ -19,8 +19,12 @@
             <Run Text="repositories" />
           </TextBlock>
         </StackPanel>
-        <Button Grid.Column="1" Classes="ghost" Content="Rescan" VerticalAlignment="Center"
-                Command="{Binding RescanCommand}" IsVisible="{Binding HasWorkspace}" />
+        <Button Grid.Column="1" Classes="spin" Classes.busy="{Binding IsLoading}"
+                VerticalAlignment="Center" ToolTip.Tip="Rescan (auto every 3 minutes)"
+                Command="{Binding RescanCommand}" IsVisible="{Binding HasWorkspace}">
+          <Path Data="{DynamicResource IconRefresh}" Fill="{DynamicResource TextMutedBrush}"
+                Width="16" Height="16" Stretch="Uniform" />
+        </Button>
       </Grid>
 
       <!-- No workspace state -->
@@ -109,12 +113,12 @@
         <ItemsControl ItemsSource="{Binding Repos}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-              <WrapPanel Orientation="Horizontal" />
+              <UniformGrid Columns="3" />
             </ItemsPanelTemplate>
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:RepoCard">
-              <Border Classes="card hover" Width="330" Margin="0,0,14,14">
+              <Border Classes="card hover" Margin="0,0,14,14">
                 <StackPanel Spacing="12">
                   <Grid ColumnDefinitions="*,Auto">
                     <TextBlock Grid.Column="0" Text="{Binding Name}" Classes="h2"
@@ -131,7 +135,7 @@
                           <Ellipse Width="4" Height="4" VerticalAlignment="Center"
                                    Fill="{DynamicResource AccentBrush}" />
                           <TextBlock Text="{Binding}" Classes="muted" FontSize="12.5"
-                                     TextTrimming="CharacterEllipsis" MaxWidth="270" />
+                                     TextTrimming="CharacterEllipsis" />
                         </StackPanel>
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>

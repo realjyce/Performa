@@ -26,6 +26,7 @@ public sealed class SettingsViewModel : ObservableObject
     public SettingsViewModel(PerformaEngine engine)
     {
         _engine = engine;
+        _userName = engine.Prefs.UserName ?? "";
         _workspacePath = engine.WorkspacePath ?? "";
         _gitHubToken = engine.Prefs.GitHubToken ?? "";
         _verbosity = engine.Prefs.Verbosity.ToString();
@@ -204,6 +205,9 @@ public sealed class SettingsViewModel : ObservableObject
         if (result == "Cloned.") row.IsLocal = true;
     }
 
+    private string _userName;
+    public string UserName { get => _userName; set => SetProperty(ref _userName, value); }
+
     private string _workspacePath;
     public string WorkspacePath
     {
@@ -253,6 +257,7 @@ public sealed class SettingsViewModel : ObservableObject
 
     private void Save()
     {
+        _engine.Prefs.UserName = string.IsNullOrWhiteSpace(UserName) ? null : UserName.Trim();
         _engine.Prefs.GitHubToken = string.IsNullOrWhiteSpace(GitHubToken) ? null : GitHubToken.Trim();
         _engine.Prefs.Verbosity = Enum.Parse<Performa.Prefs.Verbosity>(_verbosity);
         _engine.Prefs.Grouping = Enum.Parse<Performa.Prefs.Grouping>(_grouping);

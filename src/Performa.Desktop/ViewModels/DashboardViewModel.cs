@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Threading;
 using Performa.Desktop.Infrastructure;
 using Performa.Desktop.Services;
 using Performa.Reports;
@@ -53,6 +54,7 @@ public sealed class DashboardViewModel : ObservableObject
     private readonly PerformaEngine _engine;
     private readonly GitHubService _github = new();
     private readonly Action<string> _onQuickAction;
+    private readonly DispatcherTimer _timer;
 
     public DashboardViewModel(PerformaEngine engine, Action<string> onQuickAction)
     {
@@ -62,6 +64,13 @@ public sealed class DashboardViewModel : ObservableObject
         RescanCommand = new RelayCommand(() => _ = LoadAsync());
         DetectCommand = new RelayCommand(Detect);
         engine.WorkspaceChanged += () => _ = LoadAsync();
+
+        // Local git is cheap, but each scan spawns processes; three minutes
+        // keeps the dashboard live without churn.
+        _timer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(3) };
+        _timer.Tick += (_, _) => _ = LoadAsync();
+        _timer.Start();
+
         _ = LoadAsync();
     }
 

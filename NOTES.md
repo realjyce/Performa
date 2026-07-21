@@ -186,3 +186,16 @@ One decision or lesson per entry. Newest last.
   IActivatablePage.OnActivated call fired when the sidebar selection changes.
   So signing in mid-session fills Daily and Inbox without a restart, and
   opening either page re-checks the session.
+
+- **Auto-refresh intervals, chosen deliberately:** dashboard git rescan every
+  3 minutes (local, but each scan spawns processes), Google calendar and Gmail
+  every 5 minutes (respects API quota and battery). Refresh controls are
+  circular arrows that spin only while a fetch is actually running.
+
+- **Username is asked, never inferred.** A first-run overlay collects it and it
+  is editable in Settings, so nothing is silently taken from a Google profile.
+
+- **Email fidelity.** The digest keeps the message's own text/html part, and
+  "Open as Gmail sent it" writes it to a temp file and opens the browser, so
+  the original renders exactly as sent rather than as stripped text. Avalonia
+  has no HTML renderer, so the browser is the honest route.

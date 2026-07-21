@@ -12,6 +12,15 @@
         <TextBlock Text="Where your repos come from and how reports read." Classes="muted" />
       </StackPanel>
 
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <TextBlock Text="YOUR NAME" Classes="label" />
+          <TextBlock Classes="faint" TextWrapping="Wrap"
+                     Text="What Performa calls you. Set here rather than taken from a Google profile." />
+          <TextBox Text="{Binding UserName}" Watermark="e.g. Jason" Margin="0,4,0,0" />
+        </StackPanel>
+      </Border>
+
       <!-- Local repositories -->
       <Border Classes="card">
         <StackPanel Spacing="10">

@@ -19,7 +19,8 @@ public sealed record EmailDigest(
     IReadOnlyList<string> Links,
     IReadOnlyList<string> Amounts,
     IReadOnlyList<string> Actions,
-    string FullBody);
+    string FullBody,
+    string? Html);
 
 public sealed partial class GmailService
 {
@@ -73,6 +74,7 @@ public sealed partial class GmailService
         }
 
         var body = ExtractBody(payload);
+        var html = FindPart(payload, "text/html");
         return new EmailDigest(
             From: CleanSender(from),
             Subject: subject,
@@ -81,7 +83,8 @@ public sealed partial class GmailService
             Links: Distinct(LinkRegex().Matches(body).Select(m => m.Value.TrimEnd('.', ',', ')'))),
             Amounts: Distinct(AmountRegex().Matches(body).Select(m => m.Value)),
             Actions: ExtractActions(body),
-            FullBody: body.Trim());
+            FullBody: body.Trim(),
+            Html: html);
     }
 
     private static string CleanSender(string from)

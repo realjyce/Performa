@@ -13,8 +13,12 @@
           <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap" MaxWidth="700"
                      HorizontalAlignment="Left" />
         </StackPanel>
-        <Button Grid.Column="1" Classes="ghost" Content="Refresh" VerticalAlignment="Center"
-                Command="{Binding RefreshCommand}" />
+        <Button Grid.Column="1" Classes="spin" Classes.busy="{Binding Loading}"
+                VerticalAlignment="Center" ToolTip.Tip="Refresh (auto every 5 minutes)"
+                Command="{Binding RefreshCommand}">
+          <Path Data="{DynamicResource IconRefresh}" Width="16" Height="16"
+                Stretch="Uniform" Fill="{DynamicResource TextMutedBrush}" />
+        </Button>
       </Grid>
 
       <ItemsControl ItemsSource="{Binding Mail}">
@@ -95,10 +99,15 @@
                   </ItemsControl>
                 </StackPanel>
 
-                <Button Classes="ghost" Content="{Binding ToggleLabel}"
-                        HorizontalAlignment="Left" FontSize="12"
-                        Command="{Binding $parent[ItemsControl].((vm:InboxViewModel)DataContext).ToggleCommand}"
-                        CommandParameter="{Binding}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Classes="ghost" Content="{Binding ToggleLabel}" FontSize="12"
+                          Command="{Binding $parent[ItemsControl].((vm:InboxViewModel)DataContext).ToggleCommand}"
+                          CommandParameter="{Binding}" />
+                  <Button Classes="ghost" Content="Open as Gmail sent it" FontSize="12"
+                          IsVisible="{Binding HasHtml}"
+                          Command="{Binding $parent[ItemsControl].((vm:InboxViewModel)DataContext).OpenOriginalCommand}"
+                          CommandParameter="{Binding}" />
+                </StackPanel>
 
                 <Border IsVisible="{Binding Expanded}" Background="{DynamicResource BgInsetBrush}"
                         CornerRadius="8" Padding="14" MaxHeight="320">

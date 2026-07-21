@@ -10,6 +10,9 @@ public enum Tone { Plain, Friendly }
 public sealed class Preferences
 {
     public bool Initialised { get; set; }
+
+    /// <summary>What to call the user. Asked once, never inferred from an SSO profile.</summary>
+    public string? UserName { get; set; }
     public OutputFormat Format { get; set; } = OutputFormat.Markdown;
     public Verbosity Verbosity { get; set; } = Verbosity.Normal;
     public Grouping Grouping { get; set; } = Grouping.Area;

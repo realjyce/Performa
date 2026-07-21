@@ -37,6 +37,28 @@ public sealed class MainViewModel : ObservableObject
 
     public ConsoleViewModel Console { get; }
 
+    // Asked once on first run so nothing is silently inherited from an SSO profile.
+    private bool _needsName;
+    public bool NeedsName { get => _needsName; set => SetProperty(ref _needsName, value); }
+
+    private string _nameEntry = "";
+    public string NameEntry { get => _nameEntry; set => SetProperty(ref _nameEntry, value); }
+
+    private string _greeting = "";
+    public string Greeting { get => _greeting; set => SetProperty(ref _greeting, value); }
+
+    public RelayCommand SaveNameCommand { get; }
+
+    private void SaveName()
+    {
+        var name = NameEntry.Trim();
+        if (name.Length == 0) return;
+        Engine.Prefs.UserName = name;
+        Engine.SavePrefs();
+        NeedsName = false;
+        Greeting = name;
+    }
+
     private bool _isConsoleOpen;
     public bool IsConsoleOpen
     {
@@ -50,6 +72,9 @@ public sealed class MainViewModel : ObservableObject
     {
         Console = new ConsoleViewModel(Engine);
         ToggleConsoleCommand = new RelayCommand(() => IsConsoleOpen = !IsConsoleOpen);
+        SaveNameCommand = new RelayCommand(SaveName);
+        _needsName = string.IsNullOrWhiteSpace(Engine.Prefs.UserName);
+        _greeting = Engine.Prefs.UserName ?? "";
 
         var dashboard = new DashboardViewModel(Engine, HandleQuickAction);
         var daily = new DailyViewModel(Engine);
@@ -70,11 +95,11 @@ public sealed class MainViewModel : ObservableObject
             new NavItem("Inbox", "IconStreams", inbox),
             _reportsNav,
             _looseNav,
-            new NavItem("Assistant", "IconAssistant", assistant),
             new NavItem("Streams", "IconStreams", streams, dormant: true),
         ];
         UtilityItems =
         [
+            new NavItem("Assistant", "IconAssistant", assistant, featured: true),
             new NavItem("Settings", "IconSettings", settings),
         ];
 
