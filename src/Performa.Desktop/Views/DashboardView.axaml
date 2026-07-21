@@ -70,6 +70,31 @@
         </Border>
       </Grid>
 
+      <!-- Quick actions -->
+      <StackPanel Spacing="12" IsVisible="{Binding HasWorkspace}">
+        <TextBlock Text="QUICK ACTIONS" Classes="label" />
+        <ItemsControl ItemsSource="{Binding QuickActions}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Columns="4" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:QuickAction">
+              <Button Classes="qcard" Margin="0,0,12,0"
+                      Command="{Binding $parent[ItemsControl].((vm:DashboardViewModel)DataContext).QuickCommand}"
+                      CommandParameter="{Binding Command}">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextPrimaryBrush}"
+                             FontSize="14.5" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding Blurb}" Classes="faint" TextWrapping="Wrap" />
+                </StackPanel>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
       <!-- Repo cards -->
       <StackPanel Spacing="12" IsVisible="{Binding HasWorkspace}">
         <TextBlock Text="REPOSITORIES" Classes="label" />
@@ -114,6 +139,14 @@
                       </Ellipse.Fill>
                     </Ellipse>
                     <TextBlock Text="{Binding Status}" Classes="faint" />
+                  </StackPanel>
+
+                  <StackPanel Orientation="Horizontal" Spacing="7"
+                              IsVisible="{Binding HasRemote}">
+                    <Path Data="{DynamicResource IconStreams}" Width="12" Height="12"
+                          Stretch="Uniform" VerticalAlignment="Center"
+                          Fill="{DynamicResource TextFaintBrush}" />
+                    <TextBlock Text="{Binding RemoteText}" Classes="mono" FontSize="11" />
                   </StackPanel>
                 </StackPanel>
               </Border>

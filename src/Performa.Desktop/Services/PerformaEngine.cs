@@ -72,6 +72,16 @@ public sealed class PerformaEngine
     public string CurrentBranch(string repoPath)
         => Repo(repoPath).Git.TryRun("rev-parse", "--abbrev-ref", "HEAD")?.Trim() ?? "?";
 
+    /// <summary>Parses owner/repo from the origin remote, or null if not a GitHub repo.</summary>
+    public (string Owner, string Name)? RemoteSlug(string repoPath)
+    {
+        var url = Repo(repoPath).Git.TryRun("remote", "get-url", "origin")?.Trim();
+        if (url is null) return null;
+        var m = System.Text.RegularExpressions.Regex.Match(
+            url, @"github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?/?$");
+        return m.Success ? (m.Groups[1].Value, m.Groups[2].Value) : null;
+    }
+
     public List<(string Repo, DateTimeOffset When, string Subject)> TodayCommits()
     {
         var midnight = new DateTimeOffset(DateTimeOffset.Now.Date, DateTimeOffset.Now.Offset);

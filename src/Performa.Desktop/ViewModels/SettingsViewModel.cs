@@ -12,6 +12,7 @@ public sealed class SettingsViewModel : ObservableObject
     {
         _engine = engine;
         _workspacePath = engine.WorkspacePath ?? "";
+        _gitHubToken = engine.Prefs.GitHubToken ?? "";
         _verbosity = engine.Prefs.Verbosity.ToString();
         _grouping = engine.Prefs.Grouping.ToString();
         _tone = engine.Prefs.Tone.ToString();
@@ -23,6 +24,13 @@ public sealed class SettingsViewModel : ObservableObject
     {
         get => _workspacePath;
         set => SetProperty(ref _workspacePath, value);
+    }
+
+    private string _gitHubToken;
+    public string GitHubToken
+    {
+        get => _gitHubToken;
+        set => SetProperty(ref _gitHubToken, value);
     }
 
     public string[] Verbosities { get; } = ["Terse", "Normal", "Detailed"];
@@ -47,6 +55,7 @@ public sealed class SettingsViewModel : ObservableObject
     {
         if (Directory.Exists(WorkspacePath))
             _engine.Prefs.WorkspacePath = WorkspacePath;
+        _engine.Prefs.GitHubToken = string.IsNullOrWhiteSpace(GitHubToken) ? null : GitHubToken.Trim();
         _engine.Prefs.Verbosity = Enum.Parse<Performa.Prefs.Verbosity>(_verbosity);
         _engine.Prefs.Grouping = Enum.Parse<Performa.Prefs.Grouping>(_grouping);
         _engine.Prefs.Tone = Enum.Parse<Performa.Prefs.Tone>(_tone);

@@ -22,6 +22,16 @@
       </Border>
 
       <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="GITHUB TOKEN (OPTIONAL)" Classes="label" />
+          <TextBlock Classes="faint" TextWrapping="Wrap"
+                     Text="For remote data on the dashboard. Public repos work without one; a token raises the rate limit and reaches private repos. Generate a free token at github.com/settings/tokens (read-only). Stored locally, never shared." />
+          <TextBox Text="{Binding GitHubToken}" PasswordChar="•"
+                   Watermark="ghp_… (leave blank for public only)" Margin="0,4,0,0" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
         <StackPanel Spacing="14">
           <TextBlock Text="OUTPUT" Classes="label" />
           <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">

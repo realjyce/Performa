@@ -25,6 +25,10 @@ vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(pageIndex);
 if (args.Length > 4 && vm.Selected.Page is AssistantViewModel assistant)
     assistant.AskSuggestionCommand.Execute(args[4]);
 
+// Optional: fire a dashboard quick action (e.g. "quick:standup") to test navigation.
+if (args.Length > 4 && args[4].StartsWith("quick:") && vm.Selected.Page is DashboardViewModel dash)
+    dash.QuickCommand.Execute(args[4]["quick:".Length..]);
+
 var window = new MainWindow
 {
     DataContext = vm,
@@ -42,5 +46,7 @@ while (DateTime.Now < deadline)
 }
 
 var frame = window.CaptureRenderedFrame();
-frame?.Save(outFile);
+if (frame is not null)
+    using (var fs = File.Create(outFile))
+        frame.Save(fs);
 Console.WriteLine($"saved {outFile} (page {pageIndex}, {width}x{height})");

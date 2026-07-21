@@ -103,6 +103,22 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
   </Style>
 
+  <!-- Quick-action card button -->
+  <Style Selector="Button.qcard">
+    <Setter Property="Background" Value="{DynamicResource BgCardBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderSoftBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="16" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="Button.qcard:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource BgCardHoverBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+  </Style>
+
   <!-- Pill / chip -->
   <Style Selector="Border.chip">
     <Setter Property="Background" Value="{DynamicResource BgInsetBrush}" />

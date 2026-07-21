@@ -16,6 +16,10 @@ public sealed class Preferences
     public Tone Tone { get; set; } = Tone.Plain;
     public int RejectStreak { get; set; }
     public string? WorkspacePath { get; set; }
+
+    // Stored only. The CLI never reads it; the desktop uses it for the optional
+    // GitHub remote-data calls. Core makes no network requests.
+    public string? GitHubToken { get; set; }
 }
 
 public sealed class StateFile

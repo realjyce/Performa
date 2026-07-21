@@ -89,3 +89,15 @@ One decision or lesson per entry. Newest last.
   methods moved). Not worth chasing for v1 — report text sits in a
   SelectableTextBlock, so native Ctrl+C works. Revisit if a Copy button earns
   its place.
+
+- **GitHub remote data lives in Desktop only.** GitHubService (HttpClient to
+  api.github.com) is in Performa.Desktop, never Core, so the CLI keeps its
+  no-network guarantee. Works unauthenticated for public repos (60/hr); an
+  optional token in Settings raises the limit and reaches private repos. Repos
+  with no GitHub origin simply show no remote line. Claude API stays a dormant
+  seam per the brief; only a stored token field exists, no model calls.
+
+- **Dashboard quick actions navigate, they don't duplicate.** The four cards
+  (standup/changelog/recap/loose) call back into MainViewModel, which selects
+  the right page and presets it, rather than re-implementing report logic on
+  the dashboard.

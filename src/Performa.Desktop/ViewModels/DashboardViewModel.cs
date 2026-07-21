@@ -5,21 +5,32 @@ using Performa.Reports;
 
 namespace Performa.Desktop.ViewModels;
 
-public sealed class RepoCard(RepoSnapshot snap)
+public sealed class RepoCard : ObservableObject
 {
-    public string Name { get; } = snap.Name;
-    public string Branch { get; } = snap.Branch;
-
-    public IReadOnlyList<string> Recent { get; } =
-        snap.Recent.Count == 0
+    public RepoCard(RepoSnapshot snap)
+    {
+        Name = snap.Name;
+        Path = snap.Path;
+        Branch = snap.Branch;
+        Recent = snap.Recent.Count == 0
             ? ["No commits today"]
             : [.. snap.Recent.Select(c => Classification.CleanSubject(c.Subject))];
+        Status = BuildStatus(snap);
+        IsClean = snap.UncommittedFiles == 0 && snap.UnpushedCommits == 0;
+    }
 
-    public bool IsQuiet { get; } = snap.Recent.Count == 0;
+    public string Name { get; }
+    public string Path { get; }
+    public string Branch { get; }
+    public IReadOnlyList<string> Recent { get; }
+    public string Status { get; }
+    public bool IsClean { get; }
 
-    public string Status { get; } = BuildStatus(snap);
-    public bool HasStatus { get; } = snap.UncommittedFiles > 0 || snap.UnpushedCommits > 0;
-    public bool IsClean { get; } = snap.UncommittedFiles == 0 && snap.UnpushedCommits == 0;
+    private string _remoteText = "";
+    public string RemoteText { get => _remoteText; set => SetProperty(ref _remoteText, value); }
+
+    private bool _hasRemote;
+    public bool HasRemote { get => _hasRemote; set => SetProperty(ref _hasRemote, value); }
 
     private static string BuildStatus(RepoSnapshot s)
     {
@@ -30,17 +41,38 @@ public sealed class RepoCard(RepoSnapshot snap)
     }
 }
 
+public sealed class QuickAction(string title, string blurb, string command)
+{
+    public string Title { get; } = title;
+    public string Blurb { get; } = blurb;
+    public string Command { get; } = command;
+}
+
 public sealed class DashboardViewModel : ObservableObject
 {
     private readonly PerformaEngine _engine;
+    private readonly GitHubService _github = new();
+    private readonly Action<string> _onQuickAction;
 
-    public DashboardViewModel(PerformaEngine engine)
+    public DashboardViewModel(PerformaEngine engine, Action<string> onQuickAction)
     {
         _engine = engine;
+        _onQuickAction = onQuickAction;
+        QuickCommand = new RelayCommand<string>(c => { if (c is not null) _onQuickAction(c); });
         _ = LoadAsync();
     }
 
     public ObservableCollection<RepoCard> Repos { get; } = [];
+
+    public QuickAction[] QuickActions { get; } =
+    [
+        new("Standup", "What you did, grouped", "standup"),
+        new("Changelog", "Release notes since last tag", "changelog"),
+        new("Recap", "Branch summary & why", "summary"),
+        new("Loose ends", "What's still open", "loose"),
+    ];
+
+    public RelayCommand<string> QuickCommand { get; }
 
     private bool _isLoading = true;
     public bool IsLoading { get => _isLoading; set => SetProperty(ref _isLoading, value); }
@@ -97,5 +129,32 @@ public sealed class DashboardViewModel : ObservableObject
         };
 
         IsLoading = false;
+        _ = LoadRemotesAsync();
+    }
+
+    private async Task LoadRemotesAsync()
+    {
+        var token = _engine.Prefs.GitHubToken;
+        foreach (var card in Repos)
+        {
+            var slug = _engine.RemoteSlug(card.Path);
+            if (slug is not { } s) continue;
+            var info = await _github.GetRepoAsync(s.Owner, s.Name, token);
+            if (info is null) continue;
+
+            var bits = new List<string> { $"★ {info.Stars}" };
+            if (info.OpenIssues > 0) bits.Add($"{info.OpenIssues} open");
+            if (info.PushedAt is { } pushed) bits.Add($"pushed {Ago(pushed)}");
+            card.RemoteText = string.Join("  ·  ", bits);
+            card.HasRemote = true;
+        }
+    }
+
+    private static string Ago(DateTimeOffset when)
+    {
+        var span = DateTimeOffset.Now - when;
+        if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes}m ago";
+        if (span.TotalHours < 24) return $"{(int)span.TotalHours}h ago";
+        return $"{(int)span.TotalDays}d ago";
     }
 }

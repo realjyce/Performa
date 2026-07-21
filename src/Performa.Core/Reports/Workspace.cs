@@ -4,6 +4,7 @@ namespace Performa.Reports;
 
 public sealed record RepoSnapshot(
     string Name,
+    string Path,
     string Branch,
     IReadOnlyList<Commit> Recent,
     int UncommittedFiles,
@@ -45,6 +46,7 @@ public static class WorkspaceBuilder
             var ahead = repo.Branches().FirstOrDefault(b => b.Name == branch)?.Ahead ?? 0;
             snapshots.Add(new RepoSnapshot(
                 repo.RepoName,
+                dir,
                 branch,
                 [.. repo.CommitsSince(since, onlyMine: true).Take(2)],
                 repo.Working().Total,
