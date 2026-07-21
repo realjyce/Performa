@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.ReportsView"
+             x:DataType="vm:ReportsViewModel">
+
+  <Grid Margin="34,26,34,34" RowDefinitions="Auto,Auto,*">
+
+    <StackPanel Grid.Row="0" Spacing="3">
+      <TextBlock Text="Reports" Classes="h1" />
+      <TextBlock Text="Generated straight from your commits. Copy them anywhere." Classes="muted" />
+    </StackPanel>
+
+    <!-- Controls row -->
+    <Grid Grid.Row="1" Margin="0,20,0,16" ColumnDefinitions="Auto,Auto,*,Auto"
+          ColumnSpacing="10">
+      <ComboBox Grid.Column="0" Width="180" ItemsSource="{Binding Repos}"
+                SelectedItem="{Binding SelectedRepo}" PlaceholderText="Repository" />
+      <ComboBox Grid.Column="1" Width="150" ItemsSource="{Binding Kinds}"
+                SelectedItem="{Binding SelectedKind}" />
+      <Button Grid.Column="3" Classes="accent" Content="Generate"
+              Command="{Binding GenerateCommand}" />
+    </Grid>
+
+    <!-- Output -->
+    <Border Grid.Row="2" Classes="card" Padding="0">
+      <Grid>
+        <ScrollViewer Padding="22" IsVisible="{Binding HasOutput}">
+          <SelectableTextBlock Text="{Binding Output}" FontFamily="{DynamicResource MonoFont}"
+                               FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}"
+                               TextWrapping="Wrap" LineHeight="21" />
+        </ScrollViewer>
+        <TextBlock Text="Generating…" Classes="muted" IsVisible="{Binding IsGenerating}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Grid>
+    </Border>
+
+  </Grid>
+</UserControl>

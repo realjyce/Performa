@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.StreamsView"
+             x:DataType="vm:StreamsViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="34,26,34,34" Spacing="20">
+
+      <StackPanel Spacing="3">
+        <TextBlock Text="Streams" Classes="h1" />
+        <TextBlock Text="Performa reads one stream today. The rest plug into the same seam later." Classes="muted" />
+      </StackPanel>
+
+      <TextBlock Text="ACTIVE" Classes="label" />
+      <ItemsControl ItemsSource="{Binding Live}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:StreamTile">
+            <Border Classes="card" Margin="0,0,0,10"
+                    BorderBrush="{DynamicResource AccentBrush}">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="5">
+                  <TextBlock Text="{Binding Name}" Classes="h2" />
+                  <TextBlock Text="{Binding Blurb}" Classes="muted" />
+                </StackPanel>
+                <Border Grid.Column="1" Classes="chip" VerticalAlignment="Top"
+                        Background="{DynamicResource AccentSoftBrush}"
+                        BorderBrush="{DynamicResource AccentBrush}">
+                  <TextBlock Text="{Binding Status}"
+                             Foreground="{DynamicResource AccentBrightBrush}"
+                             FontSize="11" FontWeight="SemiBold" />
+                </Border>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <TextBlock Text="COMING LATER" Classes="label" Margin="0,6,0,0" />
+      <ItemsControl ItemsSource="{Binding Dormant}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:StreamTile">
+            <Border Classes="card" Width="340" Margin="0,0,14,14" Opacity="0.62">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="5">
+                  <TextBlock Text="{Binding Name}" Classes="h2" />
+                  <TextBlock Text="{Binding Blurb}" Classes="muted" TextWrapping="Wrap"
+                             MaxWidth="250" />
+                </StackPanel>
+                <Path Grid.Column="1" Data="{DynamicResource IconLock}"
+                      Fill="{DynamicResource TextFaintBrush}" Width="16" Height="16"
+                      Stretch="Uniform" VerticalAlignment="Top" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

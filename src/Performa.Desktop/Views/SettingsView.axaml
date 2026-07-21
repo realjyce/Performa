@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="34,26,34,34" Spacing="20" MaxWidth="560" HorizontalAlignment="Left">
+
+      <StackPanel Spacing="3">
+        <TextBlock Text="Settings" Classes="h1" />
+        <TextBlock Text="Where your repos live and how reports read." Classes="muted" />
+      </StackPanel>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="WORKSPACE FOLDER" Classes="label" />
+          <TextBlock Text="Performa scans this folder for git repositories." Classes="faint" />
+          <TextBox Text="{Binding WorkspacePath}" Watermark="C:\path\to\your\repos"
+                   Margin="0,4,0,0" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="14">
+          <TextBlock Text="OUTPUT" Classes="label" />
+          <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Verbosity" Classes="muted"
+                       VerticalAlignment="Center" />
+            <ComboBox Grid.Row="0" Grid.Column="1" Width="200" HorizontalAlignment="Left"
+                      ItemsSource="{Binding Verbosities}" SelectedItem="{Binding Verbosity}" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Grouping" Classes="muted"
+                       VerticalAlignment="Center" />
+            <ComboBox Grid.Row="1" Grid.Column="1" Width="200" HorizontalAlignment="Left"
+                      ItemsSource="{Binding Groupings}" SelectedItem="{Binding Grouping}" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Tone" Classes="muted"
+                       VerticalAlignment="Center" />
+            <ComboBox Grid.Row="2" Grid.Column="1" Width="200" HorizontalAlignment="Left"
+                      ItemsSource="{Binding Tones}" SelectedItem="{Binding Tone}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <StackPanel Orientation="Horizontal" Spacing="14">
+        <Button Classes="accent" Content="Save preferences" Command="{Binding SaveCommand}" />
+        <TextBlock Text="{Binding SavedNote}" Classes="muted" VerticalAlignment="Center" />
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

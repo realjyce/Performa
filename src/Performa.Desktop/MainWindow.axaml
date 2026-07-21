@@ -1,9 +1,106 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
         x:Class="Performa.Desktop.MainWindow"
-        Title="Performa.Desktop">
-    Welcome to Avalonia!
+        x:DataType="vm:MainViewModel"
+        Title="Performa"
+        Width="1200" Height="780"
+        MinWidth="920" MinHeight="620"
+        Background="{DynamicResource BgBaseBrush}"
+        SystemDecorations="None"
+        CanResize="True">
+
+  <Grid RowDefinitions="36,*">
+
+    <!-- Title bar -->
+    <Grid Grid.Row="0" Name="TitleBar" Background="{DynamicResource BgBaseBrush}"
+          ColumnDefinitions="*,Auto">
+      <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
+                  Margin="14,0">
+        <Border Width="14" Height="14" CornerRadius="4"
+                Background="{DynamicResource AccentGradient}" />
+        <TextBlock Text="Performa" Foreground="{DynamicResource TextMutedBrush}"
+                   FontSize="12" FontWeight="SemiBold" Margin="9,0,0,0"
+                   VerticalAlignment="Center" />
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <Button Name="MinBtn" Classes="wbtn">
+          <Rectangle Width="10" Height="1" Fill="{DynamicResource TextMutedBrush}" />
+        </Button>
+        <Button Name="MaxBtn" Classes="wbtn">
+          <Rectangle Width="9" Height="9" Stroke="{DynamicResource TextMutedBrush}"
+                     StrokeThickness="1" />
+        </Button>
+        <Button Name="CloseBtn" Classes="wbtn wclose">
+          <Path Data="M0,0 L8,8 M8,0 L0,8" Stroke="{DynamicResource TextMutedBrush}"
+                StrokeThickness="1.2" />
+        </Button>
+      </StackPanel>
+    </Grid>
+
+    <!-- Body -->
+    <Grid Grid.Row="1" ColumnDefinitions="236,*">
+
+      <!-- Sidebar -->
+      <Border Grid.Column="0" Background="{DynamicResource BgSidebarBrush}"
+              BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,1,0">
+        <DockPanel Margin="14,6,14,16">
+
+          <StackPanel DockPanel.Dock="Top" Margin="4,10,4,18">
+            <TextBlock Text="WORKSPACE" Classes="label" />
+            <TextBlock Text="{Binding Engine.WorkspacePath, FallbackValue='Not set'}"
+                       Classes="muted" TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
+          </StackPanel>
+
+          <StackPanel DockPanel.Dock="Bottom">
+            <ListBox Classes="nav" ItemsSource="{Binding UtilityItems}"
+                     SelectedItem="{Binding Selected, Mode=TwoWay}">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:NavItem">
+                  <StackPanel Orientation="Horizontal">
+                    <Path Data="{Binding Icon}" Fill="{DynamicResource TextMutedBrush}"
+                          Width="17" Height="17" Stretch="Uniform"
+                          VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Title}" Margin="12,0,0,0"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               FontSize="13.5" VerticalAlignment="Center" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </StackPanel>
+
+          <ListBox DockPanel.Dock="Top" Classes="nav" ItemsSource="{Binding NavItems}"
+                   SelectedItem="{Binding Selected, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:NavItem">
+                <StackPanel Orientation="Horizontal">
+                  <Path Data="{Binding Icon}" Fill="{DynamicResource TextMutedBrush}"
+                        Width="17" Height="17" Stretch="Uniform"
+                        VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding Title}" Margin="12,0,0,0"
+                             Foreground="{DynamicResource TextPrimaryBrush}"
+                             FontSize="13.5" VerticalAlignment="Center" />
+                  <Border Classes="chip" Margin="8,0,0,0" IsVisible="{Binding Dormant}"
+                          VerticalAlignment="Center" Padding="6,1">
+                    <TextBlock Text="soon" FontSize="9.5"
+                               Foreground="{DynamicResource TextFaintBrush}" />
+                  </Border>
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+        </DockPanel>
+      </Border>
+
+      <!-- Content host -->
+      <TransitioningContentControl Grid.Column="1" Content="{Binding CurrentPage}">
+        <TransitioningContentControl.PageTransition>
+          <CrossFade Duration="0:0:0.18" />
+        </TransitioningContentControl.PageTransition>
+      </TransitioningContentControl>
+
+    </Grid>
+  </Grid>
 </Window>

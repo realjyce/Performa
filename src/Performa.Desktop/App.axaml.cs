@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Performa.Desktop.ViewModels;
 
 namespace Performa.Desktop;
 
@@ -15,7 +16,10 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            desktop.MainWindow = new MainWindow
+            {
+                DataContext = new MainViewModel(),
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

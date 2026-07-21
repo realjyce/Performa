@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.DailyView"
+             x:DataType="vm:DailyViewModel">
+  <StackPanel Margin="34,26" Spacing="3">
+    <TextBlock Text="Daily" Classes="h1" />
+    <TextBlock Text="Today's timeline, tasks, and notes." Classes="muted" />
+  </StackPanel>
+</UserControl>

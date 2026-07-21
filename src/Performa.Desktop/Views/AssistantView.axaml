@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.AssistantView"
+             x:DataType="vm:AssistantViewModel">
+  <StackPanel Margin="34,26" Spacing="3">
+    <TextBlock Text="Assistant" Classes="h1" />
+    <TextBlock Text="Ask about your work. Deterministic today, AI-ready behind one seam." Classes="muted" />
+  </StackPanel>
+</UserControl>

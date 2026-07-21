@@ -1,0 +1,51 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Surfaces -->
+  <Color x:Key="BgBase">#16171B</Color>
+  <Color x:Key="BgSidebar">#1B1C21</Color>
+  <Color x:Key="BgCard">#212228</Color>
+  <Color x:Key="BgCardHover">#282932</Color>
+  <Color x:Key="BgInset">#131418</Color>
+  <Color x:Key="BorderSoft">#2C2E37</Color>
+  <Color x:Key="BorderStrong">#3A3D48</Color>
+
+  <!-- Text -->
+  <Color x:Key="TextPrimary">#ECECEF</Color>
+  <Color x:Key="TextMuted">#9698A2</Color>
+  <Color x:Key="TextFaint">#616470</Color>
+
+  <!-- Accent + semantics -->
+  <Color x:Key="Accent">#7C6CF0</Color>
+  <Color x:Key="AccentBright">#9B8BFF</Color>
+  <Color x:Key="Positive">#4FB286</Color>
+  <Color x:Key="Warning">#E0A34E</Color>
+  <Color x:Key="Danger">#E0655E</Color>
+  <Color x:Key="Info">#4AA8E0</Color>
+
+  <SolidColorBrush x:Key="BgBaseBrush" Color="{StaticResource BgBase}" />
+  <SolidColorBrush x:Key="BgSidebarBrush" Color="{StaticResource BgSidebar}" />
+  <SolidColorBrush x:Key="BgCardBrush" Color="{StaticResource BgCard}" />
+  <SolidColorBrush x:Key="BgCardHoverBrush" Color="{StaticResource BgCardHover}" />
+  <SolidColorBrush x:Key="BgInsetBrush" Color="{StaticResource BgInset}" />
+  <SolidColorBrush x:Key="BorderSoftBrush" Color="{StaticResource BorderSoft}" />
+  <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrong}" />
+  <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}" />
+  <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}" />
+  <SolidColorBrush x:Key="TextFaintBrush" Color="{StaticResource TextFaint}" />
+  <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}" />
+  <SolidColorBrush x:Key="AccentBrightBrush" Color="{StaticResource AccentBright}" />
+  <SolidColorBrush x:Key="PositiveBrush" Color="{StaticResource Positive}" />
+  <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource Warning}" />
+  <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}" />
+  <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource Info}" />
+  <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource Accent}" Opacity="0.16" />
+
+  <LinearGradientBrush x:Key="AccentGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+    <GradientStop Offset="0" Color="#7C6CF0" />
+    <GradientStop Offset="1" Color="#B06CE0" />
+  </LinearGradientBrush>
+
+  <FontFamily x:Key="MonoFont">Cascadia Code,Consolas,Menlo,monospace</FontFamily>
+
+</ResourceDictionary>

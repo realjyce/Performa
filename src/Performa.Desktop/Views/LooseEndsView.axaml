@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.LooseEndsView"
+             x:DataType="vm:LooseEndsViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="34,26,34,34" Spacing="20">
+
+      <StackPanel Spacing="3">
+        <TextBlock Text="Loose Ends" Classes="h1" />
+        <TextBlock Text="{Binding Summary}" Classes="muted" />
+      </StackPanel>
+
+      <Border Classes="card" IsVisible="{Binding IsClean}" Padding="26">
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+          <Path Data="{DynamicResource IconCheck}" Fill="{DynamicResource PositiveBrush}"
+                Width="26" Height="26" Stretch="Uniform" />
+          <TextBlock Text="All clear" Classes="h2" HorizontalAlignment="Center" />
+          <TextBlock Text="Nothing dangling across your workspace." Classes="muted" />
+        </StackPanel>
+      </Border>
+
+      <ItemsControl ItemsSource="{Binding Items}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:LooseEndItem">
+            <Border Classes="card hover" Margin="0,0,0,10" Padding="16,13">
+              <Grid ColumnDefinitions="Auto,Auto,*">
+                <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center"
+                         Margin="0,0,13,0" Fill="{DynamicResource WarningBrush}" />
+                <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center"
+                        Margin="0,0,13,0">
+                  <TextBlock Text="{Binding Kind}" Classes="mono" FontSize="11" />
+                </Border>
+                <TextBlock Grid.Column="2" Text="{Binding Text}" Classes="muted"
+                           FontSize="13" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

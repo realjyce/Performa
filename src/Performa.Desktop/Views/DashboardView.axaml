@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="34,26,34,34" Spacing="22">
+
+      <!-- Header -->
+      <StackPanel Spacing="3">
+        <TextBlock Text="Dashboard" Classes="h1" />
+        <TextBlock Classes="muted">
+          <Run Text="Workspace" />
+          <Run Text="{Binding WorkspaceName}" Foreground="{DynamicResource TextPrimaryBrush}" />
+          <Run Text="·" />
+          <Run Text="{Binding RepoCount}" />
+          <Run Text="repositories" />
+        </TextBlock>
+      </StackPanel>
+
+      <!-- No workspace state -->
+      <Border Classes="card" IsVisible="{Binding !HasWorkspace}" Padding="26">
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+          <TextBlock Text="No workspace set" Classes="h2" HorizontalAlignment="Center" />
+          <TextBlock Classes="muted" HorizontalAlignment="Center"
+                     Text="Point Performa at the folder that holds your repos in Settings." />
+        </StackPanel>
+      </Border>
+
+      <!-- Velocity strip -->
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="14"
+            IsVisible="{Binding HasWorkspace}">
+        <Border Grid.Column="0" Classes="card">
+          <StackPanel Spacing="6">
+            <TextBlock Text="COMMITS THIS WEEK" Classes="label" />
+            <TextBlock Text="{Binding ThisWeek}" FontSize="30" FontWeight="Bold"
+                       Foreground="{DynamicResource TextPrimaryBrush}" />
+            <TextBlock Text="{Binding WeekDelta}" Classes="faint" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="6">
+            <TextBlock Text="ACTIVE STREAK" Classes="label" />
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="{Binding Streak}" FontSize="30" FontWeight="Bold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" />
+              <TextBlock Text="days" Classes="muted" VerticalAlignment="Bottom"
+                         Margin="6,0,0,6" />
+            </StackPanel>
+            <TextBlock Text="consecutive coding days" Classes="faint" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Classes="card">
+          <StackPanel Spacing="6">
+            <TextBlock Text="BUSIEST REPO" Classes="label" />
+            <TextBlock Text="{Binding Busiest}" FontSize="22" FontWeight="SemiBold"
+                       Foreground="{DynamicResource AccentBrightBrush}"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="most commits this week" Classes="faint" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="3" Classes="card">
+          <StackPanel Spacing="6">
+            <TextBlock Text="REPOSITORIES" Classes="label" />
+            <TextBlock Text="{Binding RepoCount}" FontSize="30" FontWeight="Bold"
+                       Foreground="{DynamicResource TextPrimaryBrush}" />
+            <TextBlock Text="tracked in workspace" Classes="faint" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <!-- Repo cards -->
+      <StackPanel Spacing="12" IsVisible="{Binding HasWorkspace}">
+        <TextBlock Text="REPOSITORIES" Classes="label" />
+        <ItemsControl ItemsSource="{Binding Repos}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:RepoCard">
+              <Border Classes="card hover" Width="330" Margin="0,0,14,14">
+                <StackPanel Spacing="12">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="{Binding Name}" Classes="h2"
+                               TextTrimming="CharacterEllipsis" />
+                    <Border Grid.Column="1" Classes="chip">
+                      <TextBlock Text="{Binding Branch}" Classes="mono" FontSize="11" />
+                    </Border>
+                  </Grid>
+
+                  <ItemsControl ItemsSource="{Binding Recent}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="0,2" Spacing="8">
+                          <Ellipse Width="4" Height="4" VerticalAlignment="Center"
+                                   Fill="{DynamicResource AccentBrush}" />
+                          <TextBlock Text="{Binding}" Classes="muted" FontSize="12.5"
+                                     TextTrimming="CharacterEllipsis" MaxWidth="270" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+
+                  <Border Height="1" Background="{DynamicResource BorderSoftBrush}" />
+
+                  <StackPanel Orientation="Horizontal" Spacing="7">
+                    <Ellipse Width="7" Height="7" VerticalAlignment="Center">
+                      <Ellipse.Fill>
+                        <SolidColorBrush Color="{Binding IsClean,
+                          Converter={x:Static vm:BoolBrush.Instance}}" />
+                      </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock Text="{Binding Status}" Classes="faint" />
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
