@@ -12,14 +12,33 @@ namespace Performa.Desktop.Services;
 /// </summary>
 public sealed class GeminiService
 {
-    private const string Endpoint =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    // Model choice matters more than it looks: the 2.x flash models are legacy
+    // and carry zero free-tier allocation, so a perfectly valid key returns 429
+    // limit:0 against them. These two are current and free-tier eligible. The
+    // second is a named fallback because the "latest" alias returns 503 under
+    // load often enough to be worth surviving.
+    private static readonly string[] Models = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
+
+    private static string Endpoint(string model)
+        => $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
 
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(30) };
 
     public async Task<string?> AskAsync(string apiKey, string systemContext, string question)
     {
         if (string.IsNullOrWhiteSpace(apiKey)) return null;
+
+        foreach (var model in Models)
+        {
+            var answer = await TryAskAsync(model, apiKey, systemContext, question);
+            if (answer is { Length: > 0 }) return answer;
+        }
+        return null;
+    }
+
+    private static async Task<string?> TryAskAsync(
+        string model, string apiKey, string systemContext, string question)
+    {
 
         var prompt =
             $"{systemContext}\n\nQuestion: {question}\n\n" +
@@ -40,7 +59,7 @@ public sealed class GeminiService
         {
             using var content = new StringContent(
                 JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            using var req = new HttpRequestMessage(HttpMethod.Post, Endpoint) { Content = content };
+            using var req = new HttpRequestMessage(HttpMethod.Post, Endpoint(model)) { Content = content };
             req.Headers.Add("x-goog-api-key", apiKey);
 
             using var res = await Http.SendAsync(req);

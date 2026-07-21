@@ -231,3 +231,11 @@ One decision or lesson per entry. Newest last.
 - **Obsolete Avalonia APIs cleared.** Watermark to PlaceholderText and
   SystemDecorations to WindowDecorations. The build is warning-free again, so a
   real warning stays visible instead of hiding in the noise.
+
+- **A valid Gemini key can still return 429 limit:0.** The 2.x flash models are
+  legacy and carry no free-tier allocation, so the error looks like a billing or
+  project problem when it is really a model choice. Listing /v1beta/models with
+  the same key proved the key was fine. Now on gemini-flash-lite-latest with
+  gemini-3.1-flash-lite behind it, because the "latest" alias returns 503 under
+  load often enough to be worth a fallback. Lesson: read which metric the quota
+  error names before blaming the credential.

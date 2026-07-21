@@ -19,7 +19,12 @@ AppBuilder.Configure<App>()
     .SetupWithoutStarting();
 
 var vm = new MainViewModel();
-vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(pageIndex);
+
+// The assistant sits outside both nav lists, so -1 reaches it.
+if (pageIndex < 0)
+    vm.OpenAssistantCommand.Execute(null);
+else
+    vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(pageIndex);
 
 // Optional: drive the assistant with a question so the shot shows a real answer.
 if (args.Length > 4 && vm.Selected.Page is AssistantViewModel assistant)
@@ -65,8 +70,11 @@ if (args.Length > 5 && args[5].StartsWith("navto:"))
     vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(idx);
 }
 
-// Pump the UI + let the async git load settle before capturing.
-var deadline = DateTime.Now.AddSeconds(8);
+// Pump the UI + let the async git load settle before capturing. A network
+// round trip needs far longer than a git read, so PERFORMA_SHOT_WAIT extends it.
+var waitSeconds = int.TryParse(
+    Environment.GetEnvironmentVariable("PERFORMA_SHOT_WAIT"), out var w) ? w : 8;
+var deadline = DateTime.Now.AddSeconds(waitSeconds);
 while (DateTime.Now < deadline)
 {
     Dispatcher.UIThread.RunJobs();
