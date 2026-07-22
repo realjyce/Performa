@@ -11,11 +11,7 @@ google-credentials.json
 app-credentials.json
 **/app-credentials.json
 
-# Screenshot harness output
+# Build artefacts and the shipped installer
+build/
 .shots/
-
-# Published build output
-dist/
-
-# Installer build output (the .iss script itself is tracked)
-installer/out/
+PerformaSetup.exe

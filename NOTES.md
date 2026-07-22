@@ -298,9 +298,15 @@ One decision or lesson per entry. Newest last.
   needs no administrator rights, and an elevation prompt on an unsigned binary
   is exactly what makes people cancel. Gets a Start Menu entry, an optional
   desktop shortcut, and a real Add/Remove Programs entry with an uninstaller.
-  Verified by wiping the manual install, running setup silently, and launching
-  from the shortcut it created.
+  Verified by wiping the install, running setup silently, and launching from
+  the shortcut it created.
 
 - **Credentials are copied with skipifsourcedoesntexist.** A build made on a
   machine without them still compiles and runs; it just asks for a key in
   Settings instead of failing at install time.
+
+- **One build recipe, one artefact.** The Inno script is generated inside
+  publish.ps1 rather than kept as a checked-in .iss, and the intermediate
+  publish folder is deleted once the installer has swallowed it. Two recipes
+  drift apart; one cannot. PerformaSetup.exe lands in the repo root because a
+  deliverable buried two folders deep gets confused for a build leftover.
