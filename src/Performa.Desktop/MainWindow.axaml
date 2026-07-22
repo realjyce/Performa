@@ -197,21 +197,70 @@
     </Grid>
   </Grid>
 
-  <!-- First run: ask once, so nothing is inherited from an SSO profile -->
-  <Border IsVisible="{Binding NeedsName}" Background="{DynamicResource ScrimBrush}">
-    <Border Classes="card" Width="420" Padding="28" VerticalAlignment="Center"
+  <!-- Launch walkthrough: name, then the sign-ins. Shown once. -->
+  <Border IsVisible="{Binding ShowOnboarding}" Background="#D915171A">
+    <Border Classes="card" Width="460" Padding="30" VerticalAlignment="Center"
             HorizontalAlignment="Center">
-      <StackPanel Spacing="14">
-        <TextBlock Text="Welcome to Performa" Classes="h1" FontSize="22" />
-        <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="What should I call you? This stays on your machine and is never taken from a sign-in." />
-        <TextBox Text="{Binding NameEntry}" PlaceholderText="Your name">
-          <TextBox.KeyBindings>
-            <KeyBinding Gesture="Enter" Command="{Binding SaveNameCommand}" />
-          </TextBox.KeyBindings>
-        </TextBox>
-        <Button Classes="accent" Content="Get started" HorizontalAlignment="Right"
-                Command="{Binding SaveNameCommand}" />
+      <StackPanel Spacing="16">
+
+        <!-- Step 1 -->
+        <StackPanel Spacing="14" IsVisible="{Binding NeedsName}">
+          <TextBlock Text="Welcome to Performa" Classes="h1" FontSize="22" />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="What should I call you? This stays on your machine and is never taken from a sign-in." />
+          <TextBox Text="{Binding NameEntry}" PlaceholderText="Your name">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter" Command="{Binding SaveNameCommand}" />
+            </TextBox.KeyBindings>
+          </TextBox>
+          <Button Classes="accent" Content="Continue" HorizontalAlignment="Right"
+                  Command="{Binding SaveNameCommand}" />
+        </StackPanel>
+
+        <!-- Step 2 -->
+        <StackPanel Spacing="14" IsVisible="{Binding ShowConnectStep}">
+          <TextBlock Text="Connect your accounts" Classes="h1" FontSize="22" />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="Optional, and read-only. You can do this later in Settings." />
+
+          <Border Classes="card" Padding="16" Background="{DynamicResource BgInsetBrush}">
+            <StackPanel Spacing="9">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="2">
+                  <TextBlock Text="GitHub" Classes="h2" FontSize="14" />
+                  <TextBlock Text="{Binding GitHubStatus}" Classes="faint" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" Classes="accent" Content="Connect"
+                        VerticalAlignment="Center" IsVisible="{Binding !GitHubConnected}"
+                        Command="{Binding ConnectGitHubCommand}" />
+              </Grid>
+              <Border IsVisible="{Binding HasDeviceCode}" Classes="chip"
+                      HorizontalAlignment="Left" Padding="14,8"
+                      Background="{DynamicResource AccentSoftBrush}"
+                      BorderBrush="{DynamicResource AccentBrush}">
+                <SelectableTextBlock Text="{Binding GitHubDeviceCode}" Classes="mono"
+                                     FontSize="19" LetterSpacing="3"
+                                     Foreground="{DynamicResource AccentBrightBrush}" />
+              </Border>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="16" Background="{DynamicResource BgInsetBrush}">
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Grid.Column="0" Spacing="2">
+                <TextBlock Text="Google" Classes="h2" FontSize="14" />
+                <TextBlock Text="{Binding GoogleStatusText}" Classes="faint" TextWrapping="Wrap" />
+              </StackPanel>
+              <Button Grid.Column="1" Classes="accent" Content="Connect"
+                      VerticalAlignment="Center" IsVisible="{Binding !GoogleConnected}"
+                      Command="{Binding ConnectGoogleCommand}" />
+            </Grid>
+          </Border>
+
+          <Button Classes="accent" Content="Start using Performa"
+                  HorizontalAlignment="Right" Command="{Binding FinishOnboardingCommand}" />
+        </StackPanel>
+
       </StackPanel>
     </Border>
   </Border>

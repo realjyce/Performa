@@ -14,6 +14,9 @@ public sealed class Preferences
 {
     public bool Initialised { get; set; }
 
+    /// <summary>Set once the launch walkthrough has been seen, so it never nags again.</summary>
+    public bool OnboardingDone { get; set; }
+
     /// <summary>What to call the user. Asked once, never inferred from an SSO profile.</summary>
     public string? UserName { get; set; }
     public OutputFormat Format { get; set; } = OutputFormat.Markdown;

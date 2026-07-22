@@ -310,3 +310,13 @@ One decision or lesson per entry. Newest last.
   publish folder is deleted once the installer has swallowed it. Two recipes
   drift apart; one cannot. PerformaSetup.exe lands in the repo root because a
   deliverable buried two folders deep gets confused for a build leftover.
+
+- **GitHub sign-in runs at launch.** The first-run overlay became a two-step
+  walkthrough: name, then Connect accounts. It shows once (OnboardingDone in
+  prefs) and skips any step already satisfied, so a returning user with both
+  accounts connected never sees it. Device flow shows the user code in the
+  overlay itself and polls until GitHub approves.
+
+- **Device flow needs no client secret**, unlike Google. The GitHub client id is
+  public by design, so a shipped binary carries nothing worth stealing. The
+  OAuth App must have "Device flow" enabled or GitHub rejects the grant type.
