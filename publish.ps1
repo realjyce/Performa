@@ -5,12 +5,14 @@
 # reflection, so a trimmed build publishes fine and then fails at runtime, which
 # is the worst possible place to discover it.
 #
-#   pwsh ./publish.ps1              -> dist/
-#   pwsh ./publish.ps1 -Install     -> also installs and puts a shortcut on the Desktop
+#   pwsh ./publish.ps1              -> dist/Performa.exe
+#   pwsh ./publish.ps1 -Installer   -> also installer/out/PerformaSetup.exe
+#   pwsh ./publish.ps1 -Install     -> also installs here with a Desktop shortcut
 
 param(
     [string]$Output = "dist",
-    [switch]$Install
+    [switch]$Install,
+    [switch]$Installer
 )
 
 $ErrorActionPreference = "Stop"
@@ -44,6 +46,26 @@ foreach ($name in @("app-credentials.json", "google-credentials.json")) {
 $exe = Join-Path "$root/$Output" "Performa.exe"
 $mb = [math]::Round((Get-Item $exe).Length / 1MB, 1)
 Write-Host "built $exe ($mb MB)"
+
+if ($Installer) {
+    # Inno Setup installs per-user, so ISCC lives under LOCALAPPDATA here.
+    $iscc = @(
+        "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+        "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+        "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
+    ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+    if (-not $iscc) {
+        throw "Inno Setup not found. Install it with: winget install JRSoftware.InnoSetup"
+    }
+
+    & $iscc "$root/installer/Performa.iss"
+    if ($LASTEXITCODE -ne 0) { throw "installer compile failed" }
+
+    $setup = Join-Path $root "installer/out/PerformaSetup.exe"
+    $setupMb = [math]::Round((Get-Item $setup).Length / 1MB, 1)
+    Write-Host "built $setup ($setupMb MB)"
+}
 
 if ($Install) {
     $target = Join-Path $env:LOCALAPPDATA "Programs\Performa"

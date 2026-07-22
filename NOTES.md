@@ -293,3 +293,14 @@ One decision or lesson per entry. Newest last.
   build works for someone who types nothing, so there is a test asserting an
   empty Preferences still resolves the file beside the binary, and that a key
   entered in Settings beats it.
+
+- **Installer is per-user, not Program Files.** Installing under LOCALAPPDATA
+  needs no administrator rights, and an elevation prompt on an unsigned binary
+  is exactly what makes people cancel. Gets a Start Menu entry, an optional
+  desktop shortcut, and a real Add/Remove Programs entry with an uninstaller.
+  Verified by wiping the manual install, running setup silently, and launching
+  from the shortcut it created.
+
+- **Credentials are copied with skipifsourcedoesntexist.** A build made on a
+  machine without them still compiles and runs; it just asks for a key in
+  Settings instead of failing at install time.

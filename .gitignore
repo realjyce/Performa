@@ -16,3 +16,6 @@ app-credentials.json
 
 # Published build output
 dist/
+
+# Installer build output (the .iss script itself is tracked)
+installer/out/
