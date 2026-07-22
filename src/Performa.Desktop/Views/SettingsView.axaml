@@ -21,6 +21,17 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <TextBlock Text="STARTUP" Classes="label" />
+          <CheckBox IsChecked="{Binding LaunchAtStartup}" Content="Launch Performa when Windows starts" />
+          <TextBlock Classes="faint" TextWrapping="Wrap"
+                     Text="Opens minimised so it is ready without interrupting your boot. You can also turn this off from Task Manager's Startup tab." />
+          <TextBlock Text="{Binding StartupNote}" Classes="faint" TextWrapping="Wrap"
+                     Foreground="{DynamicResource AccentBrightBrush}" />
+        </StackPanel>
+      </Border>
+
       <!-- Local repositories -->
       <Border Classes="card">
         <StackPanel Spacing="10">

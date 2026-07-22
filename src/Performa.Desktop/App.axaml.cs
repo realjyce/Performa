@@ -36,6 +36,11 @@ public partial class App : Application
             var vm = new MainViewModel();
             ApplyTheme(vm.Engine.Prefs.Theme);
             desktop.MainWindow = new MainWindow { DataContext = vm };
+
+            // Launched by Windows at boot: come up minimised rather than stealing focus.
+            if (desktop.Args?.Contains(Services.StartupService.StartupArgument) == true
+                && desktop.MainWindow is { } w)
+                w.WindowState = Avalonia.Controls.WindowState.Minimized;
         }
 
         base.OnFrameworkInitializationCompleted();

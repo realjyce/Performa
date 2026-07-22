@@ -35,6 +35,7 @@ public sealed class SettingsViewModel : ObservableObject
         _grouping = engine.Prefs.Grouping.ToString();
         _tone = engine.Prefs.Tone.ToString();
         SaveCommand = new RelayCommand(Save);
+        _launchAtStartup = StartupService.IsEnabled();
         ScanGitHubCommand = new RelayCommand(() => _ = ScanGitHubAsync());
         AutoDetectCommand = new RelayCommand(AutoDetectLocal);
         CloneCommand = new RelayCommand<GitHubRepoRow>(row => { if (row is not null) Clone(row); });
@@ -50,6 +51,24 @@ public sealed class SettingsViewModel : ObservableObject
         GitHubSignOutCommand = new RelayCommand(GitHubSignOut);
         RefreshGitHubStatus();
     }
+
+    // Launch at desktop boot. Reads the live registry state rather than a
+    // stored flag, so it stays honest if the user removes it from Task Manager.
+    private bool _launchAtStartup;
+    public bool LaunchAtStartup
+    {
+        get => _launchAtStartup;
+        set
+        {
+            if (!SetProperty(ref _launchAtStartup, value)) return;
+            StartupNote = StartupService.Set(value);
+            _launchAtStartup = StartupService.IsEnabled();
+            OnPropertyChanged(nameof(LaunchAtStartup));
+        }
+    }
+
+    private string _startupNote = "";
+    public string StartupNote { get => _startupNote; set => SetProperty(ref _startupNote, value); }
 
     private readonly GitHubService _github = new();
     private readonly GoogleAuthService _google = new();

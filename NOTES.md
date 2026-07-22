@@ -320,3 +320,15 @@ One decision or lesson per entry. Newest last.
 - **Device flow needs no client secret**, unlike Google. The GitHub client id is
   public by design, so a shipped binary carries nothing worth stealing. The
   OAuth App must have "Device flow" enabled or GitHub rejects the grant type.
+
+- **Launch at boot uses the per-user Run key** (HKCU), not a machine-wide entry
+  or a scheduled task: no admin rights needed, it appears in Task Manager's
+  Startup tab where the user can disable it themselves, and removal is one
+  delete. The toggle reads the live registry rather than a stored flag, so it
+  stays honest if the user turns it off outside the app. Verified by writing
+  and removing the entry against the real registry.
+
+- **Boot launch passes --startup**, which brings the window up minimised so it
+  is ready without stealing focus during login. The registry value stores the
+  path from Environment.ProcessPath, so enable it from the published exe rather
+  than a debug run if you want it pointing at the real binary.
