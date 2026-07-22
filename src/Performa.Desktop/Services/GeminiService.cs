@@ -24,14 +24,20 @@ public sealed class GeminiService
 
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(30) };
 
-    public async Task<string?> AskAsync(string apiKey, string systemContext, string question)
+    /// <summary>
+    /// Which model actually answered, so the UI can name it rather than claim
+    /// "AI" generically. Null model means the deterministic answer is standing.
+    /// </summary>
+    public sealed record AiAnswer(string Text, string Model);
+
+    public async Task<AiAnswer?> AskAsync(string apiKey, string systemContext, string question)
     {
         if (string.IsNullOrWhiteSpace(apiKey)) return null;
 
         foreach (var model in Models)
         {
             var answer = await TryAskAsync(model, apiKey, systemContext, question);
-            if (answer is { Length: > 0 }) return answer;
+            if (answer is { Length: > 0 }) return new AiAnswer(answer, model);
         }
         return null;
     }
@@ -86,11 +92,13 @@ public sealed class GeminiService
     /// A short prose read of one email. The structured extraction stays on the
     /// card either way, so this only ever adds; it never replaces the facts.
     /// </summary>
-    public Task<string?> SummariseEmailAsync(string apiKey, string from, string subject, string body)
+    public async Task<string?> SummariseEmailAsync(
+        string apiKey, string from, string subject, string body)
     {
         var trimmed = body.Length > 6000 ? body[..6000] : body;
-        return AskAsync(apiKey,
+        var answer = await AskAsync(apiKey,
             $"Email from {from}, subject \"{subject}\":\n{trimmed}",
             "In two sentences, what is this asking of me and by when? If nothing is asked, say what it is telling me.");
+        return answer?.Text;
     }
 }

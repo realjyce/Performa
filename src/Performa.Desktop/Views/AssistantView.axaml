@@ -7,10 +7,19 @@
 
   <Grid Margin="34,26,34,26" RowDefinitions="Auto,*,Auto,Auto,Auto">
 
-    <StackPanel Grid.Row="0" Spacing="3" Margin="0,0,0,18">
-      <TextBlock Text="Assistant" Classes="h1" />
-      <TextBlock Text="Answers from your git facts. Deterministic today, AI-ready behind one seam." Classes="muted" />
-    </StackPanel>
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+      <StackPanel Grid.Column="0" Spacing="3">
+        <TextBlock Text="Assistant" Classes="h1" />
+        <TextBlock Text="Reads your git history and answers from facts. Prose comes from a model; the facts never do." Classes="muted" />
+      </StackPanel>
+      <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center"
+              IsVisible="{Binding HasActiveModel}"
+              Background="{DynamicResource AccentSoftBrush}"
+              BorderBrush="{DynamicResource AccentBrush}">
+        <TextBlock Text="{Binding ActiveModel}" Classes="mono" FontSize="10.5"
+                   Foreground="{DynamicResource AccentBrightBrush}" />
+      </Border>
+    </Grid>
 
     <!-- Conversation -->
     <ScrollViewer Grid.Row="1">
@@ -21,8 +30,17 @@
               <Border Classes="card" MaxWidth="560" HorizontalAlignment="Left"
                       IsVisible="{Binding IsAssistant}"
                       Background="{DynamicResource BgCardBrush}">
-                <TextBlock Text="{Binding Text}" Classes="muted" FontSize="13.5"
-                           TextWrapping="Wrap" LineHeight="20" />
+                <StackPanel Spacing="8">
+                  <TextBlock Text="{Binding Text}" Classes="muted" FontSize="13.5"
+                             TextWrapping="Wrap" LineHeight="20" />
+                  <StackPanel Orientation="Horizontal" Spacing="6"
+                              IsVisible="{Binding HasSource}">
+                    <Ellipse Width="4" Height="4" VerticalAlignment="Center"
+                             Fill="{DynamicResource TextFaintBrush}" />
+                    <TextBlock Text="{Binding Source}" Classes="mono" FontSize="10"
+                               Foreground="{DynamicResource TextFaintBrush}" />
+                  </StackPanel>
+                </StackPanel>
               </Border>
               <Border MaxWidth="560" HorizontalAlignment="Right"
                       IsVisible="{Binding IsUser}"

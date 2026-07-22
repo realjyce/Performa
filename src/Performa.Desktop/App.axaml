@@ -11,14 +11,14 @@
   <Application.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="avares://Performa.Desktop/Themes/Tokens.axaml" />
-        <ResourceInclude Source="avares://Performa.Desktop/Themes/Icons.axaml" />
+        <ResourceInclude Source="avares://Performa/Themes/Tokens.axaml" />
+        <ResourceInclude Source="avares://Performa/Themes/Icons.axaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>
 
   <Application.Styles>
     <FluentTheme />
-    <StyleInclude Source="avares://Performa.Desktop/Themes/Styles.axaml" />
+    <StyleInclude Source="avares://Performa/Themes/Styles.axaml" />
   </Application.Styles>
 </Application>

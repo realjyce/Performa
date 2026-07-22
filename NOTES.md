@@ -272,3 +272,24 @@ One decision or lesson per entry. Newest last.
   a file beside the binary, then AppData. The GitHub client id is public by
   design in the device flow. The Gemini key is not, and shipping it is a
   testing-phase compromise, recorded as such in the code.
+
+- **Shipping build is a single self-contained exe.** One Performa.exe, no .NET
+  needed on the target machine. Trimming stays off on purpose: Avalonia resolves
+  controls and converters by reflection, so a trimmed build publishes clean and
+  then fails at runtime, which is the worst place to find out. 47 MB is the
+  price of that safety and it is the right trade.
+
+- **Renaming the assembly breaks every avares URI.** They are keyed on assembly
+  name, so AssemblyName=Performa turned five working resource lookups into
+  runtime failures the compiler said nothing about. Renamed together, and a
+  publish is not trusted until the exe is launched and shown to hold a window.
+
+- **AI ships on.** A build that needs a checkbox ticked before it answers is not
+  zero-setup. The Settings switch still turns it off, the deterministic answers
+  are identical either way, and the model that answered is named on every reply
+  so its prose is never mistaken for the facts.
+
+- **Credential resolution is tested, not assumed.** It decides whether a shipped
+  build works for someone who types nothing, so there is a test asserting an
+  empty Preferences still resolves the file beside the binary, and that a key
+  entered in Settings beats it.

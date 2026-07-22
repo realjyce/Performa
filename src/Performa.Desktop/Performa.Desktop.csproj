@@ -5,6 +5,26 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>Performa</AssemblyName>
+    <Product>Performa</Product>
+    <Version>1.0.0</Version>
+    <Company>Jason Clarence</Company>
+    <Description>A local-first developer chief of staff.</Description>
+    <ApplicationIcon>Assets/performa.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!--
+    Single-file publish settings. Trimming stays off: Avalonia resolves controls
+    and converters by reflection, and a trimmed build fails at runtime rather
+    than at publish, which is the worst place to find out.
+  -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishTrimmed>false</PublishTrimmed>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

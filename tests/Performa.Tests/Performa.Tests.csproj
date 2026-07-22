@@ -16,6 +16,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Performa.Core\Performa.Core.csproj" />
+    <!-- Credential resolution decides whether a shipped build works with no
+         setup at all, so it is tested rather than assumed. -->
+    <ProjectReference Include="..\..\src\Performa.Desktop\Performa.Desktop.csproj" />
   </ItemGroup>
 
 </Project>

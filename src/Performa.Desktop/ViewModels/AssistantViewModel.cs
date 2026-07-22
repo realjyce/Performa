@@ -4,11 +4,16 @@ using Performa.Desktop.Services;
 
 namespace Performa.Desktop.ViewModels;
 
-public sealed class ChatMessage(bool isUser, string text)
+public sealed class ChatMessage(bool isUser, string text, string? source = null)
 {
     public bool IsUser { get; } = isUser;
     public bool IsAssistant => !IsUser;
     public string Text { get; } = text;
+
+    /// <summary>What produced this answer. Shown so a model's prose is never
+    /// mistaken for the deterministic reading of your git history.</summary>
+    public string? Source { get; } = source;
+    public bool HasSource => !string.IsNullOrEmpty(Source);
 }
 
 /// <summary>
@@ -63,18 +68,31 @@ public sealed class AssistantViewModel : ObservableObject
         if (_engine.Prefs.AiEnabled && !string.IsNullOrWhiteSpace(key))
         {
             var context = await Task.Run(BuildContext);
-            var prose = await _gemini.AskAsync(key, context, question);
-            if (prose is { Length: > 0 })
+            var answer = await _gemini.AskAsync(key, context, question);
+            if (answer is not null)
             {
-                Messages.Add(new ChatMessage(false, prose));
+                Messages.Add(new ChatMessage(false, answer.Text, answer.Model));
+                ActiveModel = answer.Model;
                 Thinking = false;
                 return;
             }
+            // The model was asked and did not answer, so say so rather than
+            // letting the deterministic reply pass for a working AI.
+            ActiveModel = "unavailable, answering from facts";
         }
 
-        Messages.Add(new ChatMessage(false, facts));
+        Messages.Add(new ChatMessage(false, facts, "your git history"));
         Thinking = false;
     }
+
+    private string _activeModel = "";
+    public string ActiveModel
+    {
+        get => _activeModel;
+        set { if (SetProperty(ref _activeModel, value)) OnPropertyChanged(nameof(HasActiveModel)); }
+    }
+
+    public bool HasActiveModel => _activeModel.Length > 0;
 
     /// <summary>Only real git facts go to the model; it is never asked to invent.</summary>
     private string BuildContext()

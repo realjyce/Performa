@@ -8,6 +8,7 @@
         MinWidth="920" MinHeight="620"
         Background="{DynamicResource BgBackdrop}"
         WindowDecorations="None"
+        Icon="avares://Performa/Assets/performa.png"
         CanResize="True">
 
   <Grid>
@@ -74,7 +75,7 @@
                 <TextBlock Text="Ask about your work" Foreground="#D9CCFF" FontSize="11" />
                 <Border Background="#33FFFFFF" CornerRadius="20" Padding="8,2"
                         HorizontalAlignment="Left">
-                  <TextBlock Text="AI arriving soon" Foreground="White" FontSize="9.5"
+                  <TextBlock Text="Gemini" Foreground="White" FontSize="9.5"
                              FontWeight="SemiBold" />
                 </Border>
               </StackPanel>

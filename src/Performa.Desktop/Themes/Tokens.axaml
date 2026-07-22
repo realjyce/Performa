@@ -58,7 +58,7 @@
 
       <!-- Carbon weave: an 8px tile of offset light/dark dots, tiled at 1:1 -->
       <ImageBrush x:Key="CarbonWeave"
-                  Source="avares://Performa.Desktop/Assets/carbon.png"
+                  Source="avares://Performa/Assets/carbon.png"
                   TileMode="Tile" Stretch="None"
                   DestinationRect="0,0,8,8" />
 
@@ -157,7 +157,7 @@
 
       <!-- Same weave geometry, inverted weights so paper still reads as paper. -->
       <ImageBrush x:Key="CarbonWeave"
-                  Source="avares://Performa.Desktop/Assets/carbon-light.png"
+                  Source="avares://Performa/Assets/carbon-light.png"
                   TileMode="Tile" Stretch="None"
                   DestinationRect="0,0,8,8" />
 

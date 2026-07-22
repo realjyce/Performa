@@ -37,8 +37,12 @@ public sealed class Preferences
     /// <summary>Gemini key for the optional AI enricher. Free tier, user supplied.</summary>
     public string? GeminiApiKey { get; set; }
 
-    /// <summary>Opt-in: nothing leaves the machine unless this is true.</summary>
-    public bool AiEnabled { get; set; }
+    /// <summary>
+    /// Gates every outbound model call. On by default so a fresh install answers
+    /// in prose without setup; turning it off in Settings keeps the machine
+    /// silent, and the deterministic answers are unchanged either way.
+    /// </summary>
+    public bool AiEnabled { get; set; } = true;
 }
 
 public sealed class StateFile

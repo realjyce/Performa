@@ -13,3 +13,6 @@ app-credentials.json
 
 # Screenshot harness output
 .shots/
+
+# Published build output
+dist/

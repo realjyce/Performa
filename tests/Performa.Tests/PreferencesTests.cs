@@ -68,15 +68,25 @@ public class PreferencesTests
         => Assert.Equal(AppTheme.Dark, new Preferences().Theme);
 
     [Fact]
-    public void Ai_is_off_and_no_credentials_exist_by_default()
+    public void No_user_credentials_exist_by_default()
     {
         var fresh = new Preferences();
 
-        Assert.False(fresh.AiEnabled);
         Assert.Null(fresh.GeminiApiKey);
         Assert.Null(fresh.GitHubToken);
         Assert.Null(fresh.GitHubClientId);
         Assert.Null(fresh.GoogleClientSecret);
+    }
+
+    /// <summary>
+    /// AI ships on so a fresh install answers in prose with no setup. The flag
+    /// still has to survive being turned off, or the Settings switch is a lie.
+    /// </summary>
+    [Fact]
+    public void Ai_is_on_by_default_and_can_be_turned_off()
+    {
+        Assert.True(new Preferences().AiEnabled);
+        Assert.False(RoundTrip(new Preferences { AiEnabled = false }).AiEnabled);
     }
 
     [Fact]
