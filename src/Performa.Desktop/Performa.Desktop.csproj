@@ -27,6 +27,19 @@
     <DebugType>none</DebugType>
   </PropertyGroup>
 
+  <!--
+    Skia and HarfBuzz ship native .pdb files as package content, so they land
+    next to the binary and survive DebugType=none. That is about 100MB of
+    symbols beside a 48MB app, and nobody downloading a release wants them.
+  -->
+  <Target Name="DropNativeSymbols" AfterTargets="ComputeResolvedFilesToPublishList"
+          Condition="'$(PublishSingleFile)' == 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <AvaloniaResource Include="Assets/**" />
   </ItemGroup>

@@ -26,7 +26,9 @@ public static class StartupService
 
     public static bool IsEnabled()
     {
-        if (!IsSupported) return false;
+        // Called rather than IsSupported so the platform analyser can see the
+        // guard and follow it into the registry calls below.
+        if (!OperatingSystem.IsWindows()) return false;
         try
         {
             using var key = OpenRunKey(writable: false);
@@ -38,7 +40,8 @@ public static class StartupService
     /// <summary>Turns boot launch on or off. Returns a human-readable outcome.</summary>
     public static string Set(bool enabled)
     {
-        if (!IsSupported) return "Launching at startup is only wired up for Windows.";
+        if (!OperatingSystem.IsWindows())
+            return "Launching at startup is only wired up for Windows.";
 
         var exe = Environment.ProcessPath;
         if (enabled && (exe is null || !exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)))
