@@ -10,6 +10,13 @@ public enum Tone { Plain, Friendly }
 /// <summary>Carbon is the identity, so it stays the default.</summary>
 public enum AppTheme { Dark, Light }
 
+/// <summary>
+/// Which vendor answers when the optional AI layer is on. Gemini leads because
+/// it is the only one of the three with a free tier, so a fresh install can
+/// try the feature without a card on file.
+/// </summary>
+public enum AiProvider { Gemini, Claude, OpenAi }
+
 public sealed class Preferences
 {
     public bool Initialised { get; set; }
@@ -37,8 +44,19 @@ public sealed class Preferences
     public string? GoogleClientId { get; set; }
     public string? GoogleClientSecret { get; set; }
 
-    /// <summary>Gemini key for the optional AI enricher. Free tier, user supplied.</summary>
+    // Keys for the optional AI enricher, one per vendor so switching provider
+    // does not make you re-paste the key you were using before.
+    /// <summary>Gemini key. Free tier, user supplied.</summary>
     public string? GeminiApiKey { get; set; }
+
+    /// <summary>Anthropic key. Billed per token.</summary>
+    public string? AnthropicApiKey { get; set; }
+
+    /// <summary>OpenAI key. Billed per token.</summary>
+    public string? OpenAiApiKey { get; set; }
+
+    /// <summary>Which vendor gets the question when AI is on.</summary>
+    public AiProvider AiProvider { get; set; } = AiProvider.Gemini;
 
     /// <summary>
     /// Gates every outbound model call. On by default so a fresh install answers

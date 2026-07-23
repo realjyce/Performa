@@ -68,6 +68,12 @@ if (args.Length > 1 && args[1] == "dots")
 
 var vm = new MainViewModel();
 
+// The launch walkthrough sits over everything, which is right for a first run
+// and wrong for a page shot. PERFORMA_SHOT_ONBOARDING=1 keeps it for the one
+// capture that is meant to show it.
+if (Environment.GetEnvironmentVariable("PERFORMA_SHOT_ONBOARDING") != "1")
+    vm.ShowOnboarding = false;
+
 // Shot builds its own window, so the theme App would normally apply on startup
 // has to be applied here. PERFORMA_SHOT_THEME overrides the stored preference.
 App.ApplyTheme(
@@ -126,10 +132,13 @@ window.Show();
 // view via the ViewLocator, which the initial render does not exercise).
 if (args.Length > 5 && args[5].StartsWith("navto:"))
 {
-    var idx = int.Parse(args[5]["navto:".Length..]);
     Dispatcher.UIThread.RunJobs();
     Thread.Sleep(400);
-    vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(idx);
+    var target = args[5]["navto:".Length..];
+    // Assistant lives on its own button rather than in the nav lists, so it
+    // is reached by name through the same command the sidebar uses.
+    if (target == "assistant") vm.OpenAssistantCommand.Execute(null);
+    else vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(int.Parse(target));
 }
 
 // Optional: "combo" opens the first dropdown so the popup itself can be checked.
@@ -151,6 +160,26 @@ while (DateTime.Now < deadline)
 {
     Dispatcher.UIThread.RunJobs();
     Thread.Sleep(120);
+}
+
+// Long pages put the interesting card below the fold. PERFORMA_SHOT_SCROLL
+// moves the first scroller down by that many pixels before capturing.
+if (int.TryParse(Environment.GetEnvironmentVariable("PERFORMA_SHOT_SCROLL"), out var scroll)
+    && scroll > 0)
+{
+    // Tree order finds the sidebar and combo popups first, so pick the one
+    // that actually has the most to scroll: that is the page body.
+    var viewer = window.GetVisualDescendants().OfType<ScrollViewer>()
+        .Where(s => s.Extent.Height > s.Viewport.Height)
+        .OrderByDescending(s => s.Extent.Height)
+        .FirstOrDefault();
+    if (viewer is not null)
+    {
+        viewer.Offset = viewer.Offset.WithY(Math.Min(scroll, viewer.ScrollBarMaximum.Y));
+        for (var i = 0; i < 12; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(120); }
+        Console.WriteLine($"scrolled to {viewer.Offset.Y} of {viewer.ScrollBarMaximum.Y}");
+    }
+    else Console.WriteLine("no scrollable viewer found");
 }
 
 var frame = window.CaptureRenderedFrame();

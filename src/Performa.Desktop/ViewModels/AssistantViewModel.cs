@@ -23,7 +23,7 @@ public sealed class ChatMessage(bool isUser, string text, string? source = null)
 public sealed class AssistantViewModel : ObservableObject
 {
     private readonly PerformaEngine _engine;
-    private readonly GeminiService _gemini = new();
+    private readonly AiService _ai = new();
 
     public AssistantViewModel(PerformaEngine engine)
     {
@@ -64,11 +64,11 @@ public sealed class AssistantViewModel : ObservableObject
         // Deterministic facts first: they are the ground truth either way.
         var facts = await Task.Run(() => Answer(question.ToLowerInvariant()));
 
-        var key = AppCredentialStore.GeminiKey(_engine.Prefs);
+        var key = AppCredentialStore.AiKey(_engine.Prefs, _engine.Prefs.AiProvider);
         if (_engine.Prefs.AiEnabled && !string.IsNullOrWhiteSpace(key))
         {
             var context = await Task.Run(BuildContext);
-            var answer = await _gemini.AskAsync(key, context, question);
+            var answer = await _ai.AskAsync(_engine.Prefs, context, question);
             if (answer is not null)
             {
                 Messages.Add(new ChatMessage(false, answer.Text, answer.Model));

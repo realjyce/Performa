@@ -33,6 +33,19 @@ public static class AppCredentialStore
     public static string? GeminiKey(Preferences prefs)
         => prefs.GeminiApiKey is { Length: > 0 } key ? key : Read("gemini_api_key");
 
+    /// <summary>
+    /// The key for whichever vendor is selected. Claude and OpenAI are user-supplied
+    /// only: both bill per token, so shipping a shared key would be spending
+    /// someone else's money on every install.
+    /// </summary>
+    public static string? AiKey(Preferences prefs, AiProvider provider) => provider switch
+    {
+        AiProvider.Gemini => GeminiKey(prefs),
+        AiProvider.Claude => prefs.AnthropicApiKey is { Length: > 0 } k ? k : null,
+        AiProvider.OpenAi => prefs.OpenAiApiKey is { Length: > 0 } k ? k : null,
+        _ => null,
+    };
+
     private static string? Read(string property)
         => FromFile(Path.Combine(AppContext.BaseDirectory, FileName), property)
            ?? FromFile(Path.Combine(

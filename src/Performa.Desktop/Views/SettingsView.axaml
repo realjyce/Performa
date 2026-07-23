@@ -172,16 +172,42 @@
       <!-- AI -->
       <Border Classes="card">
         <StackPanel Spacing="10">
-          <TextBlock Text="AI (GEMINI)" Classes="label" />
+          <TextBlock Text="AI" Classes="label" />
           <TextBlock Classes="faint" TextWrapping="Wrap"
-                     Text="Adds prose on top of the facts: a readable answer in the Assistant and a short read of each email. The extracted facts never go away, so turning this off loses nothing. When enabled, commit subjects and email text are sent to Google's Gemini API." />
+                     Text="Adds prose on top of the facts: a readable answer in the Assistant and a short read of each email. The extracted facts never go away, so turning this off loses nothing. When enabled, commit subjects and email text are sent to whichever provider you pick below." />
           <CheckBox IsChecked="{Binding AiEnabled}" Margin="0,4,0,0">
             <TextBlock Text="Enable AI prose" Foreground="{DynamicResource TextPrimaryBrush}" />
           </CheckBox>
-          <TextBlock Classes="faint" TextWrapping="Wrap" FontSize="11"
-                     Text="This build ships with a shared key, so leave the field empty unless you want your own quota. Your own key always wins." />
-          <TextBox Text="{Binding GeminiKey}" PasswordChar="•"
-                   PlaceholderText="Your own Gemini key (optional)" />
+
+          <StackPanel Spacing="7" IsVisible="{Binding AiEnabled}">
+            <TextBlock Text="PROVIDER" Classes="label" FontSize="10" />
+            <ComboBox ItemsSource="{Binding AiProviders}"
+                      SelectedItem="{Binding AiProvider}" HorizontalAlignment="Stretch" />
+            <TextBlock Text="{Binding AiKeyHint}" Classes="faint" FontSize="11"
+                       TextWrapping="Wrap" />
+
+            <!-- One field per provider, so switching back never costs a re-paste. -->
+            <StackPanel Spacing="5" IsVisible="{Binding IsGemini}">
+              <TextBox Text="{Binding GeminiKey}" PasswordChar="•"
+                       PlaceholderText="Your own Gemini key (optional)" />
+              <TextBlock Classes="faint" FontSize="11" TextWrapping="Wrap"
+                         Text="Gemini has a free tier and this build ships with a shared key, so you can leave this empty. Your own key always wins." />
+            </StackPanel>
+
+            <StackPanel Spacing="5" IsVisible="{Binding IsClaude}">
+              <TextBox Text="{Binding AnthropicKey}" PasswordChar="•"
+                       PlaceholderText="Your Anthropic key" />
+              <TextBlock Classes="faint" FontSize="11" TextWrapping="Wrap"
+                         Text="Billed per token, so this key is yours to supply. Nothing is sent until you paste one." />
+            </StackPanel>
+
+            <StackPanel Spacing="5" IsVisible="{Binding IsOpenAi}">
+              <TextBox Text="{Binding OpenAiKey}" PasswordChar="•"
+                       PlaceholderText="Your OpenAI key" />
+              <TextBlock Classes="faint" FontSize="11" TextWrapping="Wrap"
+                         Text="Billed per token, so this key is yours to supply. Nothing is sent until you paste one." />
+            </StackPanel>
+          </StackPanel>
         </StackPanel>
       </Border>
 

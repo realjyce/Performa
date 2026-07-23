@@ -55,7 +55,7 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
     private readonly PerformaEngine _engine;
     private readonly GoogleAuthService _auth = new();
     private readonly GmailService _gmail = new();
-    private readonly GeminiService _gemini = new();
+    private readonly AiService _ai = new();
 
     public InboxViewModel(PerformaEngine engine)
     {
@@ -120,13 +120,10 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
     /// </summary>
     private async Task SummariseAsync()
     {
-        var key = AppCredentialStore.GeminiKey(_engine.Prefs);
-        if (!_engine.Prefs.AiEnabled || string.IsNullOrWhiteSpace(key)) return;
-
         foreach (var card in Mail.Take(6))
         {
-            var prose = await _gemini.SummariseEmailAsync(
-                key, card.From, card.Subject, card.FullBody);
+            var prose = await _ai.SummariseEmailAsync(
+                _engine.Prefs, card.From, card.Subject, card.FullBody);
             if (prose is { Length: > 0 }) card.AiSummary = prose;
         }
     }

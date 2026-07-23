@@ -28,6 +28,9 @@ public sealed class SettingsViewModel : ObservableObject
         _engine = engine;
         _userName = engine.Prefs.UserName ?? "";
         _geminiKey = engine.Prefs.GeminiApiKey ?? "";
+        _anthropicKey = engine.Prefs.AnthropicApiKey ?? "";
+        _openAiKey = engine.Prefs.OpenAiApiKey ?? "";
+        _aiProvider = engine.Prefs.AiProvider.ToString();
         _aiEnabled = engine.Prefs.AiEnabled;
         _workspacePath = engine.WorkspacePath ?? "";
         _gitHubToken = engine.Prefs.GitHubToken ?? "";
@@ -341,6 +344,40 @@ public sealed class SettingsViewModel : ObservableObject
     private string _geminiKey;
     public string GeminiKey { get => _geminiKey; set => SetProperty(ref _geminiKey, value); }
 
+    private string _anthropicKey;
+    public string AnthropicKey { get => _anthropicKey; set => SetProperty(ref _anthropicKey, value); }
+
+    private string _openAiKey;
+    public string OpenAiKey { get => _openAiKey; set => SetProperty(ref _openAiKey, value); }
+
+    public string[] AiProviders { get; } = Enum.GetNames<Performa.Prefs.AiProvider>();
+
+    /// <summary>
+    /// Which vendor answers. Each provider keeps its own key, so switching back
+    /// and forth never costs a re-paste; only the selected one's field is shown.
+    /// </summary>
+    private string _aiProvider;
+    public string AiProvider
+    {
+        get => _aiProvider;
+        set
+        {
+            if (!SetProperty(ref _aiProvider, value)) return;
+            OnPropertyChanged(nameof(IsGemini));
+            OnPropertyChanged(nameof(IsClaude));
+            OnPropertyChanged(nameof(IsOpenAi));
+            OnPropertyChanged(nameof(AiKeyHint));
+        }
+    }
+
+    public bool IsGemini => _aiProvider == nameof(Performa.Prefs.AiProvider.Gemini);
+    public bool IsClaude => _aiProvider == nameof(Performa.Prefs.AiProvider.Claude);
+    public bool IsOpenAi => _aiProvider == nameof(Performa.Prefs.AiProvider.OpenAi);
+
+    /// <summary>Where to get a key for whichever provider is selected.</summary>
+    public string AiKeyHint =>
+        "Key from " + AiService.KeyUrlOf(Enum.Parse<Performa.Prefs.AiProvider>(_aiProvider));
+
     private bool _aiEnabled;
     public bool AiEnabled { get => _aiEnabled; set => SetProperty(ref _aiEnabled, value); }
 
@@ -416,6 +453,11 @@ public sealed class SettingsViewModel : ObservableObject
     {
         _engine.Prefs.UserName = string.IsNullOrWhiteSpace(UserName) ? null : UserName.Trim();
         _engine.Prefs.GeminiApiKey = string.IsNullOrWhiteSpace(GeminiKey) ? null : GeminiKey.Trim();
+        _engine.Prefs.AnthropicApiKey =
+            string.IsNullOrWhiteSpace(AnthropicKey) ? null : AnthropicKey.Trim();
+        _engine.Prefs.OpenAiApiKey =
+            string.IsNullOrWhiteSpace(OpenAiKey) ? null : OpenAiKey.Trim();
+        _engine.Prefs.AiProvider = Enum.Parse<Performa.Prefs.AiProvider>(AiProvider);
         _engine.Prefs.AiEnabled = AiEnabled;
         _engine.Prefs.GitHubToken = string.IsNullOrWhiteSpace(GitHubToken) ? null : GitHubToken.Trim();
         _engine.Prefs.GitHubClientId =
