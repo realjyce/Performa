@@ -1,8 +1,8 @@
-# Performa
+<h1 align="center">Performa</h1>
 
-Let yourself be managed. A helper, a summariser, a standup scribe, a
-changelog keeper, a catcher of loose ends. An all-rounder by your side,
-working from what your git history already knows. 🧹
+<p align="center">Let yourself be managed. A helper, summariser, standup scribe,</p>
+<p align="center">changelog keeper, and cleans up after you 🧹. An all-rounder by your side,</p>
+<p align="center">works from both local and remote git. Bring your own AI key and integrate it into the structure.</p>
 
 `performa` reads your project's git history and writes the things you'd
 otherwise write by hand: standups, changelogs, branch summaries, loose-end
