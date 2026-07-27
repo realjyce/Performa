@@ -51,6 +51,7 @@ public class PreferencesTests
             Tone = Tone.Friendly,
             Format = OutputFormat.Text,
             Theme = AppTheme.Light,
+            SidebarCollapsed = true,
         });
 
         Assert.True(back.Initialised);
@@ -61,6 +62,7 @@ public class PreferencesTests
         Assert.Equal(Tone.Friendly, back.Tone);
         Assert.Equal(OutputFormat.Text, back.Format);
         Assert.Equal(AppTheme.Light, back.Theme);
+        Assert.True(back.SidebarCollapsed);
     }
 
     [Fact]

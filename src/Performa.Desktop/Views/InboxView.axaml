@@ -21,8 +21,11 @@
           <Button Classes="spin" Classes.busy="{Binding Loading}"
                   VerticalAlignment="Center" ToolTip.Tip="Refresh (auto every 5 minutes)"
                   Command="{Binding RefreshCommand}">
-            <Path Data="{DynamicResource IconRefresh}" Width="16" Height="16"
-                  Stretch="Uniform" Fill="{DynamicResource TextMutedBrush}" />
+            <Viewbox Width="16" Height="16">
+              <Panel Width="24" Height="24">
+                <Path Data="{DynamicResource IconRefresh}" Fill="{DynamicResource TextMutedBrush}" />
+              </Panel>
+            </Viewbox>
           </Button>
         </StackPanel>
       </Grid>

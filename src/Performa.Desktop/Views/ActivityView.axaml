@@ -20,8 +20,11 @@
           <Button Classes="spin" Classes.busy="{Binding IsLoading}"
                   ToolTip.Tip="Refresh (auto every 5 minutes)"
                   Command="{Binding RefreshCommand}">
-            <Path Data="{DynamicResource IconRefresh}" Width="16" Height="16"
-                  Stretch="Uniform" Fill="{DynamicResource TextMutedBrush}" />
+            <Viewbox Width="16" Height="16">
+              <Panel Width="24" Height="24">
+                <Path Data="{DynamicResource IconRefresh}" Fill="{DynamicResource TextMutedBrush}" />
+              </Panel>
+            </Viewbox>
           </Button>
         </StackPanel>
       </Grid>
@@ -47,14 +50,18 @@
                 <ItemsControl ItemsSource="{Binding Commits}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ActivityCommit">
-                      <Grid ColumnDefinitions="44,Auto,*" Margin="0,4">
+                      <!-- Fixed columns: every subject starts at the same x,
+                           however long the repo name is. -->
+                      <Grid ColumnDefinitions="44,104,*" Margin="0,4">
                         <TextBlock Grid.Column="0" Text="{Binding Time}" Classes="mono"
                                    FontSize="11.5"
                                    Foreground="{DynamicResource AccentBrightBrush}"
                                    VerticalAlignment="Center" />
                         <Border Grid.Column="1" Classes="chip" Margin="0,0,10,0"
-                                VerticalAlignment="Center">
-                          <TextBlock Text="{Binding Repo}" Classes="mono" FontSize="10.5" />
+                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                MaxWidth="94">
+                          <TextBlock Text="{Binding Repo}" Classes="mono" FontSize="10.5"
+                                     TextTrimming="CharacterEllipsis" />
                         </Border>
                         <TextBlock Grid.Column="2" Text="{Binding Subject}" Classes="muted"
                                    FontSize="12.5" VerticalAlignment="Center"

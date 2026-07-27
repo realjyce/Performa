@@ -14,6 +14,15 @@ public sealed record RemoteRepo(
     string CloneUrl,
     DateTimeOffset? PushedAt);
 
+/// <summary>An open PR or issue that involves the signed-in user.</summary>
+public sealed record WorkItem(
+    string Repo,
+    int Number,
+    string Title,
+    string Url,
+    bool IsPull,
+    DateTimeOffset? Updated);
+
 /// <summary>
 /// Opt-in GitHub remote data. Lives in the desktop layer only; Performa.Core
 /// stays network-free. Works unauthenticated for public repos (60 req/hr);
@@ -105,5 +114,56 @@ public sealed class GitHubService
         catch (TaskCanceledException) { return null; }
         catch (JsonException) { return null; }
         catch (KeyNotFoundException) { return null; }
+    }
+
+    /// <summary>
+    /// Open PRs and issues that involve the signed-in user, newest activity
+    /// first. "involves" is GitHub's own union of authored, assigned,
+    /// mentioned and commented, which matches what a person means by "mine".
+    /// </summary>
+    public async Task<List<WorkItem>?> GetOpenWorkAsync(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token)) return null;
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Get,
+                "https://api.github.com/search/issues?q=is:open+involves:@me&sort=updated&per_page=40");
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var res = await Http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return null;
+
+            await using var stream = await res.Content.ReadAsStreamAsync();
+            using var doc = await JsonDocument.ParseAsync(stream);
+            if (!doc.RootElement.TryGetProperty("items", out var items)) return null;
+
+            var work = new List<WorkItem>();
+            foreach (var item in items.EnumerateArray())
+            {
+                // repository_url ends with /repos/{owner}/{name}
+                var repoUrl = item.TryGetProperty("repository_url", out var r)
+                    ? r.GetString() ?? "" : "";
+                var slash = repoUrl.LastIndexOf('/');
+                var owner = repoUrl[..slash].LastIndexOf('/') is var o and >= 0
+                    ? repoUrl[(o + 1)..slash] : "";
+                var repo = slash >= 0 ? $"{owner}/{repoUrl[(slash + 1)..]}" : "";
+
+                DateTimeOffset? updated = item.TryGetProperty("updated_at", out var u)
+                    && u.ValueKind == JsonValueKind.String
+                    && DateTimeOffset.TryParse(u.GetString(), out var dt) ? dt : null;
+
+                work.Add(new WorkItem(
+                    Repo: repo,
+                    Number: item.TryGetProperty("number", out var n) ? n.GetInt32() : 0,
+                    Title: item.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "",
+                    Url: item.TryGetProperty("html_url", out var h) ? h.GetString() ?? "" : "",
+                    IsPull: item.TryGetProperty("pull_request", out _),
+                    Updated: updated));
+            }
+            return work;
+        }
+        catch (HttpRequestException) { return null; }
+        catch (TaskCanceledException) { return null; }
+        catch (JsonException) { return null; }
     }
 }

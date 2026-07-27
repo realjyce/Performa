@@ -46,34 +46,62 @@
     </Grid>
 
     <!-- Body -->
-    <Grid Grid.Row="1" ColumnDefinitions="236,*">
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
 
-      <!-- Sidebar -->
+      <!-- Sidebar: animates between full and icon rail -->
       <Border Grid.Column="0" Background="{DynamicResource BgSidebarBrush}"
-              BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,1,0">
+              BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,1,0"
+              Width="{Binding SidebarWidth}">
+        <Border.Transitions>
+          <Transitions>
+            <DoubleTransition Property="Width" Duration="0:0:0.18" Easing="CubicEaseOut" />
+          </Transitions>
+        </Border.Transitions>
         <Grid>
         <Border Background="{DynamicResource CarbonWeave}" IsHitTestVisible="False" />
-        <DockPanel Margin="14,6,14,16">
+        <DockPanel Margin="12,6,12,16">
 
-          <StackPanel DockPanel.Dock="Top" Margin="4,10,4,18">
-            <TextBlock Text="WORKSPACE" Classes="label" />
-            <TextBlock Text="{Binding Engine.WorkspacePath, FallbackValue='Not set'}"
-                       Classes="muted" TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
-          </StackPanel>
+          <!-- Workspace: click to switch folders; chevron collapses the rail -->
+          <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="2,10,2,14">
+            <Button Grid.Column="0" Classes="wspick" Click="OnPickWorkspace"
+                    IsVisible="{Binding !SidebarCollapsed}"
+                    ToolTip.Tip="{Binding WorkspaceFull}">
+              <StackPanel Spacing="2">
+                <TextBlock Text="WORKSPACE" Classes="label" />
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Path Data="{DynamicResource IconFolder}"
+                        Fill="{DynamicResource TextMutedBrush}" Width="12" Height="12"
+                        Stretch="Uniform" VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding WorkspaceDisplay}" Classes="muted"
+                             TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                </StackPanel>
+              </StackPanel>
+            </Button>
+            <Button Grid.Column="1" Classes="railtoggle"
+                    Classes.flipped="{Binding SidebarCollapsed}"
+                    Command="{Binding ToggleSidebarCommand}"
+                    ToolTip.Tip="Collapse or expand the menu">
+              <Path Data="{DynamicResource IconChevron}"
+                    Fill="{DynamicResource TextMutedBrush}" Width="13" Height="13"
+                    Stretch="Uniform" />
+            </Button>
+          </Grid>
 
           <StackPanel DockPanel.Dock="Bottom" Spacing="10">
 
             <!-- Assistant: the premium surface, sized to hint at what lands here -->
-            <Button Classes="assistantcard" Command="{Binding OpenAssistantCommand}">
+            <Button Classes="assistantcard" Classes.rail="{Binding SidebarCollapsed}"
+                    Command="{Binding OpenAssistantCommand}" ToolTip.Tip="Assistant">
               <StackPanel Spacing="7">
                 <StackPanel Orientation="Horizontal" Spacing="9">
                   <Path Data="{DynamicResource IconAssistant}" Fill="White"
                         Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center" />
-                  <TextBlock Text="Assistant" Foreground="White" FontSize="14"
+                  <TextBlock Text="Assistant" Classes="navtitle" Foreground="White" FontSize="14"
                              FontWeight="SemiBold" VerticalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Text="Ask about your work" Foreground="#D9CCFF" FontSize="11" />
-                <Border Background="#33FFFFFF" CornerRadius="20" Padding="8,2"
+                <TextBlock Text="Ask about your work" Classes="navtitle"
+                           Foreground="#D9CCFF" FontSize="11" />
+                <Border Classes="navchip" Background="#33FFFFFF" CornerRadius="20" Padding="8,2"
                         HorizontalAlignment="Left">
                   <TextBlock Text="Gemini" Foreground="White" FontSize="9.5"
                              FontWeight="SemiBold" />
@@ -84,25 +112,28 @@
             <!-- Greeting sits with Settings in one quiet container -->
             <Border Background="{DynamicResource BgCardBrush}"
                     BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1"
-                    CornerRadius="10" Padding="4,6">
+                    CornerRadius="10" Padding="4,6"
+                    Classes.rail="{Binding SidebarCollapsed}">
               <StackPanel>
-                <TextBlock Margin="11,2,11,6" FontSize="11"
-                           Foreground="{DynamicResource TextFaintBrush}"
-                           TextTrimming="CharacterEllipsis"
-                           IsVisible="{Binding Greeting, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                  <Run Text="Hello," />
-                  <Run Text="{Binding Greeting}" Foreground="{DynamicResource NeonBrush}"
-                       FontWeight="SemiBold" />
-                </TextBlock>
+                <Panel IsVisible="{Binding !SidebarCollapsed}">
+                  <TextBlock Margin="11,2,11,6" FontSize="11"
+                             Foreground="{DynamicResource TextFaintBrush}"
+                             TextTrimming="CharacterEllipsis"
+                             IsVisible="{Binding Greeting, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <Run Text="Hello," />
+                    <Run Text="{Binding Greeting}" Foreground="{DynamicResource NeonBrush}"
+                         FontWeight="SemiBold" />
+                  </TextBlock>
+                </Panel>
                 <ListBox Classes="nav" ItemsSource="{Binding UtilityItems}"
                          SelectedItem="{Binding Selected, Mode=TwoWay}">
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:NavItem">
-                      <StackPanel Orientation="Horizontal">
+                      <StackPanel Orientation="Horizontal" ToolTip.Tip="{Binding Title}">
                         <Path Data="{Binding Icon}" Fill="{DynamicResource TextMutedBrush}"
                               Width="16" Height="16" Stretch="Uniform"
                               VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding Title}" Margin="12,0,0,0"
+                        <TextBlock Text="{Binding Title}" Classes="navtitle" Margin="12,0,0,0"
                                    Foreground="{DynamicResource TextPrimaryBrush}"
                                    FontSize="13" VerticalAlignment="Center" />
                       </StackPanel>
@@ -115,21 +146,17 @@
           </StackPanel>
 
           <ListBox DockPanel.Dock="Top" Classes="nav" ItemsSource="{Binding NavItems}"
+                   Classes.rail="{Binding SidebarCollapsed}"
                    SelectedItem="{Binding Selected, Mode=TwoWay}">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:NavItem">
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" ToolTip.Tip="{Binding Title}">
                   <Path Data="{Binding Icon}" Fill="{DynamicResource TextMutedBrush}"
                         Width="17" Height="17" Stretch="Uniform"
                         VerticalAlignment="Center" />
-                  <TextBlock Text="{Binding Title}" Margin="12,0,0,0"
+                  <TextBlock Text="{Binding Title}" Classes="navtitle" Margin="12,0,0,0"
                              Foreground="{DynamicResource TextPrimaryBrush}"
                              FontSize="13.5" VerticalAlignment="Center" />
-                  <Border Classes="chip" Margin="8,0,0,0" IsVisible="{Binding Dormant}"
-                          VerticalAlignment="Center" Padding="6,1">
-                    <TextBlock Text="soon" FontSize="9.5"
-                               Foreground="{DynamicResource TextFaintBrush}" />
-                  </Border>
                 </StackPanel>
               </DataTemplate>
             </ListBox.ItemTemplate>

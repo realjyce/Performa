@@ -112,6 +112,11 @@ if (args.Length > 4 && args[4] == "gh:code" && vm.Selected.Page is SettingsViewM
         + "your browser should already be open.";
 }
 
+// Optional: "rail" collapses the sidebar for the shot. The setter persists the
+// choice, so the previous value is put back before the process exits.
+var priorRail = vm.SidebarCollapsed;
+if (args.Length > 4 && args[4] == "rail") vm.SidebarCollapsed = true;
+
 // Optional: open the console and run a command (e.g. "console:standup Performa").
 if (args.Length > 4 && args[4].StartsWith("console:"))
 {
@@ -186,4 +191,6 @@ var frame = window.CaptureRenderedFrame();
 if (frame is not null)
     using (var fs = File.Create(outFile))
         frame.Save(fs);
+
+if (vm.SidebarCollapsed != priorRail) vm.SidebarCollapsed = priorRail;
 Console.WriteLine($"saved {outFile} (page {pageIndex}, {width}x{height})");

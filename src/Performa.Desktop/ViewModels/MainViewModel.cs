@@ -38,6 +38,36 @@ public sealed class MainViewModel : ObservableObject
 
     public ConsoleViewModel Console { get; }
 
+    /// <summary>Collapsed keeps icons only; the width animates via a transition
+    /// on the sidebar border. Persisted so the choice survives a restart.</summary>
+    private bool _sidebarCollapsed;
+    public bool SidebarCollapsed
+    {
+        get => _sidebarCollapsed;
+        set
+        {
+            if (!SetProperty(ref _sidebarCollapsed, value)) return;
+            OnPropertyChanged(nameof(SidebarWidth));
+            Engine.Prefs.SidebarCollapsed = value;
+            Engine.SavePrefs();
+        }
+    }
+
+    public double SidebarWidth => _sidebarCollapsed ? 62 : 236;
+
+    public RelayCommand ToggleSidebarCommand { get; }
+
+    /// <summary>Folder name for the sidebar header; the full path lives in the
+    /// tooltip. Re-raised whenever the engine's workspace changes.</summary>
+    public string WorkspaceDisplay
+        => Engine.WorkspacePath is { Length: > 0 } ws
+            ? System.IO.Path.GetFileName(ws.TrimEnd('\\', '/'))
+            : "Not set";
+
+    public string WorkspaceFull => Engine.WorkspacePath ?? "No workspace folder set";
+
+    public void SetWorkspace(string path) => Engine.SetWorkspace(path);
+
     // Launch walkthrough: name first, then offer the sign-ins, once only.
     private readonly GitHubAuthService _gitHubAuth = new();
     private readonly GoogleAuthService _googleAuth = new();
@@ -166,8 +196,15 @@ public sealed class MainViewModel : ObservableObject
         if (_googleConnected) _googleStatusText = "Connected";
         _showOnboarding = !Engine.Prefs.OnboardingDone;
         OpenAssistantCommand = new RelayCommand(() => Selected = _assistantNav);
+        ToggleSidebarCommand = new RelayCommand(() => SidebarCollapsed = !SidebarCollapsed);
+        _sidebarCollapsed = Engine.Prefs.SidebarCollapsed;
         _needsName = string.IsNullOrWhiteSpace(Engine.Prefs.UserName);
         _greeting = Engine.Prefs.UserName ?? "";
+        Engine.WorkspaceChanged += () =>
+        {
+            OnPropertyChanged(nameof(WorkspaceDisplay));
+            OnPropertyChanged(nameof(WorkspaceFull));
+        };
 
         var dashboard = new DashboardViewModel(Engine, HandleQuickAction);
         var daily = new DailyViewModel(Engine);
@@ -175,7 +212,7 @@ public sealed class MainViewModel : ObservableObject
         _reports = new ReportsViewModel(Engine);
         var loose = new LooseEndsViewModel(Engine);
         var inbox = new InboxViewModel(Engine);
-        var streams = new StreamsViewModel();
+        var pulls = new PullsViewModel(Engine);
         var assistant = new AssistantViewModel(Engine);
         var settings = new SettingsViewModel(Engine);
 
@@ -188,9 +225,9 @@ public sealed class MainViewModel : ObservableObject
             new NavItem("Daily", "IconDaily", daily),
             new NavItem("Inbox", "IconMail", inbox),
             new NavItem("Activity", "IconActivity", activity),
+            new NavItem("Pulls", "IconGitBranch", pulls),
             _reportsNav,
             _looseNav,
-            new NavItem("Streams", "IconStreams", streams, dormant: true),
         ];
         _assistantNav = new NavItem("Assistant", "IconAssistant", assistant);
         UtilityItems = [new NavItem("Settings", "IconSettings", settings)];

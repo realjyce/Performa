@@ -350,3 +350,27 @@ One decision or lesson per entry. Newest last.
 - **NeonBrush exists for exactly one word: the user's name.** An accent used
   everywhere stops being an accent. Brighter than AccentBright on carbon,
   deepened on paper where electric violet washes out.
+
+- **The spin wobble was geometry, not animation.** The refresh glyph's bounds
+  are taller than wide, so rotating the Path swept an off-centre envelope. The
+  fix renders the glyph in its native square canvas inside a Viewbox and
+  rotates that: the pivot is the arc circle's true centre for any icon.
+
+- **Smooth scrolling is one attached behavior, applied from a style.** Wheel
+  input eases the offset toward a target with exponential decay against real
+  elapsed time - never a per-frame constant, which runs at different speeds on
+  different refresh rates (the portfolio deck bug, not repeated).
+
+- **Pulls replaced Streams.** Streams' tiles still called Email, Calendar and
+  AI "later" after all three had shipped - a menu item that lies is worse than
+  an empty one. Pulls is GitHub's own "involves:@me" search: Inbox is what
+  email asks of you, Pulls is what code asks of you.
+
+- **Loose Ends always shows the health roster.** A clean workspace used to be
+  one tick in an empty page; now every repo states its branch and verdict, so
+  "clean" is a claim per repository instead of an absence of content.
+
+- **The sidebar collapses to an icon rail.** One width property with a
+  transition; labels hide via a .rail class on their containers, so no view
+  duplicates its layout. The workspace header became a picker button - the
+  folder you are looking at should be switchable where it is displayed.

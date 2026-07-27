@@ -11,6 +11,15 @@ public sealed class LooseEndItem(string kind, string text, string tone)
     public string Tone { get; } = tone; // "warn" | "info" | "danger"
 }
 
+/// <summary>One repo's line in the health roster: name, branch, verdict.</summary>
+public sealed class RepoHealthRow(string name, string branch, string verdict, bool clean)
+{
+    public string Name { get; } = name;
+    public string Branch { get; } = branch;
+    public string Verdict { get; } = verdict;
+    public bool Clean { get; } = clean;
+}
+
 public sealed class LooseEndsViewModel : ObservableObject
 {
     private readonly PerformaEngine _engine;
@@ -23,6 +32,10 @@ public sealed class LooseEndsViewModel : ObservableObject
     }
 
     public ObservableCollection<LooseEndItem> Items { get; } = [];
+
+    /// <summary>Per-repo verdicts, shown always. A clean workspace deserves a
+    /// roster saying so per repo, not a bare tick in an empty page.</summary>
+    public ObservableCollection<RepoHealthRow> Health { get; } = [];
 
     private bool _isLoading = true;
     public bool IsLoading { get => _isLoading; set => SetProperty(ref _isLoading, value); }
@@ -38,13 +51,15 @@ public sealed class LooseEndsViewModel : ObservableObject
         IsLoading = true;
         var repos = _engine.DiscoverRepos();
 
-        var collected = await Task.Run(() =>
+        var (collected, health) = await Task.Run(() =>
         {
             var list = new List<LooseEndItem>();
+            var roster = new List<RepoHealthRow>();
             foreach (var path in repos)
             {
                 var name = System.IO.Path.GetFileName(path);
                 var f = _engine.BuildLooseEnds(path);
+                var before = list.Count;
 
                 if (f.Working.Total > 0)
                     list.Add(new LooseEndItem(name,
@@ -62,12 +77,19 @@ public sealed class LooseEndsViewModel : ObservableObject
                 if (f.TodoTotal > 0)
                     list.Add(new LooseEndItem(name,
                         $"{f.TodoTotal} TODO/FIXME marker(s)", "danger"));
+
+                var found = list.Count - before;
+                var branch = _engine.CurrentBranch(path);
+                roster.Add(new RepoHealthRow(name, branch,
+                    found == 0 ? "clean" : $"{found} loose end(s)", found == 0));
             }
-            return list;
+            return (list, roster);
         });
 
         Items.Clear();
         foreach (var item in collected) Items.Add(item);
+        Health.Clear();
+        foreach (var row in health) Health.Add(row);
 
         IsClean = collected.Count == 0;
         Summary = collected.Count == 0

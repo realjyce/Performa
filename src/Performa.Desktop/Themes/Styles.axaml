@@ -1,5 +1,11 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:infra="clr-namespace:Performa.Desktop.Infrastructure">
+
+  <!-- Every scroll surface glides instead of stepping -->
+  <Style Selector="ScrollViewer">
+    <Setter Property="(infra:SmoothScroll.IsEnabled)" Value="True" />
+  </Style>
 
   <!-- Card container -->
   <Style Selector="Border.card">
@@ -198,13 +204,6 @@
     <Setter Property="TextTrimming" Value="CharacterEllipsis" />
   </Style>
 
-  <!-- Featured nav item (Assistant): lifted above the rest -->
-  <Style Selector="ListBox.nav ListBoxItem.featured /template/ Border#root">
-    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
-  </Style>
-
   <!-- Circular refresh affordance -->
   <Style Selector="Button.spin">
     <Setter Property="Background" Value="Transparent" />
@@ -217,16 +216,99 @@
   <Style Selector="Button.spin:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource BgCardHoverBrush}" />
   </Style>
-  <Style Selector="Button.spin Path">
+  <!--
+    The icon geometry's bounding box is taller than wide, so rotating the Path
+    itself wobbles: the shape's envelope sweeps off-centre. Rotating the square
+    Viewbox instead pivots on the glyph's true circle centre, whatever the
+    geometry's own bounds are.
+  -->
+  <Style Selector="Button.spin Viewbox">
     <Setter Property="RenderTransformOrigin" Value="50%,50%" />
   </Style>
-  <Style Selector="Button.spin.busy Path">
+  <Style Selector="Button.spin.busy Viewbox">
     <Style.Animations>
       <Animation Duration="0:0:1.1" IterationCount="INFINITE" Easing="LinearEasing">
         <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0" /></KeyFrame>
         <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360" /></KeyFrame>
       </Animation>
     </Style.Animations>
+  </Style>
+
+  <!-- Sidebar workspace picker: quiet, whole block clickable -->
+  <Style Selector="Button.wspick">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="6,4" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="Button.wspick /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+  <Style Selector="Button.wspick:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource BgCardHoverBrush}" />
+  </Style>
+
+  <!-- Rail collapse toggle: chevron points at where the rail will go -->
+  <Style Selector="Button.railtoggle">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="7" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+  </Style>
+  <Style Selector="Button.railtoggle /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="CornerRadius" Value="16" />
+  </Style>
+  <Style Selector="Button.railtoggle:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource BgCardHoverBrush}" />
+  </Style>
+  <Style Selector="Button.railtoggle Path">
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    <Setter Property="RenderTransform" Value="rotate(90deg)" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.railtoggle.flipped Path">
+    <Setter Property="RenderTransform" Value="rotate(-90deg)" />
+  </Style>
+
+  <!-- Collapsed rail: any .rail container hides its labels, icons remain -->
+  <Style Selector=".rail TextBlock.navtitle">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector=".rail Border.navchip">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="Button.assistantcard.rail">
+    <Setter Property="Padding" Value="11,12" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+  </Style>
+
+  <!-- Clickable list row: flat until hovered, stretches full width -->
+  <Style Selector="Button.workrow">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="10,8" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="Button.workrow /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+  <Style Selector="Button.workrow:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource BgCardHoverBrush}" />
   </Style>
 
   <!-- Assistant: the one premium surface in the sidebar -->

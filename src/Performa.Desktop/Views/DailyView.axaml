@@ -70,8 +70,11 @@
                         IsVisible="{Binding GoogleConnected}"
                         ToolTip.Tip="Refresh (auto every 5 minutes)"
                         Command="{Binding RefreshCalendarCommand}">
-                  <Path Data="{DynamicResource IconRefresh}" Width="14" Height="14"
-                        Stretch="Uniform" Fill="{DynamicResource TextMutedBrush}" />
+                  <Viewbox Width="16" Height="16">
+              <Panel Width="24" Height="24">
+                <Path Data="{DynamicResource IconRefresh}" Fill="{DynamicResource TextMutedBrush}" />
+              </Panel>
+            </Viewbox>
                 </Button>
               </Grid>
 
@@ -110,11 +113,13 @@
               <ItemsControl ItemsSource="{Binding Timeline}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:TimelineRow">
-                    <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,12">
+                    <!-- Fixed first column so every subject starts at the same x -->
+                    <Grid ColumnDefinitions="72,*" Margin="0,0,0,12">
                       <StackPanel Grid.Column="0" Margin="0,0,12,0">
                         <TextBlock Text="{Binding Time}" Classes="mono" FontSize="12"
                                    Foreground="{DynamicResource AccentBrightBrush}" />
-                        <TextBlock Text="{Binding Repo}" Classes="faint" FontSize="10" />
+                        <TextBlock Text="{Binding Repo}" Classes="faint" FontSize="10"
+                                   TextTrimming="CharacterEllipsis" />
                       </StackPanel>
                       <TextBlock Grid.Column="1" Text="{Binding Subject}" Classes="muted"
                                  FontSize="12.5" TextWrapping="Wrap" />

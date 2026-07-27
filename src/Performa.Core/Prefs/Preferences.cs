@@ -31,6 +31,9 @@ public sealed class Preferences
     public Grouping Grouping { get; set; } = Grouping.Area;
     public Tone Tone { get; set; } = Tone.Plain;
     public AppTheme Theme { get; set; } = AppTheme.Dark;
+
+    /// <summary>Icon-only sidebar. A layout choice worth surviving a restart.</summary>
+    public bool SidebarCollapsed { get; set; }
     public int RejectStreak { get; set; }
     public string? WorkspacePath { get; set; }
 

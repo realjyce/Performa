@@ -27,8 +27,11 @@
           <Button Classes="spin" Classes.busy="{Binding IsLoading}"
                   VerticalAlignment="Center" ToolTip.Tip="Rescan (auto every 3 minutes)"
                   Command="{Binding RescanCommand}">
-            <Path Data="{DynamicResource IconRefresh}" Fill="{DynamicResource TextMutedBrush}"
-                  Width="16" Height="16" Stretch="Uniform" />
+            <Viewbox Width="16" Height="16">
+              <Panel Width="24" Height="24">
+                <Path Data="{DynamicResource IconRefresh}" Fill="{DynamicResource TextMutedBrush}" />
+              </Panel>
+            </Viewbox>
           </Button>
         </StackPanel>
       </Grid>

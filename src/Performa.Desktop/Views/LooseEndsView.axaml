@@ -22,6 +22,38 @@
         </StackPanel>
       </Border>
 
+      <!-- Per-repo verdicts: the page has substance even when nothing dangles -->
+      <StackPanel Spacing="8">
+        <TextBlock Text="WORKSPACE HEALTH" Classes="label" />
+        <Border Classes="card" Padding="16,10">
+          <ItemsControl ItemsSource="{Binding Health}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:RepoHealthRow">
+                <Grid ColumnDefinitions="16,140,110,*" Margin="0,5" ColumnSpacing="10">
+                  <Path Grid.Column="0" Data="{DynamicResource IconCheck}"
+                        Fill="{DynamicResource PositiveBrush}" Width="12" Height="12"
+                        Stretch="Uniform" VerticalAlignment="Center"
+                        IsVisible="{Binding Clean}" />
+                  <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" Fill="{DynamicResource WarningBrush}"
+                           IsVisible="{Binding !Clean}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Name}"
+                             Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13"
+                             VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                  <Border Grid.Column="2" Classes="chip" HorizontalAlignment="Left"
+                          VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Branch}" Classes="mono" FontSize="10.5"
+                               TextTrimming="CharacterEllipsis" />
+                  </Border>
+                  <TextBlock Grid.Column="3" Text="{Binding Verdict}" Classes="faint"
+                             FontSize="12" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Border>
+      </StackPanel>
+
       <ItemsControl ItemsSource="{Binding Items}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:LooseEndItem">

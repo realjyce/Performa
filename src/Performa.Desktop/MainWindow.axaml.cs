@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Performa.Desktop.ViewModels;
 
@@ -51,5 +52,20 @@ public partial class MainWindow : Window
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             BeginMoveDrag(e);
+    }
+
+    /// <summary>Workspace switch from the sidebar: pick a folder in Explorer
+    /// and every page reloads against it.</summary>
+    private async void OnPickWorkspace(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel vm) return;
+        var picked = await StorageProvider.OpenFolderPickerAsync(
+            new FolderPickerOpenOptions
+            {
+                Title = "Choose your workspace folder",
+                AllowMultiple = false,
+            });
+        if (picked.Count == 1 && picked[0].TryGetLocalPath() is { Length: > 0 } path)
+            vm.SetWorkspace(path);
     }
 }
