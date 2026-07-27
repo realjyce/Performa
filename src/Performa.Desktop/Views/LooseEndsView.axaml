@@ -15,9 +15,10 @@
       <Border Classes="card" IsVisible="{Binding IsClean}" Padding="26">
         <StackPanel Spacing="8" HorizontalAlignment="Center">
           <Path Data="{DynamicResource IconCheck}" Fill="{DynamicResource PositiveBrush}"
-                Width="26" Height="26" Stretch="Uniform" />
+                Width="26" Height="26" Stretch="Uniform" HorizontalAlignment="Center" />
           <TextBlock Text="All clear" Classes="h2" HorizontalAlignment="Center" />
-          <TextBlock Text="Nothing dangling across your workspace." Classes="muted" />
+          <TextBlock Text="Nothing here yet, maybe come back later?" Classes="muted"
+                     HorizontalAlignment="Center" />
         </StackPanel>
       </Border>
 

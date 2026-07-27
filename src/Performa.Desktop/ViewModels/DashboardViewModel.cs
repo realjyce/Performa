@@ -101,6 +101,11 @@ public sealed class DashboardViewModel : ObservableObject
     private bool _isLoading = true;
     public bool IsLoading { get => _isLoading; set => SetProperty(ref _isLoading, value); }
 
+    /// <summary>When the workspace last actually scanned, so a quiet auto-rescan
+    /// is visible and stale numbers are never mistaken for fresh.</summary>
+    private string _lastRefreshed = "";
+    public string LastRefreshed { get => _lastRefreshed; set => SetProperty(ref _lastRefreshed, value); }
+
     private bool _hasWorkspace = true;
     public bool HasWorkspace { get => _hasWorkspace; set => SetProperty(ref _hasWorkspace, value); }
 
@@ -153,6 +158,7 @@ public sealed class DashboardViewModel : ObservableObject
         };
 
         IsLoading = false;
+        LastRefreshed = $"Updated {DateTimeOffset.Now:HH:mm}";
         _ = LoadRemotesAsync();
     }
 

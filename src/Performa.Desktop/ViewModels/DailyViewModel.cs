@@ -107,6 +107,11 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
     private bool _isRefreshing;
     public bool IsRefreshing { get => _isRefreshing; set => SetProperty(ref _isRefreshing, value); }
 
+    /// <summary>When the schedule last actually loaded, so a quiet auto-refresh
+    /// is visible and stale data is never mistaken for fresh.</summary>
+    private string _lastRefreshed = "";
+    public string LastRefreshed { get => _lastRefreshed; set => SetProperty(ref _lastRefreshed, value); }
+
     private string _calendarStatus = "";
     public string CalendarStatus { get => _calendarStatus; set => SetProperty(ref _calendarStatus, value); }
 
@@ -186,6 +191,7 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
 
         _calendarLoaded = true;
         IsRefreshing = false;
+        LastRefreshed = $"Updated {DateTimeOffset.Now:HH:mm}";
         CalendarStatus = events.Count == 0
             ? "Nothing scheduled in the next seven days."
             : "";

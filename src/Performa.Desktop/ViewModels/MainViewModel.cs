@@ -171,6 +171,7 @@ public sealed class MainViewModel : ObservableObject
 
         var dashboard = new DashboardViewModel(Engine, HandleQuickAction);
         var daily = new DailyViewModel(Engine);
+        var activity = new ActivityViewModel(Engine);
         _reports = new ReportsViewModel(Engine);
         var loose = new LooseEndsViewModel(Engine);
         var inbox = new InboxViewModel(Engine);
@@ -185,7 +186,8 @@ public sealed class MainViewModel : ObservableObject
         [
             new NavItem("Dashboard", "IconDashboard", dashboard),
             new NavItem("Daily", "IconDaily", daily),
-            new NavItem("Inbox", "IconStreams", inbox),
+            new NavItem("Inbox", "IconMail", inbox),
+            new NavItem("Activity", "IconActivity", activity),
             _reportsNav,
             _looseNav,
             new NavItem("Streams", "IconStreams", streams, dormant: true),

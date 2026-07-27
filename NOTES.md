@@ -332,3 +332,21 @@ One decision or lesson per entry. Newest last.
   is ready without stealing focus during login. The registry value stores the
   path from Environment.ProcessPath, so enable it from the published exe rather
   than a debug run if you want it pointing at the real binary.
+
+- **The refresh mark is two opposing arrows.** Chosen for its 180-degree
+  rotational symmetry: a full spin shows the same silhouette twice, so the
+  rotation reads as one continuous smooth motion instead of a lopsided arrow
+  chasing its own tail.
+
+- **Every auto-refreshing surface stamps "Updated HH:mm".** A timer that
+  refreshes silently is indistinguishable from one that stopped working; the
+  stamp is the difference between trusting the number and wondering about it.
+
+- **Activity fills the history gap.** Dashboard is now, Daily is today,
+  Reports are write-ups; nothing answered "what was I doing on Tuesday".
+  Activity is two weeks of your own commits grouped by day, from the same
+  CommitsSince plumbing TodayCommits already used.
+
+- **NeonBrush exists for exactly one word: the user's name.** An accent used
+  everywhere stops being an accent. Brighter than AccentBright on carbon,
+  deepened on paper where electric violet washes out.

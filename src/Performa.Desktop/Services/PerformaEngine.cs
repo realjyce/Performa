@@ -171,11 +171,18 @@ public sealed class PerformaEngine
     public List<(string Repo, DateTimeOffset When, string Subject)> TodayCommits()
     {
         var midnight = new DateTimeOffset(DateTimeOffset.Now.Date, DateTimeOffset.Now.Offset);
+        return CommitsBack(midnight);
+    }
+
+    /// <summary>Your own commits across every repo since the given moment,
+    /// newest first. The Activity feed reads two weeks of these.</summary>
+    public List<(string Repo, DateTimeOffset When, string Subject)> CommitsBack(DateTimeOffset since)
+    {
         var result = new List<(string, DateTimeOffset, string)>();
         foreach (var path in DiscoverRepos())
         {
             var repo = Repo(path);
-            foreach (var c in repo.CommitsSince(midnight, onlyMine: true))
+            foreach (var c in repo.CommitsSince(since, onlyMine: true))
                 result.Add((repo.RepoName, c.Date, Classification.CleanSubject(c.Subject)));
         }
         return [.. result.OrderByDescending(x => x.Item2)];

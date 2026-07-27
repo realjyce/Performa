@@ -25,6 +25,8 @@
 
       <SolidColorBrush x:Key="AccentBrush" Color="#7C6CF0" />
       <SolidColorBrush x:Key="AccentBrightBrush" Color="#9B8BFF" />
+      <!-- Electric violet reserved for the user's own name: one glowing word. -->
+      <SolidColorBrush x:Key="NeonBrush" Color="#B48CFF" />
       <SolidColorBrush x:Key="AccentSoftBrush" Color="#7C6CF0" Opacity="0.16" />
       <SolidColorBrush x:Key="PositiveBrush" Color="#4FB286" />
       <SolidColorBrush x:Key="WarningBrush" Color="#E0A34E" />
@@ -126,6 +128,8 @@
       <!-- Accent darkens on paper: the dark-theme violet fails contrast on white. -->
       <SolidColorBrush x:Key="AccentBrush" Color="#5B4BD6" />
       <SolidColorBrush x:Key="AccentBrightBrush" Color="#4534C0" />
+      <!-- Deeper on paper: the dark-theme neon washes out on white. -->
+      <SolidColorBrush x:Key="NeonBrush" Color="#7B2FE0" />
       <SolidColorBrush x:Key="AccentSoftBrush" Color="#5B4BD6" Opacity="0.10" />
       <SolidColorBrush x:Key="PositiveBrush" Color="#2C7F59" />
       <SolidColorBrush x:Key="WarningBrush" Color="#9C6B18" />

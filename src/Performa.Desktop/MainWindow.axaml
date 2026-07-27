@@ -91,7 +91,8 @@
                            TextTrimming="CharacterEllipsis"
                            IsVisible="{Binding Greeting, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                   <Run Text="Hello," />
-                  <Run Text="{Binding Greeting}" Foreground="{DynamicResource TextMutedBrush}" />
+                  <Run Text="{Binding Greeting}" Foreground="{DynamicResource NeonBrush}"
+                       FontWeight="SemiBold" />
                 </TextBlock>
                 <ListBox Classes="nav" ItemsSource="{Binding UtilityItems}"
                          SelectedItem="{Binding Selected, Mode=TwoWay}">

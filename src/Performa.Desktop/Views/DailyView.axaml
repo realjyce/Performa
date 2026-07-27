@@ -60,10 +60,13 @@
 
           <Border Classes="card">
             <StackPanel Spacing="12">
-              <Grid ColumnDefinitions="*,Auto">
+              <Grid ColumnDefinitions="*,Auto,Auto">
                 <TextBlock Grid.Column="0" Text="SCHEDULE" Classes="label"
                            VerticalAlignment="Center" />
-                <Button Grid.Column="1" Classes="spin" Classes.busy="{Binding IsRefreshing}"
+                <TextBlock Grid.Column="1" Text="{Binding LastRefreshed}" Classes="faint"
+                           FontSize="10.5" VerticalAlignment="Center" Margin="0,0,8,0"
+                           IsVisible="{Binding LastRefreshed, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <Button Grid.Column="2" Classes="spin" Classes.busy="{Binding IsRefreshing}"
                         IsVisible="{Binding GoogleConnected}"
                         ToolTip.Tip="Refresh (auto every 5 minutes)"
                         Command="{Binding RefreshCalendarCommand}">

@@ -108,6 +108,11 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
     private bool _loading;
     public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
 
+    /// <summary>When mail last actually loaded, so a quiet auto-refresh is
+    /// visible and stale data is never mistaken for fresh.</summary>
+    private string _lastRefreshed = "";
+    public string LastRefreshed { get => _lastRefreshed; set => SetProperty(ref _lastRefreshed, value); }
+
     private string _status = "";
     public string Status { get => _status; set => SetProperty(ref _status, value); }
 
@@ -162,6 +167,7 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
         Status = mail.Count == 0
             ? "Nothing new in the last three days."
             : $"{mail.Count} message(s) from the last three days. Nothing is summarised: every date, link and request is listed, and the original is one click away.";
+        LastRefreshed = $"Updated {DateTimeOffset.Now:HH:mm}";
         Loading = false;
     }
 }
