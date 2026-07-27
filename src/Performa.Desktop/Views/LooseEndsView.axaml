@@ -22,7 +22,32 @@
         </StackPanel>
       </Border>
 
-      <!-- Per-repo verdicts: the page has substance even when nothing dangles -->
+      <!-- The actionable list leads; each finding carries its next step -->
+      <ItemsControl ItemsSource="{Binding Items}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:LooseEndItem">
+            <Border Classes="card hover" Margin="0,0,0,10" Padding="16,13">
+              <Grid ColumnDefinitions="Auto,110,*">
+                <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center"
+                         Margin="0,0,13,0" Fill="{DynamicResource WarningBrush}" />
+                <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center"
+                        HorizontalAlignment="Left" Margin="0,0,13,0" MaxWidth="100">
+                  <TextBlock Text="{Binding Kind}" Classes="mono" FontSize="11"
+                             TextTrimming="CharacterEllipsis" />
+                </Border>
+                <StackPanel Grid.Column="2" Spacing="3">
+                  <TextBlock Text="{Binding Text}" Classes="muted" FontSize="13"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding Advice}" Classes="faint" FontSize="11.5"
+                             TextWrapping="Wrap" />
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <!-- Per-repo verdicts close the page: state, not action -->
       <StackPanel Spacing="8">
         <TextBlock Text="WORKSPACE HEALTH" Classes="label" />
         <Border Classes="card" Padding="16,10">
@@ -53,26 +78,6 @@
           </ItemsControl>
         </Border>
       </StackPanel>
-
-      <ItemsControl ItemsSource="{Binding Items}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:LooseEndItem">
-            <Border Classes="card hover" Margin="0,0,0,10" Padding="16,13">
-              <Grid ColumnDefinitions="Auto,Auto,*">
-                <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center"
-                         Margin="0,0,13,0" Fill="{DynamicResource WarningBrush}" />
-                <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center"
-                        Margin="0,0,13,0">
-                  <TextBlock Text="{Binding Kind}" Classes="mono" FontSize="11" />
-                </Border>
-                <TextBlock Grid.Column="2" Text="{Binding Text}" Classes="muted"
-                           FontSize="13" VerticalAlignment="Center"
-                           TextTrimming="CharacterEllipsis" />
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
 
     </StackPanel>
   </ScrollViewer>

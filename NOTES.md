@@ -374,3 +374,14 @@ One decision or lesson per entry. Newest last.
   transition; labels hide via a .rail class on their containers, so no view
   duplicates its layout. The workspace header became a picker button - the
   folder you are looking at should be switchable where it is displayed.
+
+- **The Daily Brief is the lifestyle seam.** One paragraph over the whole day:
+  meetings, open tasks, commits, streak. The deterministic sentence is computed
+  first and always shown; a model only ever rewrites those same facts into
+  something warmer, and names itself under the paragraph. The greeting follows
+  the clock, not a canned string.
+
+- **Every loose end carries its next step.** A finding without an action is
+  just nagging; "21 uncommitted files" now ends with what to do about it. The
+  actionable list leads the page, the per-repo roster closes it: action first,
+  state second.

@@ -57,6 +57,7 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
     private readonly DailyStore _store = new();
     private readonly GoogleAuthService _auth = new();
     private readonly GoogleCalendarService _calendar = new();
+    private readonly AiService _ai = new();
     private bool _loaded;
     private bool _calendarLoaded;
     private readonly DispatcherTimer _timer;
@@ -78,14 +79,111 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         // Calendars change slowly; five minutes keeps it fresh without
         // hammering the API or the battery.
         _timer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
-        _timer.Tick += (_, _) => { _ = LoadTimelineAsync(); _ = LoadCalendarAsync(force: true); };
+        _timer.Tick += (_, _) => { _ = LoadTimelineAsync(); _ = RefreshAsync(force: true); };
         _timer.Start();
 
         _ = LoadTimelineAsync();
-        _ = LoadCalendarAsync(force: false);
+        _ = RefreshAsync(force: false);
+    }
+
+    /// <summary>Calendar first, then the brief, so the brief can count events.</summary>
+    private async Task RefreshAsync(bool force)
+    {
+        await LoadCalendarAsync(force);
+        await BuildBriefAsync();
     }
 
     public string Today { get; }
+
+    /// <summary>Greets by clock, not a canned string.</summary>
+    public string Salutation
+    {
+        get
+        {
+            var hour = DateTimeOffset.Now.Hour;
+            var name = _engine.Prefs.UserName;
+            var part = hour switch
+            {
+                < 5 => "Up late",
+                < 12 => "Good morning",
+                < 18 => "Good afternoon",
+                _ => "Good evening",
+            };
+            return string.IsNullOrWhiteSpace(name) ? part : $"{part}, {name}";
+        }
+    }
+
+    private string _brief = "";
+    public string Brief
+    {
+        get => _brief;
+        set { if (SetProperty(ref _brief, value)) OnPropertyChanged(nameof(HasBrief)); }
+    }
+
+    public bool HasBrief => _brief.Length > 0;
+
+    private string _briefSource = "";
+    public string BriefSource { get => _briefSource; set => SetProperty(ref _briefSource, value); }
+
+    /// <summary>
+    /// One paragraph that reads the whole day: schedule, tasks, code, streak.
+    /// The facts are computed first and are the fallback; a model only ever
+    /// rewrites them into something warmer.
+    /// </summary>
+    private async Task BuildBriefAsync()
+    {
+        var commits = await Task.Run(_engine.TodayCommits);
+        var openTasks = Tasks.Count(t => !t.Done);
+        var todayEvents = Events.Count(e => e.Day == "Today");
+        var nextEvent = Events.FirstOrDefault(e => e.Day == "Today");
+
+        var streak = 0;
+        try
+        {
+            streak = await Task.Run(() => _engine.BuildWorkspace().Velocity.StreakDays);
+        }
+        catch (Exception) { /* no workspace yet; the brief just skips it */ }
+
+        // The deterministic sentence: always available, never wrong.
+        var bits = new List<string>();
+        bits.Add(todayEvents switch
+        {
+            0 => "a clear calendar",
+            1 => $"one meeting ({nextEvent?.Time})",
+            _ => $"{todayEvents} meetings (first at {nextEvent?.Time})",
+        });
+        if (openTasks > 0) bits.Add($"{openTasks} task(s) still open");
+        bits.Add(commits.Count switch
+        {
+            0 => "no commits yet",
+            1 => "one commit down",
+            _ => $"{commits.Count} commits down",
+        });
+        if (streak > 1) bits.Add($"a {streak}-day streak going");
+        var facts = $"Today: {string.Join(", ", bits)}.";
+
+        Brief = facts;
+        BriefSource = "";
+
+        var context =
+            $"You are Performa, a developer's chief of staff. The user is {_engine.Prefs.UserName ?? "the developer"}. "
+            + $"It is {DateTimeOffset.Now:dddd HH:mm}. Facts about today:\n"
+            + $"- Meetings today: {todayEvents}"
+            + (nextEvent is null ? "" : $", next: \"{nextEvent.Title}\" at {nextEvent.Time}") + "\n"
+            + $"- Open tasks: {openTasks}\n"
+            + $"- Commits so far today: {commits.Count}\n"
+            + (commits.Count > 0 ? $"- Latest commit: {commits[0].Subject}\n" : "")
+            + $"- Coding streak: {streak} day(s)";
+
+        var answer = await _ai.AskAsync(_engine.Prefs, context,
+            "Write a two-sentence brief of my day. Warm, concrete, a little wry; no bullet "
+            + "points, no exclamation marks, and use only the facts above.");
+        if (answer is not null)
+        {
+            Brief = answer.Text;
+            BriefSource = answer.Model;
+        }
+    }
 
     public ObservableCollection<TaskRow> Tasks { get; } = [];
     public ObservableCollection<TimelineRow> Timeline { get; } = [];
@@ -125,7 +223,9 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
     public void OnActivated()
     {
         _ = LoadTimelineAsync();
-        if (!_calendarLoaded && _auth.IsSignedIn) _ = LoadCalendarAsync(force: true);
+        OnPropertyChanged(nameof(Salutation));
+        if (!_calendarLoaded && _auth.IsSignedIn) _ = RefreshAsync(force: true);
+        else if (!HasBrief) _ = BuildBriefAsync();
     }
 
     private TaskRow Wrap(string text, bool done)

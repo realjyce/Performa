@@ -4,11 +4,15 @@ using Performa.Desktop.Services;
 
 namespace Performa.Desktop.ViewModels;
 
-public sealed class LooseEndItem(string kind, string text, string tone)
+public sealed class LooseEndItem(string kind, string text, string tone, string advice)
 {
     public string Kind { get; } = kind;
     public string Text { get; } = text;
     public string Tone { get; } = tone; // "warn" | "info" | "danger"
+
+    /// <summary>What to actually do about it. A finding without a next step is
+    /// just nagging.</summary>
+    public string Advice { get; } = advice;
 }
 
 /// <summary>One repo's line in the health roster: name, branch, verdict.</summary>
@@ -64,19 +68,25 @@ public sealed class LooseEndsViewModel : ObservableObject
                 if (f.Working.Total > 0)
                     list.Add(new LooseEndItem(name,
                         $"{f.Working.Total} uncommitted file(s): {f.Working.Staged} staged, {f.Working.Unstaged} modified, {f.Working.Untracked} untracked",
-                        "warn"));
+                        "warn",
+                        "Commit it or stash it - uncommitted work drifts and dies with the disk."));
                 foreach (var b in f.UnpushedBranches)
                     list.Add(new LooseEndItem(name,
                         b.Upstream is null
                             ? $"branch '{b.Name}' has no upstream set"
                             : $"branch '{b.Name}' is {b.Ahead} commit(s) ahead of {b.Upstream}",
-                        "info"));
+                        "info",
+                        b.Upstream is null
+                            ? "Push it with -u once and it exists somewhere safer than this machine."
+                            : "Push it - local-only commits are one spilled coffee from gone."));
                 foreach (var b in f.StaleBranches)
                     list.Add(new LooseEndItem(name,
-                        $"stale branch '{b.Name}', last commit {b.LastCommit:yyyy-MM-dd}", "info"));
+                        $"stale branch '{b.Name}', last commit {b.LastCommit:yyyy-MM-dd}", "info",
+                        "Merge it or delete it. It is not coming back on its own."));
                 if (f.TodoTotal > 0)
                     list.Add(new LooseEndItem(name,
-                        $"{f.TodoTotal} TODO/FIXME marker(s)", "danger"));
+                        $"{f.TodoTotal} TODO/FIXME marker(s)", "danger",
+                        "Turn the real ones into tasks and delete the rest."));
 
                 var found = list.Count - before;
                 var branch = _engine.CurrentBranch(path);
