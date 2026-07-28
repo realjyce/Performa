@@ -385,3 +385,31 @@ One decision or lesson per entry. Newest last.
   just nagging; "21 uncommitted files" now ends with what to do about it. The
   actionable list leads the page, the per-repo roster closes it: action first,
   state second.
+
+- **One clock, every rule.** AutomationService replaced five per-page timers.
+  Rules that span streams only become possible once one loop sees them all:
+  "meeting in 10 minutes AND code sitting uncommitted" is a sentence no
+  single-page timer could have written.
+
+- **Automations announce themselves or they are spyware.** Every rule has its
+  own switch in Settings, every artifact it writes carries a stamp saying it
+  was automatic and when, and nothing outbound ever fires - it reads, prepares
+  and notifies, never sends or pushes. Silent magic is how trust dies.
+
+- **A late brief is worse than no brief.** The first build fired "Good morning"
+  at 22:11, because the catch-up rule only checked "past the hour". It is wrong
+  about the day it claims to describe. The window is now four hours and the
+  decision is a pure static method with tests, not a condition buried in a timer.
+
+- **Daily's Save had to become read-modify-write.** The automation loop writes
+  the close-out and suggestions into the same file; building a fresh DailyData
+  on every task tick would have erased its work silently.
+
+- **The task ring was cut on the evidence.** A two-slice donut is a documented
+  anti-pattern; a ratio against a limit is a meter. It is a thin track with the
+  count beside it, which is smaller, faster to read and honest.
+
+- **Charts follow the mark spec, not taste.** Single hue with today emphasised
+  rather than a value-ramp: bar height already encodes the count, so colouring
+  by size would say the same thing twice. Capped 24px bars, 4px data-end square
+  at the baseline, no gridlines, axis band inside the card so it cannot clip.

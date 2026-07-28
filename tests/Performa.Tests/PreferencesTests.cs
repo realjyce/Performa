@@ -69,6 +69,47 @@ public class PreferencesTests
     public void Carbon_is_the_default_theme()
         => Assert.Equal(AppTheme.Dark, new Preferences().Theme);
 
+    /// <summary>
+    /// Automations act without being asked, so their switches have to survive a
+    /// restart. A toggle that silently reverts is worse than no toggle.
+    /// </summary>
+    [Fact]
+    public void Every_automation_switch_survives_a_restart()
+    {
+        var back = RoundTrip(new Preferences
+        {
+            AutoBrief = false,
+            BriefHour = 7,
+            AutoMeetingReminders = false,
+            AutoNudgeUnpushed = false,
+            AutoCloseout = false,
+            CloseoutHour = 21,
+            AutoHarvestTasks = false,
+        });
+
+        Assert.False(back.AutoBrief);
+        Assert.Equal(7, back.BriefHour);
+        Assert.False(back.AutoMeetingReminders);
+        Assert.False(back.AutoNudgeUnpushed);
+        Assert.False(back.AutoCloseout);
+        Assert.Equal(21, back.CloseoutHour);
+        Assert.False(back.AutoHarvestTasks);
+    }
+
+    [Fact]
+    public void Automations_are_on_by_default_at_sensible_hours()
+    {
+        var fresh = new Preferences();
+
+        Assert.True(fresh.AutoBrief);
+        Assert.True(fresh.AutoMeetingReminders);
+        Assert.True(fresh.AutoNudgeUnpushed);
+        Assert.True(fresh.AutoCloseout);
+        Assert.True(fresh.AutoHarvestTasks);
+        Assert.Equal(9, fresh.BriefHour);
+        Assert.Equal(18, fresh.CloseoutHour);
+    }
+
     [Fact]
     public void No_user_credentials_exist_by_default()
     {

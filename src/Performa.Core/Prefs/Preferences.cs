@@ -67,6 +67,30 @@ public sealed class Preferences
     /// silent, and the deterministic answers are unchanged either way.
     /// </summary>
     public bool AiEnabled { get; set; } = true;
+
+    // Automations. Each has its own visible switch: an automation the user
+    // cannot see or turn off is how trust dies. Nothing outbound is ever
+    // automated - these read, prepare and notify, never send or push.
+    /// <summary>Toast when the morning brief is ready.</summary>
+    public bool AutoBrief { get; set; } = true;
+
+    /// <summary>Hour of the day (0-23) the morning brief lands.</summary>
+    public int BriefHour { get; set; } = 9;
+
+    /// <summary>Toast ten minutes before a calendar event.</summary>
+    public bool AutoMeetingReminders { get; set; } = true;
+
+    /// <summary>One daily toast when commits sit unpushed for over a day.</summary>
+    public bool AutoNudgeUnpushed { get; set; } = true;
+
+    /// <summary>Evening close-out written automatically at the end of the day.</summary>
+    public bool AutoCloseout { get; set; } = true;
+
+    /// <summary>Hour (0-23) the close-out is written.</summary>
+    public int CloseoutHour { get; set; } = 18;
+
+    /// <summary>Harvest email asks into suggested tasks on Daily.</summary>
+    public bool AutoHarvestTasks { get; set; } = true;
 }
 
 public sealed class StateFile

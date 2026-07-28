@@ -12,6 +12,21 @@ public sealed class DailyData
 {
     public List<DailyTask> Tasks { get; set; } = [];
     public string Notes { get; set; } = "";
+
+    /// <summary>The automated end-of-day write-up, with a stamp saying when and
+    /// why it was written. Auto-generated content always says so.</summary>
+    public string Closeout { get; set; } = "";
+    public string CloseoutStamp { get; set; } = "";
+
+    /// <summary>Which day the close-out belongs to (yyyy-MM-dd). Yesterday's
+    /// close-out is history, not today's page, so the date has to be stored
+    /// rather than inferred from the stamp text.</summary>
+    public string CloseoutDate { get; set; } = "";
+
+    /// <summary>Email asks harvested into task suggestions, awaiting a click.
+    /// Dismissals are remembered so a suggestion never comes back.</summary>
+    public List<string> Suggested { get; set; } = [];
+    public List<string> Dismissed { get; set; } = [];
 }
 
 /// <summary>Local, on-disk store for the Daily module. No network, just JSON in %APPDATA%.</summary>

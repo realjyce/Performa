@@ -42,6 +42,27 @@ public sealed class RepoCard : ObservableObject
     }
 }
 
+/// <summary>
+/// One column of the activity chart. Height is a share of the tallest day, and
+/// the view multiplies it by the plot height: the bar's own geometry, not a
+/// pixel count baked in the view model.
+/// </summary>
+public sealed class DayBar(DateTime day, int count, int peak, bool isToday)
+{
+    public int Count { get; } = count;
+    public bool IsToday { get; } = isToday;
+
+    /// <summary>A day with no commits still shows a sliver, so the baseline
+    /// reads as a row of days rather than a gap in the chart.</summary>
+    public double Share { get; } = peak == 0 ? 0.02 : Math.Max(0.02, count / (double)peak);
+
+    /// <summary>Single letter under the bar; the tooltip carries the full date.</summary>
+    public string Initial { get; } = day.ToString("ddd")[..1];
+
+    public string Tip { get; } =
+        $"{day:ddd d MMM} · {count} commit(s)";
+}
+
 public sealed class QuickAction(string title, string blurb, string command)
 {
     public string Title { get; } = title;
@@ -106,6 +127,12 @@ public sealed class DashboardViewModel : ObservableObject
     private string _lastRefreshed = "";
     public string LastRefreshed { get => _lastRefreshed; set => SetProperty(ref _lastRefreshed, value); }
 
+    /// <summary>Fourteen days of commit counts, oldest first.</summary>
+    public ObservableCollection<DayBar> Days { get; } = [];
+
+    private string _daysSummary = "";
+    public string DaysSummary { get => _daysSummary; set => SetProperty(ref _daysSummary, value); }
+
     private bool _hasWorkspace = true;
     public bool HasWorkspace { get => _hasWorkspace; set => SetProperty(ref _hasWorkspace, value); }
 
@@ -156,6 +183,19 @@ public sealed class DashboardViewModel : ObservableObject
             < 0 => $"{delta} vs last week",
             _ => "same as last week",
         };
+
+        var byDay = await Task.Run(() => _engine.CommitsByDay(14));
+        var peak = byDay.Count == 0 ? 0 : byDay.Max(d => d.Count);
+        var today = DateTimeOffset.Now.Date;
+        Days.Clear();
+        foreach (var (day, count) in byDay)
+            Days.Add(new DayBar(day, count, peak, day == today));
+
+        var total = byDay.Sum(d => d.Count);
+        var active = byDay.Count(d => d.Count > 0);
+        DaysSummary = total == 0
+            ? "No commits in the last two weeks"
+            : $"{total} commits over {active} active day(s) · busiest {peak}";
 
         IsLoading = false;
         LastRefreshed = $"Updated {DateTimeOffset.Now:HH:mm}";

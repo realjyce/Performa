@@ -234,6 +234,54 @@
     </Style.Animations>
   </Style>
 
+  <!--
+    Chart column. Per the mark spec: capped thickness so the slot keeps its air,
+    a 4px rounded data-end that stays square on the baseline, and no stroke -
+    the 2px margin in the surface colour is what separates neighbours.
+  -->
+  <Style Selector="Border.daybar">
+    <Setter Property="Background" Value="{DynamicResource BarRestBrush}" />
+    <Setter Property="CornerRadius" Value="4,4,0,0" />
+    <Setter Property="MaxWidth" Value="24" />
+    <Setter Property="RenderTransformOrigin" Value="50%,100%" />
+    <!-- Grows from the baseline once, on load: the chart arrives rather than
+         appearing. Styles apply per element, so each bar runs its own. -->
+    <Style.Animations>
+      <Animation Duration="0:0:0.45" Easing="CubicEaseOut" FillMode="Forward">
+        <KeyFrame Cue="0%">
+          <Setter Property="ScaleTransform.ScaleY" Value="0" />
+          <Setter Property="Opacity" Value="0" />
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="ScaleTransform.ScaleY" Value="1" />
+          <Setter Property="Opacity" Value="1" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <!-- Emphasis, not a value-ramp: today is the one bar the reader is looking for. -->
+  <Style Selector="Border.daybar.today">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+  </Style>
+
+  <!-- Meter: a ratio against a limit, on the same ramp as its track -->
+  <Style Selector="Border.metertrack">
+    <Setter Property="Background" Value="{DynamicResource BgInsetBrush}" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Height" Value="6" />
+  </Style>
+  <Style Selector="Border.meterfill">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Height" Value="6" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Width" Duration="0:0:0.4" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+
   <!-- Sidebar workspace picker: quiet, whole block clickable -->
   <Style Selector="Button.wspick">
     <Setter Property="Background" Value="Transparent" />

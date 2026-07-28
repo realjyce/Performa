@@ -106,6 +106,12 @@ public sealed class PerformaEngine
 
     public void NotifyGoogleSignedIn() => GoogleSignedIn?.Invoke();
 
+    /// <summary>Raised when the automation loop writes to the daily store, so
+    /// the Daily page can show close-outs and suggestions the moment they land.</summary>
+    public event Action? DailyChanged;
+
+    public void NotifyDailyChanged() => DailyChanged?.Invoke();
+
     public void SetWorkspace(string path)
     {
         var changed = !string.Equals(Prefs.WorkspacePath, path, StringComparison.OrdinalIgnoreCase);
@@ -172,6 +178,21 @@ public sealed class PerformaEngine
     {
         var midnight = new DateTimeOffset(DateTimeOffset.Now.Date, DateTimeOffset.Now.Offset);
         return CommitsBack(midnight);
+    }
+
+    /// <summary>
+    /// Commits per day for the last <paramref name="days"/> days, oldest first
+    /// and gap-filled, so a day with no commits is a zero rather than a missing
+    /// bar. The chart reads this directly.
+    /// </summary>
+    public List<(DateTime Day, int Count)> CommitsByDay(int days)
+    {
+        var start = DateTimeOffset.Now.Date.AddDays(-(days - 1));
+        var commits = CommitsBack(new DateTimeOffset(start, DateTimeOffset.Now.Offset));
+        var counts = commits.GroupBy(c => c.When.Date).ToDictionary(g => g.Key, g => g.Count());
+        return [.. Enumerable.Range(0, days)
+            .Select(i => start.AddDays(i))
+            .Select(d => (d, counts.TryGetValue(d, out var n) ? n : 0))];
     }
 
     /// <summary>Your own commits across every repo since the given moment,

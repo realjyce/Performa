@@ -1,8 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             xmlns:infra="clr-namespace:Performa.Desktop.Infrastructure"
              x:Class="Performa.Desktop.Views.DashboardView"
              x:DataType="vm:DashboardViewModel">
+
+  <UserControl.Resources>
+    <infra:ShareToHeight x:Key="BarHeight" PlotHeight="84" />
+  </UserControl.Resources>
 
   <ScrollViewer>
     <StackPanel Margin="34,26,34,34" Spacing="22">
@@ -90,6 +95,45 @@
           </StackPanel>
         </Border>
       </Grid>
+
+      <!--
+        Fourteen days of commits. One hue for the series with today emphasised,
+        rather than a value-ramp: the bar's height already encodes the count, so
+        spending colour on it too would say the same thing twice.
+      -->
+      <Border Classes="card" IsVisible="{Binding HasWorkspace}">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="LAST 14 DAYS" Classes="label"
+                       VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding DaysSummary}" Classes="faint"
+                       FontSize="11" VerticalAlignment="Center" />
+          </Grid>
+
+          <ItemsControl ItemsSource="{Binding Days}" Height="104">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Rows="1" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:DayBar">
+                <!-- Grid rows keep the plot and the day letters in one block, so
+                     the axis band can never be clipped out of the card. -->
+                <Grid RowDefinitions="*,16" ToolTip.Tip="{Binding Tip}" Margin="2,0">
+                  <Border Grid.Row="0" Classes="daybar"
+                          Classes.today="{Binding IsToday}"
+                          VerticalAlignment="Bottom"
+                          Height="{Binding Share, Converter={StaticResource BarHeight}}" />
+                  <TextBlock Grid.Row="1" Text="{Binding Initial}" Classes="faint"
+                             FontSize="9.5" HorizontalAlignment="Center"
+                             VerticalAlignment="Bottom" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
 
       <!-- Quick actions -->
       <StackPanel Spacing="12" IsVisible="{Binding HasWorkspace}">

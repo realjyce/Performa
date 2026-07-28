@@ -26,6 +26,20 @@
           </StackPanel>
         </StackPanel>
       </Border>
+
+      <!-- Written by the automation loop at the end of the day; always stamped -->
+      <Border Padding="18,14" CornerRadius="12" IsVisible="{Binding HasCloseout}"
+              Background="{DynamicResource AccentSoftBrush}"
+              BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
+        <StackPanel Spacing="7">
+          <TextBlock Text="CLOSE-OUT" Classes="label"
+                     Foreground="{DynamicResource AccentBrightBrush}" />
+          <TextBlock Text="{Binding Closeout}" Classes="muted" FontSize="13.5"
+                     TextWrapping="Wrap" LineHeight="21" />
+          <TextBlock Text="{Binding CloseoutStamp}" Classes="mono" FontSize="10"
+                     Foreground="{DynamicResource TextFaintBrush}" />
+        </StackPanel>
+      </Border>
     </StackPanel>
 
     <Grid Grid.Row="1" ColumnDefinitions="*,360" ColumnSpacing="18">
@@ -35,7 +49,20 @@
 
         <Border Grid.Row="0" Classes="card">
           <StackPanel Spacing="12">
-            <TextBlock Text="TASKS" Classes="label" />
+            <Grid ColumnDefinitions="Auto,*,Auto">
+              <TextBlock Grid.Column="0" Text="TASKS" Classes="label"
+                         VerticalAlignment="Center" />
+              <!-- A ratio against a limit: a meter, not a two-slice donut. -->
+              <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10"
+                          VerticalAlignment="Center" IsVisible="{Binding HasTasks}">
+                <TextBlock Text="{Binding TaskProgress}" Classes="faint" FontSize="11"
+                           VerticalAlignment="Center" />
+                <Panel Width="150" VerticalAlignment="Center">
+                  <Border Classes="metertrack" />
+                  <Border Classes="meterfill" Width="{Binding TaskMeterWidth}" />
+                </Panel>
+              </StackPanel>
+            </Grid>
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
               <TextBox Grid.Column="0" Text="{Binding NewTaskText}"
                        PlaceholderText="Add a task and press Enter…">
@@ -56,6 +83,33 @@
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
+
+            <!-- Harvested from your inbox. Suggestions, never silent additions. -->
+            <StackPanel Spacing="7" IsVisible="{Binding HasSuggestions}">
+              <Border Height="1" Background="{DynamicResource BorderSoftBrush}" />
+              <TextBlock Text="FROM YOUR INBOX" Classes="label"
+                         Foreground="{DynamicResource AccentBrightBrush}" />
+              <ItemsControl ItemsSource="{Binding Suggestions}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="x:String">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6" Margin="0,2">
+                      <TextBlock Grid.Column="0" Text="{Binding}" Classes="muted"
+                                 FontSize="12.5" VerticalAlignment="Center"
+                                 TextWrapping="Wrap" />
+                      <Button Grid.Column="1" Classes="ghost" Content="Add" FontSize="11"
+                              Padding="9,4" VerticalAlignment="Center"
+                              Command="{Binding $parent[ItemsControl].((vm:DailyViewModel)DataContext).AcceptSuggestionCommand}"
+                              CommandParameter="{Binding}" />
+                      <Button Grid.Column="2" Classes="ghost" Content="✕" FontSize="11"
+                              Padding="8,4" VerticalAlignment="Center"
+                              ToolTip.Tip="Dismiss for good"
+                              Command="{Binding $parent[ItemsControl].((vm:DailyViewModel)DataContext).DismissSuggestionCommand}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
           </StackPanel>
         </Border>
 

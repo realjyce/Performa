@@ -10,6 +10,9 @@ namespace Performa.Desktop;
 
 public partial class App : Application
 {
+    // Held for the app's lifetime; the automation clock dies with the process.
+    private Services.AutomationService? _automation;
+
     /// <summary>
     /// Single place the theme is applied. Everything visual reaches its brushes
     /// through DynamicResource, so setting the variant re-themes the live window
@@ -36,6 +39,7 @@ public partial class App : Application
             var vm = new MainViewModel();
             ApplyTheme(vm.Engine.Prefs.Theme);
             desktop.MainWindow = new MainWindow { DataContext = vm };
+            _automation = new Services.AutomationService(vm.Engine);
 
             // Launched by Windows at boot: come up minimised rather than stealing focus.
             if (desktop.Args?.Contains(Services.StartupService.StartupArgument) == true

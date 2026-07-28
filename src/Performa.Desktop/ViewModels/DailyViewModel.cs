@@ -75,6 +75,11 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         _loaded = true;
 
         engine.GoogleSignedIn += () => _ = LoadCalendarAsync(force: true);
+        engine.DailyChanged += LoadAutomationSurfaces;
+        AcceptSuggestionCommand = new RelayCommand<string>(AcceptSuggestion);
+        DismissSuggestionCommand = new RelayCommand<string>(DismissSuggestion);
+        LoadAutomationSurfaces();
+        RefreshTaskMeter();
 
         // Calendars change slowly; five minutes keeps it fresh without
         // hammering the API or the battery.
@@ -111,6 +116,89 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
             };
             return string.IsNullOrWhiteSpace(name) ? part : $"{part}, {name}";
         }
+    }
+
+    public ObservableCollection<string> Suggestions { get; } = [];
+
+    public RelayCommand<string> AcceptSuggestionCommand { get; }
+    public RelayCommand<string> DismissSuggestionCommand { get; }
+
+    private string _closeout = "";
+    public string Closeout
+    {
+        get => _closeout;
+        set { if (SetProperty(ref _closeout, value)) OnPropertyChanged(nameof(HasCloseout)); }
+    }
+
+    public bool HasCloseout => _closeout.Length > 0;
+
+    private string _closeoutStamp = "";
+    public string CloseoutStamp { get => _closeoutStamp; set => SetProperty(ref _closeoutStamp, value); }
+
+    private bool _hasSuggestions;
+    public bool HasSuggestions { get => _hasSuggestions; set => SetProperty(ref _hasSuggestions, value); }
+
+    // A ratio against a limit is a meter, not a two-slice donut: the number is
+    // the point and the track just shows how far along it sits.
+    public string TaskProgress
+    {
+        get
+        {
+            var done = Tasks.Count(t => t.Done);
+            return Tasks.Count == 0 ? "" : $"{done} of {Tasks.Count} done";
+        }
+    }
+
+    /// <summary>Meter fill width in pixels against a fixed 150px track.</summary>
+    public double TaskMeterWidth
+        => Tasks.Count == 0 ? 0 : Tasks.Count(t => t.Done) / (double)Tasks.Count * 150;
+
+    public bool HasTasks => Tasks.Count > 0;
+
+    private void RefreshTaskMeter()
+    {
+        OnPropertyChanged(nameof(TaskProgress));
+        OnPropertyChanged(nameof(TaskMeterWidth));
+        OnPropertyChanged(nameof(HasTasks));
+    }
+
+    /// <summary>Pulls what the automation loop wrote: close-out and harvested
+    /// suggestions. Runs at start and whenever the loop signals a change.</summary>
+    private void LoadAutomationSurfaces()
+    {
+        var data = _store.Load();
+        // Yesterday's close-out is history, not today's page.
+        var isToday = data.CloseoutDate == DateTimeOffset.Now.ToString("yyyy-MM-dd");
+        Closeout = isToday ? data.Closeout : "";
+        CloseoutStamp = isToday ? data.CloseoutStamp : "";
+
+        Suggestions.Clear();
+        foreach (var s in data.Suggested) Suggestions.Add(s);
+        HasSuggestions = Suggestions.Count > 0;
+    }
+
+    private void AcceptSuggestion(string? text)
+    {
+        if (text is null) return;
+        Tasks.Add(Wrap(text, false));
+        RemoveSuggestion(text, dismiss: false);
+        Save();
+    }
+
+    private void DismissSuggestion(string? text)
+    {
+        if (text is null) return;
+        RemoveSuggestion(text, dismiss: true);
+    }
+
+    private void RemoveSuggestion(string text, bool dismiss)
+    {
+        Suggestions.Remove(text);
+        HasSuggestions = Suggestions.Count > 0;
+        var data = _store.Load();
+        data.Suggested.Remove(text);
+        if (dismiss) data.Dismissed.Add(text);
+        _store.Save(data);
     }
 
     private string _brief = "";
@@ -244,12 +332,20 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         Save();
     }
 
+    /// <summary>
+    /// Read-modify-write, never build-fresh: the automation loop owns the
+    /// close-out and the suggestion lists in this same file, and constructing a
+    /// new DailyData here would silently erase its work every time a task was
+    /// ticked.
+    /// </summary>
     private void Save()
-        => _store.Save(new DailyData
-        {
-            Tasks = [.. Tasks.Select(t => new DailyTask { Text = t.Text, Done = t.Done })],
-            Notes = Notes,
-        });
+    {
+        var data = _store.Load();
+        data.Tasks = [.. Tasks.Select(t => new DailyTask { Text = t.Text, Done = t.Done })];
+        data.Notes = Notes;
+        _store.Save(data);
+        RefreshTaskMeter();
+    }
 
     private async Task LoadTimelineAsync()
     {

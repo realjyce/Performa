@@ -429,6 +429,73 @@ public sealed class SettingsViewModel : ObservableObject
 
     public string ThemeLabel => IsLightTheme ? "Paper" : "Carbon";
 
+    // Automations save on the spot rather than on Save: a switch that needs a
+    // second button to take effect reads as broken.
+    private bool Automation(bool current, bool value, Action<Preferences> apply)
+    {
+        if (current == value) return current;
+        apply(_engine.Prefs);
+        _engine.SavePrefs();
+        return value;
+    }
+
+    public bool AutoBrief
+    {
+        get => _engine.Prefs.AutoBrief;
+        set { Automation(_engine.Prefs.AutoBrief, value, p => p.AutoBrief = value); OnPropertyChanged(); }
+    }
+
+    public bool AutoMeetingReminders
+    {
+        get => _engine.Prefs.AutoMeetingReminders;
+        set { Automation(_engine.Prefs.AutoMeetingReminders, value, p => p.AutoMeetingReminders = value); OnPropertyChanged(); }
+    }
+
+    public bool AutoNudgeUnpushed
+    {
+        get => _engine.Prefs.AutoNudgeUnpushed;
+        set { Automation(_engine.Prefs.AutoNudgeUnpushed, value, p => p.AutoNudgeUnpushed = value); OnPropertyChanged(); }
+    }
+
+    public bool AutoCloseout
+    {
+        get => _engine.Prefs.AutoCloseout;
+        set { Automation(_engine.Prefs.AutoCloseout, value, p => p.AutoCloseout = value); OnPropertyChanged(); }
+    }
+
+    public bool AutoHarvestTasks
+    {
+        get => _engine.Prefs.AutoHarvestTasks;
+        set { Automation(_engine.Prefs.AutoHarvestTasks, value, p => p.AutoHarvestTasks = value); OnPropertyChanged(); }
+    }
+
+    /// <summary>Hours as strings so a ComboBox can bind straight to them.</summary>
+    public string[] Hours { get; } = [.. Enumerable.Range(0, 24).Select(h => $"{h:00}:00")];
+
+    public string BriefHour
+    {
+        get => $"{_engine.Prefs.BriefHour:00}:00";
+        set
+        {
+            if (!int.TryParse(value.AsSpan(0, 2), out var h)) return;
+            _engine.Prefs.BriefHour = h;
+            _engine.SavePrefs();
+            OnPropertyChanged();
+        }
+    }
+
+    public string CloseoutHour
+    {
+        get => $"{_engine.Prefs.CloseoutHour:00}:00";
+        set
+        {
+            if (!int.TryParse(value.AsSpan(0, 2), out var h)) return;
+            _engine.Prefs.CloseoutHour = h;
+            _engine.SavePrefs();
+            OnPropertyChanged();
+        }
+    }
+
     private string _savedNote = "";
     public string SavedNote { get => _savedNote; set => SetProperty(ref _savedNote, value); }
 

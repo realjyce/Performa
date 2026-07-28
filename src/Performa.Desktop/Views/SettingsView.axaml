@@ -211,6 +211,74 @@
         </StackPanel>
       </Border>
 
+      <!-- Automations -->
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Text="AUTOMATIONS" Classes="label" />
+          <TextBlock Classes="faint" TextWrapping="Wrap"
+                     Text="Performa prepares things without being asked. Every one of these can be switched off, and none of them ever send, push or reply on your behalf: they read, prepare and notify." />
+
+          <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                RowSpacing="12" Margin="0,4,0,0">
+
+            <StackPanel Grid.Row="0" Grid.Column="0" Spacing="1" Margin="0,0,16,0">
+              <TextBlock Text="Morning brief" Foreground="{DynamicResource TextPrimaryBrush}"
+                         FontSize="13" />
+              <TextBlock Classes="faint" FontSize="11" TextWrapping="Wrap"
+                         Text="A notification when your day's brief is ready." />
+            </StackPanel>
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                        VerticalAlignment="Center">
+              <ComboBox Width="94" ItemsSource="{Binding Hours}"
+                        SelectedItem="{Binding BriefHour}"
+                        IsVisible="{Binding AutoBrief}" />
+              <ToggleSwitch IsChecked="{Binding AutoBrief}" OnContent="" OffContent="" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="0" Spacing="1" Margin="0,0,16,0">
+              <TextBlock Text="Meeting reminders" Foreground="{DynamicResource TextPrimaryBrush}"
+                         FontSize="13" />
+              <TextBlock Classes="faint" FontSize="11" TextWrapping="Wrap"
+                         Text="Ten minutes before each event, and it tells you if code is sitting uncommitted." />
+            </StackPanel>
+            <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding AutoMeetingReminders}"
+                          OnContent="" OffContent="" VerticalAlignment="Center" />
+
+            <StackPanel Grid.Row="2" Grid.Column="0" Spacing="1" Margin="0,0,16,0">
+              <TextBlock Text="Unpushed work nudge" Foreground="{DynamicResource TextPrimaryBrush}"
+                         FontSize="13" />
+              <TextBlock Classes="faint" FontSize="11" TextWrapping="Wrap"
+                         Text="One reminder a day when commits are still only on this machine." />
+            </StackPanel>
+            <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding AutoNudgeUnpushed}"
+                          OnContent="" OffContent="" VerticalAlignment="Center" />
+
+            <StackPanel Grid.Row="3" Grid.Column="0" Spacing="1" Margin="0,0,16,0">
+              <TextBlock Text="Evening close-out" Foreground="{DynamicResource TextPrimaryBrush}"
+                         FontSize="13" />
+              <TextBlock Classes="faint" FontSize="11" TextWrapping="Wrap"
+                         Text="Writes up what you finished and what rolls over, waiting on Daily." />
+            </StackPanel>
+            <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                        VerticalAlignment="Center">
+              <ComboBox Width="94" ItemsSource="{Binding Hours}"
+                        SelectedItem="{Binding CloseoutHour}"
+                        IsVisible="{Binding AutoCloseout}" />
+              <ToggleSwitch IsChecked="{Binding AutoCloseout}" OnContent="" OffContent="" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="4" Grid.Column="0" Spacing="1" Margin="0,0,16,0">
+              <TextBlock Text="Tasks from your inbox" Foreground="{DynamicResource TextPrimaryBrush}"
+                         FontSize="13" />
+              <TextBlock Classes="faint" FontSize="11" TextWrapping="Wrap"
+                         Text="Turns what your email asks of you into suggested tasks. You approve each one." />
+            </StackPanel>
+            <ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding AutoHarvestTasks}"
+                          OnContent="" OffContent="" VerticalAlignment="Center" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
       <!-- Appearance -->
       <Border Classes="card">
         <StackPanel Spacing="10">
