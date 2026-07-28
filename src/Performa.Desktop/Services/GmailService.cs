@@ -20,7 +20,8 @@ public sealed record EmailDigest(
     IReadOnlyList<string> Amounts,
     IReadOnlyList<string> Actions,
     string FullBody,
-    string? Html);
+    string? Html,
+    bool IsBulk);
 
 public sealed partial class GmailService
 {
@@ -58,6 +59,10 @@ public sealed partial class GmailService
 
         string from = "", subject = "(no subject)";
         DateTimeOffset? received = null;
+        // Bulk mail never asks anything of you personally. List-Unsubscribe and
+        // Precedence are the headers mailing software sets on itself, which is
+        // why they beat guessing from the body.
+        var bulk = false;
 
         if (payload.TryGetProperty("headers", out var headers))
         {
@@ -70,6 +75,11 @@ public sealed partial class GmailService
                 else if (name.Equals("Subject", StringComparison.OrdinalIgnoreCase)) subject = value;
                 else if (name.Equals("Date", StringComparison.OrdinalIgnoreCase)
                     && DateTimeOffset.TryParse(value, out var d)) received = d;
+                else if (name.Equals("List-Unsubscribe", StringComparison.OrdinalIgnoreCase)
+                    || name.Equals("List-Id", StringComparison.OrdinalIgnoreCase)
+                    || (name.Equals("Precedence", StringComparison.OrdinalIgnoreCase)
+                        && value.Contains("bulk", StringComparison.OrdinalIgnoreCase)))
+                    bulk = true;
             }
         }
 
@@ -84,7 +94,16 @@ public sealed partial class GmailService
             Amounts: Distinct(AmountRegex().Matches(body).Select(m => m.Value)),
             Actions: ExtractActions(body),
             FullBody: body.Trim(),
-            Html: html);
+            Html: html,
+            IsBulk: bulk || IsNoReply(from));
+    }
+
+    /// <summary>An address that cannot be replied to is not asking you anything.</summary>
+    private static bool IsNoReply(string from)
+    {
+        var f = from.ToLowerInvariant();
+        return f.Contains("no-reply") || f.Contains("noreply") || f.Contains("donotreply")
+            || f.Contains("notifications@") || f.Contains("newsletter");
     }
 
     private static string CleanSender(string from)

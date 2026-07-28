@@ -413,3 +413,24 @@ One decision or lesson per entry. Newest last.
   rather than a value-ramp: bar height already encodes the count, so colouring
   by size would say the same thing twice. Capped 24px bars, 4px data-end square
   at the baseline, no gridlines, axis band inside the card so it cannot clip.
+
+- **Never mark an automation fired before it has fired.** CloseoutAsync marked
+  the rule done and then did the work; a failure anywhere after that burned the
+  whole day - no retry, and yesterday's close-out sat on the page looking like
+  today's. It reported "Shipped 0 commit(s)" while two commits were listed a
+  card away. Marking now happens after the artifact lands.
+
+- **A single unreadable repo could zero the day.** CommitsBack had no per-repo
+  guard, so one GitException emptied the count - and on the automation clock,
+  where exceptions are swallowed, that surfaced as a confident, wrong number
+  rather than an error.
+
+- **Harvesting into tasks needs a far higher bar than displaying asks.** The
+  Inbox card can afford loose extraction: a noisy line sits beside the mail that
+  produced it. A task list cannot - a suggestion claims something is owed. The
+  first build proposed "Please do not respond." as a task. Bulk mail is now
+  skipped on List-Unsubscribe/List-Id/Precedence, and the cue list for tasks is
+  much narrower than the one the card shows. Real inbox: 8 junk items to 0.
+
+- **All-day entries are not meetings.** Counting them together produced
+  "2 meetings (first at All day)" and "Tomorrow opens with X at 00:00".

@@ -202,9 +202,16 @@ public sealed class PerformaEngine
         var result = new List<(string, DateTimeOffset, string)>();
         foreach (var path in DiscoverRepos())
         {
-            var repo = Repo(path);
-            foreach (var c in repo.CommitsSince(since, onlyMine: true))
-                result.Add((repo.RepoName, c.Date, Classification.CleanSubject(c.Subject)));
+            // One unreadable repo must not zero the whole count. This runs on
+            // the automation clock, where a thrown exception is swallowed and
+            // the day silently reports nothing shipped.
+            try
+            {
+                var repo = Repo(path);
+                foreach (var c in repo.CommitsSince(since, onlyMine: true))
+                    result.Add((repo.RepoName, c.Date, Classification.CleanSubject(c.Subject)));
+            }
+            catch (GitException) { }
         }
         return [.. result.OrderByDescending(x => x.Item2)];
     }

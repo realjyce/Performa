@@ -181,8 +181,6 @@ public sealed class AutomationService
 
     private async Task MorningBriefAsync()
     {
-        MarkFired("brief");
-
         var commits = await Task.Run(_engine.TodayCommits);
         var tasks = _store.Load().Tasks.Count(t => !t.Done);
         var today = _events.Where(e =>
@@ -203,6 +201,7 @@ public sealed class AutomationService
         ToastService.Show(
             $"Good morning{(_engine.Prefs.UserName is { Length: > 0 } n ? ", " + n : "")}",
             $"Today: {string.Join(", ", bits)}. Your brief is ready in Performa.");
+        MarkFired("brief");
     }
 
     private async Task NudgeUnpushedAsync()
@@ -234,8 +233,6 @@ public sealed class AutomationService
 
     private async Task CloseoutAsync()
     {
-        MarkFired("closeout");
-
         var commits = await Task.Run(_engine.TodayCommits);
         var data = _store.Load();
         var done = data.Tasks.Count(t => t.Done);
@@ -247,9 +244,13 @@ public sealed class AutomationService
             $"Shipped {commits.Count} commit(s)"
             + (commits.Count > 0 ? $", last: \"{commits[0].Subject}\"" : "")
             + $". Tasks: {done} done, {open} rolling to tomorrow."
-            + (tomorrow is not null
-                ? $" Tomorrow opens with \"{tomorrow.Title}\" at {tomorrow.Start:HH:mm}."
-                : " Tomorrow starts clear.");
+            + tomorrow switch
+            {
+                // An all-day entry has no start time; printing one gives "at 00:00".
+                { AllDay: true } t => $" Tomorrow carries \"{t.Title}\" all day.",
+                { Start: { } s } t => $" Tomorrow opens with \"{t.Title}\" at {s:HH:mm}.",
+                _ => " Tomorrow starts clear.",
+            };
 
         var text = facts;
         var answer = await _ai.AskAsync(_engine.Prefs,
@@ -267,7 +268,56 @@ public sealed class AutomationService
         _store.Save(data);
         _engine.NotifyDailyChanged();
 
+        // Marked only now it has actually landed. Marking first burns the day:
+        // if the write throws, the rule is recorded as done, never retries, and
+        // yesterday's close-out sits on the page looking like today's.
+        MarkFired("closeout");
         ToastService.Show("Day closed out", text);
+    }
+
+    /// <summary>
+    /// Whether an extracted sentence is worth putting in front of someone as a
+    /// task.
+    ///
+    /// The Inbox card can afford loose extraction - a noisy line sits next to
+    /// the email that produced it and costs nothing. A task list cannot: a
+    /// suggestion is a claim that something is owed, so junk here is worse than
+    /// silence. The first build proposed "Please do not respond." as a task,
+    /// which is where this filter comes from.
+    /// </summary>
+    public static bool LooksLikeARealAsk(string sentence)
+    {
+        var s = sentence.Trim();
+        if (s.Length is < 20 or > 120) return false;
+
+        // Anything carrying a URL is almost always marketing or a footer, and
+        // an unreadable one once truncated to task length.
+        if (s.Contains("http", StringComparison.OrdinalIgnoreCase)
+            || s.Contains("<", StringComparison.Ordinal)) return false;
+
+        // A byline, not a request.
+        if (s.StartsWith("by ", StringComparison.OrdinalIgnoreCase)) return false;
+
+        string[] boilerplate =
+        [
+            "do not respond", "do not reply", "unsubscribe", "privacy policy",
+            "terms of service", "if you need additional help", "this email was sent",
+            "you received this", "view in browser", "all rights reserved",
+            "was found by", "click here", "learn more", "sign up for",
+        ];
+        if (boilerplate.Any(b => s.Contains(b, StringComparison.OrdinalIgnoreCase)))
+            return false;
+
+        // A real ask names an action directed at the reader. These cues are
+        // deliberately narrower than the ones the Inbox card displays.
+        string[] cues =
+        [
+            "could you", "can you", "please send", "please confirm", "please review",
+            "please complete", "please submit", "please sign", "let me know",
+            "deadline", "due by", "due on", "rsvp", "needs your", "waiting on you",
+            "action required", "respond by", "reply by", "submit by", "confirm your",
+        ];
+        return cues.Any(c => s.Contains(c, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>Email asks become suggested tasks. Quiet on purpose: suggestions
@@ -293,7 +343,10 @@ public sealed class AutomationService
         var added = false;
         foreach (var m in mail)
         {
-            foreach (var ask in m.Actions.Take(2))
+            // Newsletters and no-reply senders are never asking you personally.
+            if (m.IsBulk) continue;
+
+            foreach (var ask in m.Actions.Where(LooksLikeARealAsk).Take(2))
             {
                 var text = ask.Length > 90 ? ask[..90].TrimEnd() + "…" : ask;
                 if (!known.Add(text)) continue;

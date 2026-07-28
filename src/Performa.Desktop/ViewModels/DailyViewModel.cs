@@ -222,8 +222,13 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
     {
         var commits = await Task.Run(_engine.TodayCommits);
         var openTasks = Tasks.Count(t => !t.Done);
-        var todayEvents = Events.Count(e => e.Day == "Today");
-        var nextEvent = Events.FirstOrDefault(e => e.Day == "Today");
+
+        // All-day entries are birthdays and reminders, not meetings; counting
+        // them together produced "2 meetings (first at All day)".
+        var timed = Events.Where(e => e.Day == "Today" && e.Time != "All day").ToList();
+        var allDay = Events.Count(e => e.Day == "Today" && e.Time == "All day");
+        var todayEvents = timed.Count;
+        var nextEvent = timed.FirstOrDefault();
 
         var streak = 0;
         try
@@ -236,9 +241,10 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         var bits = new List<string>();
         bits.Add(todayEvents switch
         {
+            0 when allDay > 0 => $"no meetings but {allDay} all-day item(s)",
             0 => "a clear calendar",
-            1 => $"one meeting ({nextEvent?.Time})",
-            _ => $"{todayEvents} meetings (first at {nextEvent?.Time})",
+            1 => $"one meeting at {nextEvent?.Time}",
+            _ => $"{todayEvents} meetings, first at {nextEvent?.Time}",
         });
         if (openTasks > 0) bits.Add($"{openTasks} task(s) still open");
         bits.Add(commits.Count switch

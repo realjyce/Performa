@@ -14,6 +14,61 @@ var pageIndex = args.Length > 1 && int.TryParse(args[1], out var pi) ? pi : 0;
 var width = args.Length > 2 && int.TryParse(args[2], out var wd) ? wd : 1200;
 var height = args.Length > 3 && int.TryParse(args[3], out var ht) ? ht : 780;
 
+// "engine" mode: what the automation loop sees when it wakes up, from a cold
+// PerformaEngine exactly like the one App builds at startup.
+if (args.Length > 1 && args[1] == "engine")
+{
+    var e = new Performa.Desktop.Services.PerformaEngine();
+    Console.WriteLine($"WorkspacePath : {e.WorkspacePath ?? "NULL"}");
+    var repos = e.DiscoverRepos();
+    Console.WriteLine($"Repos found   : {repos.Count}");
+    try
+    {
+        var commits = e.TodayCommits();
+        Console.WriteLine($"TodayCommits  : {commits.Count}");
+        foreach (var c in commits.Take(5))
+            Console.WriteLine($"  {c.When:HH:mm} [{c.Repo}] {c.Subject}");
+    }
+    catch (Exception ex) { Console.WriteLine($"TodayCommits THREW: {ex.GetType().Name}: {ex.Message}"); }
+
+    foreach (var r in repos)
+    {
+        try { var f = e.BuildLooseEnds(r); Console.WriteLine($"LooseEnds ok  : {Path.GetFileName(r)} ({f.UnpushedBranches.Count} unpushed)"); }
+        catch (Exception ex) { Console.WriteLine($"LooseEnds THREW on {Path.GetFileName(r)}: {ex.GetType().Name}: {ex.Message}"); }
+    }
+    return;
+}
+
+// "google" mode: exercise the real auth path and report what it returns, so a
+// "sign-in expired" message can be traced to a cause rather than guessed at.
+if (args.Length > 1 && args[1] == "google")
+{
+    var engine = new Performa.Desktop.Services.PerformaEngine();
+    var auth = new Performa.Desktop.Services.GoogleAuthService();
+    Console.WriteLine($"IsSignedIn      : {auth.IsSignedIn}");
+    var loaded = auth.LoadTokens();
+    Console.WriteLine($"LoadTokens      : {(loaded is null ? "NULL" : "ok")}");
+    if (loaded is not null)
+        Console.WriteLine($"  NeedsRefresh  : {loaded.NeedsRefresh}  expires {loaded.ExpiresAt:u}");
+    var creds = Performa.Desktop.Services.GoogleCredentialStore.Load(engine.Prefs);
+    Console.WriteLine($"Credentials     : {(creds is null ? "NULL" : "ok, id " + creds.ClientId[..12])}");
+    if (creds is not null)
+    {
+        var tok = await auth.GetAccessTokenAsync(creds.ClientId, creds.ClientSecret);
+        Console.WriteLine($"GetAccessToken  : {(tok is null ? "NULL  <-- this is the failure" : "ok, len " + tok.Length)}");
+        if (tok is not null)
+        {
+            var cal = new Performa.Desktop.Services.GoogleCalendarService();
+            var events = await cal.GetUpcomingAsync(tok);
+            Console.WriteLine($"Calendar events : {events.Count}");
+            var gmail = new Performa.Desktop.Services.GmailService();
+            var mail = await gmail.GetRecentAsync(tok);
+            Console.WriteLine($"Recent mail     : {mail.Count}");
+        }
+    }
+    return;
+}
+
 AppBuilder.Configure<App>()
     .UseSkia()
     .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })

@@ -34,4 +34,31 @@ public class AutomationTests
         Assert.True(AutomationService.IsWithinBriefWindow(23, 23));
         Assert.False(AutomationService.IsWithinBriefWindow(1, 23));
     }
+
+    // Every one of these was actually proposed as a task by the first build.
+    [Theory]
+    [InlineData("Please do not respond.")]
+    [InlineData("by Joshua Luke Smith")]
+    [InlineData("You were found by people from these companies.")]
+    [InlineData("If you need additional help, please visit Steam Support.")]
+    [InlineData("Sign up for the Power On newsletter <https://www.bloomberg.com/account>")]
+    [InlineData("One designer with the right AI tools can now build what used to take entire teams.")]
+    public void Newsletter_noise_never_becomes_a_task(string sentence)
+        => Assert.False(AutomationService.LooksLikeARealAsk(sentence));
+
+    [Theory]
+    [InlineData("Could you review the draft before Thursday?")]
+    [InlineData("Please confirm your attendance for the workshop.")]
+    [InlineData("The deadline for the scholarship form is 14 August.")]
+    [InlineData("Action required: your enrolment is incomplete.")]
+    public void A_genuine_request_still_gets_through(string sentence)
+        => Assert.True(AutomationService.LooksLikeARealAsk(sentence));
+
+    [Fact]
+    public void A_fragment_or_an_essay_is_neither()
+    {
+        Assert.False(AutomationService.LooksLikeARealAsk("please"));
+        Assert.False(AutomationService.LooksLikeARealAsk(
+            "Could you " + new string('x', 200)));
+    }
 }
