@@ -108,6 +108,22 @@
   <Style Selector="Button.accent:pressed /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
   </Style>
+  <!--
+    Press feedback. Reverting the background is not an acknowledgement: the
+    button ends up looking exactly as it did at rest while the pointer is
+    still down. A small scale is the part the hand reads.
+  -->
+  <Style Selector="Button.accent">
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.14" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.accent:pressed">
+    <Setter Property="RenderTransform" Value="scale(0.97)" />
+  </Style>
 
   <Style Selector="Button.ghost">
     <Setter Property="Background" Value="Transparent" />
@@ -122,6 +138,17 @@
   <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource BgCardHoverBrush}" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+  <Style Selector="Button.ghost">
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.14" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.ghost:pressed">
+    <Setter Property="RenderTransform" Value="scale(0.97)" />
   </Style>
 
   <!-- Quick-action card button -->
@@ -275,9 +302,13 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Height" Value="6" />
     <Setter Property="HorizontalAlignment" Value="Left" />
+    <!-- Scales from the left edge so the fill grows out of the track's start
+         rather than its middle. Width used to carry this, which relayouts the
+         row on every frame of the animation; a transform does not. -->
+    <Setter Property="RenderTransformOrigin" Value="0%,50%" />
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Width" Duration="0:0:0.4" Easing="CubicEaseOut" />
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.4" Easing="CubicEaseOut" />
       </Transitions>
     </Setter>
   </Style>

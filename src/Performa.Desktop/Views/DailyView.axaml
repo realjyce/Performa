@@ -59,7 +59,7 @@
                            VerticalAlignment="Center" />
                 <Panel Width="150" VerticalAlignment="Center">
                   <Border Classes="metertrack" />
-                  <Border Classes="meterfill" Width="{Binding TaskMeterWidth}" />
+                  <Border Classes="meterfill" Width="150" RenderTransform="{Binding TaskMeterFill}" />
                 </Panel>
               </StackPanel>
             </Grid>

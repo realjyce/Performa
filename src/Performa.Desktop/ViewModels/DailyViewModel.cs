@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media;
+using Avalonia.Media.Transformation;
 using Avalonia.Threading;
 using Performa.Desktop.Infrastructure;
 using Performa.Desktop.Services;
@@ -149,16 +151,21 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         }
     }
 
-    /// <summary>Meter fill width in pixels against a fixed 150px track.</summary>
-    public double TaskMeterWidth
-        => Tasks.Count == 0 ? 0 : Tasks.Count(t => t.Done) / (double)Tasks.Count * 150;
+    /// <summary>Meter fill as a horizontal scale against a full-width track.
+    /// A transform rather than a width: animating Width relayouts the panel on
+    /// every frame, while a scale is composited.</summary>
+    public ITransform TaskMeterFill
+        => TransformOperations.Parse(
+            Tasks.Count == 0
+                ? "scaleX(0)"
+                : $"scaleX({Tasks.Count(t => t.Done) / (double)Tasks.Count:0.####})");
 
     public bool HasTasks => Tasks.Count > 0;
 
     private void RefreshTaskMeter()
     {
         OnPropertyChanged(nameof(TaskProgress));
-        OnPropertyChanged(nameof(TaskMeterWidth));
+        OnPropertyChanged(nameof(TaskMeterFill));
         OnPropertyChanged(nameof(HasTasks));
     }
 
