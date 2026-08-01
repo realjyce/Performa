@@ -10,6 +10,35 @@ namespace Performa.Tests;
 /// </summary>
 public class AutomationTests
 {
+    [Fact]
+    public void A_short_run_log_is_left_whole()
+    {
+        var lines = Enumerable.Range(0, 5).Select(i => $"line {i}").ToArray();
+        Assert.Equal(lines, AutomationService.TrimLog(lines, 400));
+    }
+
+    [Fact]
+    public void A_log_past_the_ceiling_keeps_the_newest_entries()
+    {
+        var lines = Enumerable.Range(0, 25).Select(i => $"line {i}").ToArray();
+        var kept = AutomationService.TrimLog(lines, 10);
+
+        Assert.Equal(10, kept.Length);
+        // The newest survive: this file exists to answer "what just happened",
+        // so trimming the tail instead of the head would defeat the point.
+        Assert.Equal("line 24", kept[^1]);
+        Assert.Equal("line 15", kept[0]);
+    }
+
+    [Fact]
+    public void Trimming_waits_until_the_log_is_well_past_the_ceiling()
+    {
+        // The loop ticks every minute all day, so rewriting the file the moment
+        // it crosses the line means a rewrite on nearly every append.
+        var lines = Enumerable.Range(0, 15).Select(i => $"line {i}").ToArray();
+        Assert.Equal(15, AutomationService.TrimLog(lines, 10).Length);
+    }
+
     [Theory]
     [InlineData(9, 9)]    // exactly on the hour
     [InlineData(10, 9)]   // machine booted an hour late

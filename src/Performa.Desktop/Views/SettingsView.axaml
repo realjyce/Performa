@@ -276,6 +276,21 @@
             <ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding AutoHarvestTasks}"
                           OnContent="" OffContent="" VerticalAlignment="Center" />
           </Grid>
+
+          <!-- The loop runs unattended, so a rule that quietly failed used to
+               leave no evidence anywhere. This is that evidence. -->
+          <StackPanel Spacing="6" IsVisible="{Binding HasRecentRuns}">
+            <Border Height="1" Background="{DynamicResource BorderSoftBrush}" Margin="0,4" />
+            <TextBlock Text="RECENT RUNS" Classes="label" />
+            <ItemsControl ItemsSource="{Binding RecentRuns}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding}" Classes="mono faint" FontSize="11"
+                             TextWrapping="Wrap" Margin="0,1" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
         </StackPanel>
       </Border>
 

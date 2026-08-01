@@ -25,6 +25,7 @@ public sealed class AutomationService
     private readonly DailyStore _store = new();
     private readonly DispatcherTimer _timer;
     private readonly string _statePath;
+    private readonly string _logPath;
 
     // In-memory, per-run: which events were announced, when mail/calendar were
     // last pulled, and the cached upcoming events between pulls.
@@ -48,6 +49,7 @@ public sealed class AutomationService
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "performa");
         Directory.CreateDirectory(dir);
         _statePath = Path.Combine(dir, "automation.json");
+        _logPath = LogPath;
         LoadState();
 
         // One minute is fine-grained enough for "at 09:00" and "in 10 minutes"
@@ -82,10 +84,92 @@ public sealed class AutomationService
         => _state.LastFired.TryGetValue(rule, out var day)
            && day == DateTimeOffset.Now.ToString("yyyy-MM-dd");
 
-    private void MarkFired(string rule)
+    /// <summary>Called by a rule once its work is done, never before: marking
+    /// first would burn the day's slot on a run that then failed.</summary>
+    private void MarkFired(string rule, string detail = "")
     {
         _state.LastFired[rule] = DateTimeOffset.Now.ToString("yyyy-MM-dd");
         SaveState();
+        Log(rule, "fired", detail);
+    }
+
+    /// <summary>One rule attempt. Append-only, never rewritten.</summary>
+    public readonly record struct RunEntry(string At, string Rule, string Outcome, string Detail);
+
+    /// <summary>Lines kept in the run log. The loop ticks every minute all day,
+    /// so this needs a ceiling or it grows without end; a few hundred entries
+    /// still covers several days of real firings.</summary>
+    private const int LogRetention = 400;
+
+    /// <summary>
+    /// Which log lines survive. Newest win, because the question being asked of
+    /// this file is always "what just happened". Trims only once the file is
+    /// well past the ceiling rather than on every append, since this sits on a
+    /// path that runs every minute all day.
+    /// </summary>
+    public static string[] TrimLog(string[] lines, int retention)
+        => lines.Length > retention * 2 ? lines[^retention..] : lines;
+
+    /// <summary>
+    /// Records what a rule did. The loop acts unattended, so when a brief does
+    /// not arrive the only question that matters is whether it was skipped,
+    /// tried and failed, or never reached - and until this existed there was
+    /// nothing anywhere that could answer it.
+    /// </summary>
+    private void Log(string rule, string outcome, string detail = "")
+    {
+        try
+        {
+            var line = JsonSerializer.Serialize(new RunEntry(
+                DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm"), rule, outcome, detail));
+            File.AppendAllText(_logPath, line + Environment.NewLine);
+
+            var lines = File.ReadAllLines(_logPath);
+            var kept = TrimLog(lines, LogRetention);
+            if (kept.Length != lines.Length) File.WriteAllLines(_logPath, kept);
+        }
+        catch (IOException) { }
+    }
+
+    /// <summary>Where the run log lives. Static so anything that wants to read
+    /// it can, without a handle on the running service.</summary>
+    public static string LogPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "performa", "automation-log.jsonl");
+
+    /// <summary>The run log, newest first, for Settings to show.</summary>
+    public static IReadOnlyList<RunEntry> RecentRuns(int take = 20)
+    {
+        try
+        {
+            if (!File.Exists(LogPath)) return [];
+            return [.. File.ReadAllLines(LogPath)
+                .Reverse()
+                .Select(l => { try { return JsonSerializer.Deserialize<RunEntry>(l); } catch (JsonException) { return default; } })
+                .Where(e => e.Rule is { Length: > 0 })
+                .Take(take)];
+        }
+        catch (IOException) { return []; }
+    }
+
+    /// <summary>
+    /// Runs one rule in its own failure boundary. Previously every rule shared a
+    /// single try, so a throw in the meeting reminder took the brief, the nudge
+    /// and the close-out down with it for that tick, and the swallowed exception
+    /// meant nothing recorded why.
+    /// </summary>
+    private async Task RunRuleAsync(string rule, Func<Task> body)
+    {
+        try
+        {
+            await body();
+        }
+        catch (Exception ex)
+        {
+            // Deliberately not MarkFired: a rule that threw has not done its
+            // work, and marking it would burn the day's slot on a failure.
+            Log(rule, "failed", ex.Message);
+        }
     }
 
     /// <summary>
@@ -110,20 +194,27 @@ public sealed class AutomationService
             var prefs = _engine.Prefs;
             var now = DateTimeOffset.Now;
 
-            await RefreshEventsAsync();
+            await RunRuleAsync("events", RefreshEventsAsync);
 
-            if (prefs.AutoMeetingReminders) await RemindMeetingsAsync(now);
+            if (prefs.AutoMeetingReminders)
+                await RunRuleAsync("meetings", () => RemindMeetingsAsync(now));
 
             if (prefs.AutoBrief && !FiredToday("brief")
                 && IsWithinBriefWindow(now.Hour, prefs.BriefHour))
-                await MorningBriefAsync();
+                await RunRuleAsync("brief", MorningBriefAsync);
             if (prefs.AutoNudgeUnpushed && now.Hour >= 17 && !FiredToday("nudge"))
-                await NudgeUnpushedAsync();
+                await RunRuleAsync("nudge", NudgeUnpushedAsync);
             if (prefs.AutoCloseout && now.Hour >= prefs.CloseoutHour && !FiredToday("closeout"))
-                await CloseoutAsync();
-            if (prefs.AutoHarvestTasks) await HarvestAsync(now);
+                await RunRuleAsync("closeout", CloseoutAsync);
+            if (prefs.AutoHarvestTasks)
+                await RunRuleAsync("harvest", () => HarvestAsync(now));
         }
-        catch (Exception) { /* one bad tick must never kill the loop */ }
+        catch (Exception ex)
+        {
+            // Rules carry their own boundary now, so anything reaching here is
+            // the loop's own scaffolding rather than one rule misbehaving.
+            Log("tick", "failed", ex.Message);
+        }
         finally { _ticking = false; }
     }
 

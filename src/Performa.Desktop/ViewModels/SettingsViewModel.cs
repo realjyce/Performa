@@ -26,6 +26,7 @@ public sealed class SettingsViewModel : ObservableObject
     public SettingsViewModel(PerformaEngine engine)
     {
         _engine = engine;
+        LoadRecentRuns();
         _userName = engine.Prefs.UserName ?? "";
         _geminiKey = engine.Prefs.GeminiApiKey ?? "";
         _anthropicKey = engine.Prefs.AnthropicApiKey ?? "";
@@ -428,6 +429,26 @@ public sealed class SettingsViewModel : ObservableObject
     }
 
     public string ThemeLabel => IsLightTheme ? "Paper" : "Carbon";
+
+    /// <summary>
+    /// What the automation loop actually did, newest first. The loop runs
+    /// unattended, so without this the only evidence a rule exists is the toast
+    /// you may have missed, and a rule that failed leaves no trace at all.
+    /// </summary>
+    public ObservableCollection<string> RecentRuns { get; } = [];
+
+    public bool HasRecentRuns => RecentRuns.Count > 0;
+
+    public void LoadRecentRuns()
+    {
+        RecentRuns.Clear();
+        foreach (var r in AutomationService.RecentRuns(8))
+        {
+            var suffix = r.Outcome == "failed" && r.Detail.Length > 0 ? $" - {r.Detail}" : "";
+            RecentRuns.Add($"{r.At}  {r.Rule} {r.Outcome}{suffix}");
+        }
+        OnPropertyChanged(nameof(HasRecentRuns));
+    }
 
     // Automations save on the spot rather than on Save: a switch that needs a
     // second button to take effect reads as broken.
