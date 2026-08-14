@@ -338,6 +338,21 @@
         </StackPanel>
       </Border>
 
+      <!-- Says the field you just typed into is not in effect yet, which is
+           otherwise invisible on a page where the switches apply themselves. -->
+      <Border Classes="nudge" Classes.shake="{Binding Nudge}" IsVisible="{Binding Dirty}"
+              CornerRadius="9" Padding="15,12"
+              Background="{DynamicResource AccentSoftBrush}"
+              BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Path Data="{DynamicResource IconLoose}" Width="14" Height="14" Stretch="Uniform"
+                VerticalAlignment="Center" Fill="{DynamicResource AccentBrightBrush}" />
+          <TextBlock Text="Unsaved changes. The switches above apply themselves; these do not."
+                     VerticalAlignment="Center" TextWrapping="Wrap"
+                     Foreground="{DynamicResource AccentBrightBrush}" />
+        </StackPanel>
+      </Border>
+
       <StackPanel Orientation="Horizontal" Spacing="14">
         <Button Classes="accent" Content="Save preferences" Command="{Binding SaveCommand}" />
         <TextBlock Text="{Binding SavedNote}" Classes="muted" VerticalAlignment="Center" />

@@ -152,6 +152,28 @@
   </Style>
 
   <!--
+    The unsaved-changes prompt. A short shake on arrival, because it appears
+    below the fold of a long page and a banner that fades in where nobody is
+    looking is a banner nobody reads. Small and once: this is a reminder, not
+    an alarm, and anything longer would be the app nagging.
+  -->
+  <Style Selector="Border.nudge">
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+  </Style>
+  <Style Selector="Border.nudge.shake">
+    <Style.Animations>
+      <Animation Duration="0:0:0.42" IterationCount="1" Easing="CubicEaseOut">
+        <KeyFrame Cue="0%"><Setter Property="RenderTransform" Value="translateX(0px)" /></KeyFrame>
+        <KeyFrame Cue="20%"><Setter Property="RenderTransform" Value="translateX(-7px)" /></KeyFrame>
+        <KeyFrame Cue="40%"><Setter Property="RenderTransform" Value="translateX(6px)" /></KeyFrame>
+        <KeyFrame Cue="60%"><Setter Property="RenderTransform" Value="translateX(-4px)" /></KeyFrame>
+        <KeyFrame Cue="80%"><Setter Property="RenderTransform" Value="translateX(2px)" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="RenderTransform" Value="translateX(0px)" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <!--
     The headline on Serving. It is replaced when the model finishes, and a
     sentence swapping in place is read as a glitch rather than an answer, so it
     dims while the model is out and comes back up with the new text.

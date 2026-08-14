@@ -31,6 +31,16 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
     {
         _engine = engine;
         LoadRecentRuns();
+
+        // One hook rather than thirteen setters. Anything on this list edits a
+        // preference that only lands on Save, so touching it makes the page
+        // dirty; the automation switches are absent on purpose because they
+        // save on the spot and were never pending.
+        PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is { } name && Deferred.Contains(name)) Dirty = true;
+        };
+
         _userName = engine.Prefs.UserName ?? "";
         _editorCommand = engine.Prefs.EditorCommand;
         _geminiKey = engine.Prefs.GeminiApiKey ?? "";
@@ -347,6 +357,36 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
     private string _userName;
     public string UserName { get => _userName; set => SetProperty(ref _userName, value); }
 
+    /// <summary>Fields that only take effect on Save. Everything else on this
+    /// page applies as it is switched.</summary>
+    private static readonly HashSet<string> Deferred =
+    [
+        nameof(UserName), nameof(EditorCommand), nameof(WorkspacePath),
+        nameof(GeminiKey), nameof(AnthropicKey), nameof(OpenAiKey),
+        nameof(AiProvider), nameof(AiEnabled),
+        nameof(GitHubToken), nameof(GitHubClientId),
+        nameof(Verbosity), nameof(Grouping), nameof(Tone),
+    ];
+
+    private bool _dirty;
+    /// <summary>Something is edited and not yet saved. Drives the prompt, which
+    /// is the only thing on the page that says the field you just typed into is
+    /// not actually in effect yet.</summary>
+    public bool Dirty
+    {
+        get => _dirty;
+        private set
+        {
+            if (!SetProperty(ref _dirty, value)) return;
+            // Cleared and re-set so the nudge replays on a fresh edit rather
+            // than only the first time the prompt ever appeared.
+            if (value) { Nudge = false; Nudge = true; }
+        }
+    }
+
+    private bool _nudge;
+    public bool Nudge { get => _nudge; private set => SetProperty(ref _nudge, value); }
+
     private string _editorCommand;
     public string EditorCommand { get => _editorCommand; set => SetProperty(ref _editorCommand, value); }
 
@@ -579,8 +619,13 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
         // Token or output changes should take effect without a restart.
         _engine.Rescan();
 
+        // In effect from here: the workspace reloaded, the rescan ran, and the
+        // AI and output settings are read live off Prefs by whoever needs them.
+        Dirty = false;
+        Nudge = false;
+
         SavedNote = Directory.Exists(WorkspacePath)
-            ? "Saved."
+            ? "Saved and in effect."
             : "Saved. Workspace folder not found, left unchanged.";
     }
 }
