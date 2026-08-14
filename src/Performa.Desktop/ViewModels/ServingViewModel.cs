@@ -27,6 +27,31 @@ public sealed class ServingRow(DailyTask task, Urgency urgency) : ObservableObje
 
     public bool IsStale => Serving.IsStale(Task);
     public string StaleNote => $"pushed {Task.Deferred} times";
+
+    private string _steps = "";
+    /// <summary>Concrete first moves for this task. Empty until asked for:
+    /// generating one of these per row on load would spend a call on every
+    /// task to answer a question about one.</summary>
+    public string Steps
+    {
+        get => _steps;
+        set { if (SetProperty(ref _steps, value)) OnPropertyChanged(nameof(HasSteps)); }
+    }
+
+    public bool HasSteps => _steps.Length > 0;
+
+    private bool _thinking;
+    public bool Thinking { get => _thinking; set => SetProperty(ref _thinking, value); }
+
+    private string _stepsSource = "";
+    /// <summary>Which model wrote the steps. Generated prose always says so.</summary>
+    public string StepsSource
+    {
+        get => _stepsSource;
+        set { if (SetProperty(ref _stepsSource, value)) OnPropertyChanged(nameof(HasStepsSource)); }
+    }
+
+    public bool HasStepsSource => _stepsSource.Length > 0;
 }
 
 /// <summary>
@@ -53,6 +78,7 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
         _engine = engine;
         DeferCommand = new RelayCommand<ServingRow>(Defer);
         DoneCommand = new RelayCommand<ServingRow>(MarkDone);
+        HowCommand = new RelayCommand<ServingRow>(row => _ = HowAsync(row));
         engine.DailyChanged += Load;
 
         // This is the landing page, and MainViewModel seeds its selection by
@@ -64,6 +90,7 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
 
     public RelayCommand<ServingRow> DeferCommand { get; }
     public RelayCommand<ServingRow> DoneCommand { get; }
+    public RelayCommand<ServingRow> HowCommand { get; }
 
     private string _headline = "";
     /// <summary>The one sentence at the top: what to start with, and why.</summary>
@@ -155,6 +182,79 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
 
         Headline = answer.Text;
         Source = answer.Model;
+    }
+
+    /// <summary>
+    /// Asks how to start one task, once, and keeps the answer on the row.
+    ///
+    /// Grounded in the workspace rather than asked cold: a task naming a repo
+    /// the user has uncommitted work in should get steps that mention it. The
+    /// model is told to give first moves rather than a plan, because the thing
+    /// stopping someone starting is usually not knowing the first move.
+    /// </summary>
+    private async Task HowAsync(ServingRow? row)
+    {
+        if (row is null || row.Thinking) return;
+        if (row.HasSteps) { row.Steps = ""; row.StepsSource = ""; return; }   // second press closes it
+
+        var key = AppCredentialStore.AiKey(_engine.Prefs, _engine.Prefs.AiProvider);
+        if (!_engine.Prefs.AiEnabled || string.IsNullOrWhiteSpace(key))
+        {
+            row.Steps = "Turn on AI prose in Settings and add a key to get steps here.";
+            return;
+        }
+
+        row.Thinking = true;
+        try
+        {
+            var context = await Task.Run(() => WorkContext(row.Text));
+            var answer = await _ai.AskAsync(_engine.Prefs, context,
+                $"The task is: \"{row.Text}\". Give the first two or three concrete moves to "
+                + "start it, as short lines beginning with a verb. Name real files, repos or "
+                + "commands from the context where they fit. No preamble, no encouragement, "
+                + "no restating the task. If the task is unclear, say what to decide first.");
+
+            if (answer is null)
+            {
+                row.Steps = "The model did not answer. Try again, or start with whatever is smallest.";
+                row.StepsSource = "";
+                return;
+            }
+
+            row.Steps = answer.Text;
+            row.StepsSource = answer.Model;
+        }
+        finally { row.Thinking = false; }
+    }
+
+    /// <summary>
+    /// What the workspace can say about a task. Only repos with something
+    /// outstanding, and only the ones whose name the task actually mentions
+    /// when it mentions one, so the steps are about this job rather than a
+    /// tour of everything open.
+    /// </summary>
+    private string WorkContext(string taskText)
+    {
+        try
+        {
+            var facts = _engine.BuildWorkspace();
+            var named = facts.Repos
+                .Where(r => Serving.MentionsRepo(taskText, r.Name))
+                .ToList();
+
+            var relevant = named.Count > 0
+                ? named
+                : [.. facts.Repos.Where(r => r.UncommittedFiles > 0 || r.UnpushedCommits > 0).Take(3)];
+
+            if (relevant.Count == 0) return "No repository has outstanding work.";
+
+            return "Repositories in play: " + string.Join("; ", relevant.Select(r =>
+                $"{r.Name} on {r.Branch}, {r.UncommittedFiles} uncommitted, {r.UnpushedCommits} unpushed"));
+        }
+        catch (Exception ex)
+        {
+            return $"(Workspace facts unavailable: {ex.Message})";
+        }
     }
 
     private async Task LoadWindowAsync()

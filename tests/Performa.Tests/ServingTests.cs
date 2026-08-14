@@ -119,6 +119,35 @@ public class ServingTests
         Assert.Empty(free);
     }
 
+    // --- grounding the "how do I start this" answer ---
+
+    [Theory]
+    [InlineData("Test the Performa exe on a clean box", "Performa")]
+    [InlineData("Loosen the everyAir harvest filter", "everyAir")]
+    [InlineData("fix EVERYAIR gauge", "everyAir")]            // case does not matter
+    public void A_task_naming_a_repo_is_matched_to_it(string task, string repo)
+        => Assert.True(Serving.MentionsRepo(task, repo));
+
+    [Theory]
+    [InlineData("Write the Glance widget", "Performa")]
+    [InlineData("", "Performa")]
+    public void A_task_naming_no_repo_matches_none(string task, string repo)
+        => Assert.False(Serving.MentionsRepo(task, repo));
+
+    [Theory]
+    [InlineData("Update the changelog", "log")]     // buried inside "changelog"
+    [InlineData("Rewrite the parser", "rs")]        // buried inside "parser"
+    [InlineData("Draft the README", "ad")]          // buried inside "Draft"
+    public void A_short_repo_name_does_not_match_inside_another_word(string task, string repo)
+        => Assert.False(Serving.MentionsRepo(task, repo));
+
+    [Fact]
+    public void A_short_repo_name_still_matches_when_it_stands_alone()
+    {
+        Assert.True(Serving.MentionsRepo("push log to origin", "log"));
+        Assert.True(Serving.MentionsRepo("fix rs-parser build", "rs"));
+    }
+
     [Fact]
     public void A_full_day_reports_no_longest_block_rather_than_a_zero_one()
     {

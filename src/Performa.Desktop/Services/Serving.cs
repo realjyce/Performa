@@ -101,6 +101,28 @@ public static class Serving
         return [.. free.Where(b => b.Length >= TimeSpan.FromMinutes(15))];
     }
 
+    /// <summary>
+    /// Whether a task is talking about a given repository.
+    ///
+    /// Substring, but not blindly: a repo called "a" or "ui" appears inside
+    /// half the English language, and matching one would hand the model
+    /// context about the wrong project while sounding just as certain. Short
+    /// names have to be a standalone word to count.
+    /// </summary>
+    public static bool MentionsRepo(string taskText, string repoName)
+    {
+        if (string.IsNullOrWhiteSpace(repoName)) return false;
+
+        var at = taskText.IndexOf(repoName, StringComparison.OrdinalIgnoreCase);
+        if (at < 0) return false;
+        if (repoName.Length >= 5) return true;
+
+        var before = at == 0 || !char.IsLetterOrDigit(taskText[at - 1]);
+        var afterAt = at + repoName.Length;
+        var after = afterAt >= taskText.Length || !char.IsLetterOrDigit(taskText[afterAt]);
+        return before && after;
+    }
+
     /// <summary>The longest clear stretch left, or null if the day is full.</summary>
     public static FreeBlock? LongestBlock(IEnumerable<FreeBlock> blocks)
     {
