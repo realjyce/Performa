@@ -30,10 +30,33 @@
         </StackPanel>
       </Grid>
 
+      <!-- Grouped by what each message wants of you, not by thread. Performa
+           will never beat a mail client at listing threads and does not need
+           to; sorting by demand is the thing a thread list cannot do. -->
+      <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding Connected}">
+        <Button Classes="ghost" Content="All" FontSize="12" Padding="12,6"
+                Command="{Binding FilterCommand}" CommandParameter="All" />
+        <Button Classes="ghost" FontSize="12" Padding="12,6"
+                Content="{Binding AsksCount, StringFormat='Asks {0}'}"
+                Command="{Binding FilterCommand}" CommandParameter="Asks" />
+        <Button Classes="ghost" FontSize="12" Padding="12,6"
+                Content="{Binding DatedCount, StringFormat='Dated {0}'}"
+                Command="{Binding FilterCommand}" CommandParameter="Dated" />
+        <Button Classes="ghost" FontSize="12" Padding="12,6"
+                Content="{Binding MoneyCount, StringFormat='Money {0}'}"
+                Command="{Binding FilterCommand}" CommandParameter="Money" />
+        <Button Classes="ghost" FontSize="12" Padding="12,6"
+                Content="{Binding RestCount, StringFormat='Rest {0}'}"
+                Command="{Binding FilterCommand}" CommandParameter="Rest" />
+        <TextBlock Text="{Binding FilterLabel}" Classes="faint" FontSize="11"
+                   VerticalAlignment="Center" />
+      </StackPanel>
+
       <ItemsControl ItemsSource="{Binding Mail}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:MailCard">
-            <Border Classes="card hover" Margin="0,0,0,12">
+            <Border Classes="card hover" Margin="0,0,0,12"
+                    IsVisible="{Binding Visible}">
               <StackPanel Spacing="10">
 
                 <Grid ColumnDefinitions="*,Auto">

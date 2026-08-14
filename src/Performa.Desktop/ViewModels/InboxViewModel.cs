@@ -40,6 +40,27 @@ public sealed class MailCard : ObservableObject
     public bool HasAmounts => Amounts.Count > 0;
     public bool HasActions => Actions.Count > 0;
 
+    /// <summary>
+    /// What this message wants from you, which is the only thing worth sorting
+    /// mail by here. Performa is not trying to be a mail client and will never
+    /// beat one at being a list of threads; grouping by demand is the thing a
+    /// thread list cannot do.
+    ///
+    /// Ordered, not tagged: a message asking something by Friday for a sum of
+    /// money is an ask first. Putting it in three buckets means reading it
+    /// three times.
+    /// </summary>
+    public static string BucketOf(bool hasActions, bool hasAmounts, bool hasDates)
+        => hasActions ? "Asks"
+            : hasAmounts ? "Money"
+            : hasDates ? "Dated"
+            : "Rest";
+
+    public string Bucket => BucketOf(HasActions, HasAmounts, HasDates);
+
+    private bool _visible = true;
+    public bool Visible { get => _visible; set => SetProperty(ref _visible, value); }
+
     private bool _expanded;
     public bool Expanded
     {
@@ -62,6 +83,7 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
         _engine = engine;
         RefreshCommand = new RelayCommand(() => _ = LoadAsync());
         ToggleCommand = new RelayCommand<MailCard>(c => { if (c is not null) c.Expanded = !c.Expanded; });
+        FilterCommand = new RelayCommand<string>(f => { if (f is not null) Filter = f; });
         OpenOriginalCommand = new RelayCommand<MailCard>(OpenOriginal);
         engine.GoogleSignedIn += () => _ = LoadAsync();
 
@@ -82,8 +104,41 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
     }
 
     public ObservableCollection<MailCard> Mail { get; } = [];
+
+    private string _filter = "All";
+    /// <summary>Which bucket is showing. Filters in place rather than into a
+    /// second collection, so expanding a message and then changing the filter
+    /// does not lose what was open.</summary>
+    public string Filter
+    {
+        get => _filter;
+        set
+        {
+            if (!SetProperty(ref _filter, value)) return;
+            foreach (var card in Mail) card.Visible = value == "All" || card.Bucket == value;
+            OnPropertyChanged(nameof(FilterLabel));
+        }
+    }
+
+    public string FilterLabel => _filter == "All" ? "" : $"showing {_filter.ToLowerInvariant()}";
+
+    public string AsksCount => Count("Asks");
+    public string MoneyCount => Count("Money");
+    public string DatedCount => Count("Dated");
+    public string RestCount => Count("Rest");
+
+    private string Count(string bucket) => Mail.Count(m => m.Bucket == bucket).ToString();
+
+    private void RefreshCounts()
+    {
+        OnPropertyChanged(nameof(AsksCount));
+        OnPropertyChanged(nameof(MoneyCount));
+        OnPropertyChanged(nameof(DatedCount));
+        OnPropertyChanged(nameof(RestCount));
+    }
     public RelayCommand RefreshCommand { get; }
     public RelayCommand<MailCard> ToggleCommand { get; }
+    public RelayCommand<string> FilterCommand { get; }
     public RelayCommand<MailCard> OpenOriginalCommand { get; }
 
     /// <summary>
@@ -161,6 +216,8 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
         _loadedOnce = true;
         Mail.Clear();
         foreach (var m in mail) Mail.Add(new MailCard(m));
+        Filter = "All";
+        RefreshCounts();
 
         _ = SummariseAsync();
 

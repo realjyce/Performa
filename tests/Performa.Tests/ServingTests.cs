@@ -1,4 +1,5 @@
 using Performa.Desktop.Services;
+using Performa.Desktop.ViewModels;
 using Xunit;
 
 namespace Performa.Tests;
@@ -117,6 +118,27 @@ public class ServingTests
             At(9), At(17));
 
         Assert.Empty(free);
+    }
+
+    // --- what a message wants from you ---
+
+    [Theory]
+    // hasActions, hasAmounts, hasDates
+    [InlineData(true, false, false, "Asks")]
+    [InlineData(false, true, false, "Money")]
+    [InlineData(false, false, true, "Dated")]
+    [InlineData(false, false, false, "Rest")]
+    public void A_message_lands_in_the_bucket_for_what_it_wants(
+        bool actions, bool amounts, bool dates, string expected)
+        => Assert.Equal(expected, MailCard.BucketOf(actions, amounts, dates));
+
+    [Fact]
+    public void A_message_that_is_several_things_at_once_is_only_filed_once()
+    {
+        // An invoice asking for something by Friday is an ask first. Filing it
+        // under three headings means reading it three times.
+        Assert.Equal("Asks", MailCard.BucketOf(true, true, true));
+        Assert.Equal("Money", MailCard.BucketOf(false, true, true));
     }
 
     // --- sweeping finished work off the live list ---
