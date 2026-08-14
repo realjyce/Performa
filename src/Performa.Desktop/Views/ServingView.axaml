@@ -48,11 +48,17 @@
               <StackPanel Spacing="0">
                 <Grid ColumnDefinitions="4,*,Auto,Auto,Auto" ColumnSpacing="14">
 
-                  <!-- Only the pressing rows carry the accent. Colouring every
-                       row by urgency is a ramp, and a ramp has no top. -->
+                  <!-- Only the pressing rows carry a mark, and its colour says
+                       whether the thing is yours to move. Violet is yours;
+                       blue is a fixed point that happens without you. Urgency
+                       is already in the ordering, so colouring by it again
+                       would be paint carrying nothing. -->
                   <Border Grid.Column="0" CornerRadius="2"
                           Background="{DynamicResource AccentBrush}"
-                          IsVisible="{Binding IsPressing}" />
+                          IsVisible="{Binding IsMineToMove}" />
+                  <Border Grid.Column="0" CornerRadius="2"
+                          Background="{DynamicResource InfoBrush}"
+                          IsVisible="{Binding IsFixedPoint}" />
 
                   <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                     <TextBlock Text="{Binding Text}" TextWrapping="Wrap"

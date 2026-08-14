@@ -17,6 +17,22 @@ public sealed class ServingRow(ServingCandidate item) : ObservableObject
     /// the list into a ramp, and a ramp has no top.</summary>
     public bool IsPressing => Item.Pressure <= 10;
 
+    /// <summary>
+    /// The mark's colour, by whether the thing is yours to move.
+    ///
+    /// Not by urgency: the order already says that, and repeating it in colour
+    /// is paint that carries nothing. What the order cannot say is which of the
+    /// two items at the top will happen without you. A meeting starts whether
+    /// or not you are ready; an overdue task sits there until you move it. Two
+    /// colours, still only on the pressing rows, so it stays a top rather than
+    /// becoming a gradient.
+    /// </summary>
+    /// Two flags rather than a brush key through a converter: a converter would
+    /// resolve the resource once and hold it, so the mark would keep the old
+    /// theme's colour after a switch.
+    public bool IsFixedPoint => IsPressing && Item.Kind == ItemKind.Meeting;
+    public bool IsMineToMove => IsPressing && Item.Kind != ItemKind.Meeting;
+
     public string KindLabel => Item.Kind switch
     {
         ItemKind.Meeting => "MEETING",
