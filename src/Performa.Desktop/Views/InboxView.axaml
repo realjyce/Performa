@@ -35,19 +35,19 @@
            to; sorting by demand is the thing a thread list cannot do. -->
       <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding Connected}">
         <Button Classes="ghost" Content="All" FontSize="12" Padding="12,6"
-                Command="{Binding FilterCommand}" CommandParameter="All" />
+                Command="{Binding FilterCommand}" CommandParameter="All" Classes.picked="{Binding AllPicked}" />
         <Button Classes="ghost" FontSize="12" Padding="12,6"
                 Content="{Binding AsksCount, StringFormat='Asks {0}'}"
-                Command="{Binding FilterCommand}" CommandParameter="Asks" />
+                Command="{Binding FilterCommand}" CommandParameter="Asks" Classes.picked="{Binding AsksPicked}" />
         <Button Classes="ghost" FontSize="12" Padding="12,6"
                 Content="{Binding DatedCount, StringFormat='Dated {0}'}"
-                Command="{Binding FilterCommand}" CommandParameter="Dated" />
+                Command="{Binding FilterCommand}" CommandParameter="Dated" Classes.picked="{Binding DatedPicked}" />
         <Button Classes="ghost" FontSize="12" Padding="12,6"
                 Content="{Binding MoneyCount, StringFormat='Money {0}'}"
-                Command="{Binding FilterCommand}" CommandParameter="Money" />
+                Command="{Binding FilterCommand}" CommandParameter="Money" Classes.picked="{Binding MoneyPicked}" />
         <Button Classes="ghost" FontSize="12" Padding="12,6"
                 Content="{Binding RestCount, StringFormat='Rest {0}'}"
-                Command="{Binding FilterCommand}" CommandParameter="Rest" />
+                Command="{Binding FilterCommand}" CommandParameter="Rest" Classes.picked="{Binding RestPicked}" />
         <TextBlock Text="{Binding FilterLabel}" Classes="faint" FontSize="11"
                    VerticalAlignment="Center" />
       </StackPanel>

@@ -117,6 +117,13 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
     /// prose always says where it came from.</summary>
     public string Source { get => _source; private set => SetProperty(ref _source, value); }
 
+    private bool _settling;
+    /// <summary>True while the model is out and the headline is about to be
+    /// replaced. The text dims rather than sitting there looking current, and a
+    /// sentence that fades out and back reads as an answer arriving instead of
+    /// a glitch.</summary>
+    public bool Settling { get => _settling; private set => SetProperty(ref _settling, value); }
+
     public bool HasRows => Rows.Count > 0;
 
     public void OnActivated()
@@ -206,24 +213,29 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
         var key = AppCredentialStore.AiKey(_engine.Prefs, _engine.Prefs.AiProvider);
         if (!_engine.Prefs.AiEnabled || string.IsNullOrWhiteSpace(key)) return;
 
-        var list = string.Join("; ", Rows.Take(6).Select(r => $"[{r.KindLabel}] {r.Text} ({r.Why})"));
-        var answer = await _ai.AskAsync(_engine.Prefs,
-            $"The user is {_engine.Prefs.UserName ?? "the developer"}. "
-            + $"Everything wanting their attention, most pressing first: {list}. "
-            + (Window.Length > 0 ? $"Clear time: {Window}. " : "No calendar data. "),
-            "In two sentences, tell them what to do first and why. Keep the order given, "
-            + "do not reorder or invent items, do not add encouragement. If a meeting is "
-            + "imminent, say what fits before it. Calm and concrete.");
-
-        if (answer is null)
+        Settling = true;
+        try
         {
-            // Say so rather than let the plain sentence pass as the model's.
-            Source = "not phrased, model unavailable";
-            return;
-        }
+            var list = string.Join("; ", Rows.Take(6).Select(r => $"[{r.KindLabel}] {r.Text} ({r.Why})"));
+            var answer = await _ai.AskAsync(_engine.Prefs,
+                $"The user is {_engine.Prefs.UserName ?? "the developer"}. "
+                + $"Everything wanting their attention, most pressing first: {list}. "
+                + (Window.Length > 0 ? $"Clear time: {Window}. " : "No calendar data. "),
+                "In two sentences, tell them what to do first and why. Keep the order given, "
+                + "do not reorder or invent items, do not add encouragement. If a meeting is "
+                + "imminent, say what fits before it. Calm and concrete.");
 
-        Headline = answer.Text;
-        Source = answer.Model;
+            if (answer is null)
+            {
+                // Say so rather than let the plain sentence pass as the model's.
+                Source = "not phrased, model unavailable";
+                return;
+            }
+
+            Headline = answer.Text;
+            Source = answer.Model;
+        }
+        finally { Settling = false; }
     }
 
     /// <summary>

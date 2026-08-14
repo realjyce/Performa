@@ -151,6 +151,31 @@
     <Setter Property="RenderTransform" Value="scale(0.97)" />
   </Style>
 
+  <!--
+    The headline on Serving. It is replaced when the model finishes, and a
+    sentence swapping in place is read as a glitch rather than an answer, so it
+    dims while the model is out and comes back up with the new text.
+  -->
+  <Style Selector="TextBlock.settling">
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.26" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="TextBlock.settling.waiting">
+    <Setter Property="Opacity" Value="0.25" />
+  </Style>
+
+  <!-- A ghost button that is currently the active choice. Filled rather than
+       merely outlined: an outline against an outline is a difference you have
+       to look for, and the whole job of this state is to be found. -->
+  <Style Selector="Button.ghost.picked /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrightBrush}" />
+  </Style>
+
   <!-- Quick-action card button -->
   <Style Selector="Button.qcard">
     <Setter Property="Background" Value="{DynamicResource BgCardBrush}" />

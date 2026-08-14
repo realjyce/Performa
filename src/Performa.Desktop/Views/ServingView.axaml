@@ -20,7 +20,9 @@
            told one thing, not handed a board to read. -->
       <Border Classes="card" Padding="22,20">
         <StackPanel Spacing="10">
-          <TextBlock Text="{Binding Headline}" Classes="h2" TextWrapping="Wrap" LineHeight="27" />
+          <TextBlock Text="{Binding Headline}" Classes="h2 settling"
+                     Classes.waiting="{Binding Settling}"
+                     TextWrapping="Wrap" LineHeight="27" />
           <TextBlock Text="{Binding Window}" Classes="muted"
                      IsVisible="{Binding Window, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
           <!-- Generated prose always says what generated it. -->

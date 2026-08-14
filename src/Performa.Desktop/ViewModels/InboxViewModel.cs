@@ -123,8 +123,21 @@ public sealed class InboxViewModel : ObservableObject, IActivatablePage
             if (!SetProperty(ref _filter, value)) return;
             foreach (var card in Mail) card.Visible = value == "All" || card.Bucket == value;
             OnPropertyChanged(nameof(FilterLabel));
+            // Which chip is lit. Without this a filtered list looks like an
+            // inbox that lost mail, with nothing on screen saying why.
+            OnPropertyChanged(nameof(AllPicked));
+            OnPropertyChanged(nameof(AsksPicked));
+            OnPropertyChanged(nameof(DatedPicked));
+            OnPropertyChanged(nameof(MoneyPicked));
+            OnPropertyChanged(nameof(RestPicked));
         }
     }
+
+    public bool AllPicked => _filter == "All";
+    public bool AsksPicked => _filter == "Asks";
+    public bool DatedPicked => _filter == "Dated";
+    public bool MoneyPicked => _filter == "Money";
+    public bool RestPicked => _filter == "Rest";
 
     public string FilterLabel => _filter == "All" ? "" : $"showing {_filter.ToLowerInvariant()}";
 
