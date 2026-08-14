@@ -147,8 +147,13 @@
           <Border Classes="card">
             <StackPanel Spacing="12">
               <Grid ColumnDefinitions="*,Auto,Auto">
-                <TextBlock Grid.Column="0" Text="SCHEDULE" Classes="label"
-                           VerticalAlignment="Center" />
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9"
+                            VerticalAlignment="Center">
+                  <TextBlock Text="SCHEDULE" Classes="label" VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding FocusNote}" Classes="label" VerticalAlignment="Center"
+                             IsVisible="{Binding HasFocusNote}"
+                             Foreground="{DynamicResource AccentBrightBrush}" />
+                </StackPanel>
                 <TextBlock Grid.Column="1" Text="{Binding LastRefreshed}" Classes="faint"
                            FontSize="10.5" VerticalAlignment="Center" Margin="0,0,8,0"
                            IsVisible="{Binding LastRefreshed, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
@@ -170,6 +175,16 @@
               <ItemsControl ItemsSource="{Binding Events}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:EventCard">
+                   <StackPanel>
+                    <!-- The clear run in front of this event. Drawn as its own
+                         line because the gap is the part you can spend. -->
+                    <Grid ColumnDefinitions="3,*" Margin="0,0,0,10" IsVisible="{Binding HasGap}">
+                      <Border Grid.Column="0" CornerRadius="2"
+                              Background="{DynamicResource AccentSoftBrush}" />
+                      <TextBlock Grid.Column="1" Text="{Binding GapBefore}" Margin="11,0,0,0"
+                                 Classes="faint" FontSize="11.5" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource AccentBrightBrush}" />
+                    </Grid>
                     <Grid ColumnDefinitions="3,*" Margin="0,0,0,12">
                       <!-- colour node from your own Google palette -->
                       <Border Grid.Column="0" Background="{Binding Colour}" CornerRadius="2" />
@@ -185,6 +200,7 @@
                                    IsVisible="{Binding HasLocation}" TextWrapping="Wrap" />
                       </StackPanel>
                     </Grid>
+                   </StackPanel>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>

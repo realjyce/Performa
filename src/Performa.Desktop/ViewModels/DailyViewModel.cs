@@ -75,6 +75,16 @@ public sealed class EventCard(CalendarEvent e)
         : e.Start is { } st
             ? (e.End is { } en ? $"{st:HH:mm} – {en:HH:mm}" : st.ToString("HH:mm"))
             : "";
+
+    /// <summary>Clear time immediately before this event, if any.
+    ///
+    /// A Gantt chart was the request, but a personal day has no dependencies to
+    /// draw and durations you already know. The question actually being asked
+    /// of a calendar is how long until the next interruption, so the gaps are
+    /// what get drawn and the meetings are what they sit between.</summary>
+    public string GapBefore { get; set; } = "";
+
+    public bool HasGap => GapBefore.Length > 0;
 }
 
 /// <summary>
@@ -411,6 +421,55 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
     /// new DailyData here would silently erase its work every time a task was
     /// ticked.
     /// </summary>
+    /// <summary>
+    /// Labels each of today's remaining events with the clear run in front of
+    /// it, so the schedule reads as time you have rather than only time you owe.
+    /// Only today: a gap on Thursday is not something you can act on now.
+    /// </summary>
+    private void MarkFocusGaps(List<CalendarEvent> events)
+    {
+        var now = DateTimeOffset.Now;
+        var endOfDay = new DateTimeOffset(now.Year, now.Month, now.Day, 18, 0, 0, now.Offset);
+        if (endOfDay <= now) return;
+
+        var blocks = Serving.FreeBlocks(events, now, endOfDay);
+        var today = events
+            .Where(e => !e.AllDay && e.Start is { } s && s.Date == now.Date && s > now)
+            .OrderBy(e => e.Start)
+            .ToList();
+
+        foreach (var block in blocks)
+        {
+            // The event this gap runs up to, if there is one.
+            var next = today.FirstOrDefault(e => e.Start == block.End);
+            if (next is null) continue;
+
+            var card = Events.FirstOrDefault(c => c.Title == next.Title && !c.HasGap);
+            if (card is not null) card.GapBefore = $"{Describe(block.Length)} clear";
+        }
+
+        FocusNote = Serving.LongestBlock(blocks) is { } best
+            ? $"{Describe(best.Length)} clear from {best.Start:HH:mm}"
+            : "";
+    }
+
+    private static string Describe(TimeSpan span)
+        => span.TotalMinutes < 60
+            ? $"{(int)span.TotalMinutes} min"
+            : span.Minutes == 0
+                ? $"{(int)span.TotalHours}h"
+                : $"{(int)span.TotalHours}h {span.Minutes}m";
+
+    private string _focusNote = "";
+    /// <summary>The longest clear run left today, shown on the schedule header.</summary>
+    public string FocusNote
+    {
+        get => _focusNote;
+        set { if (SetProperty(ref _focusNote, value)) OnPropertyChanged(nameof(HasFocusNote)); }
+    }
+
+    public bool HasFocusNote => _focusNote.Length > 0;
+
     private void Save()
     {
         var data = _store.Load();
@@ -467,6 +526,7 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         var events = await _calendar.GetUpcomingAsync(token);
         Events.Clear();
         foreach (var e in events) Events.Add(new EventCard(e));
+        MarkFocusGaps(events);
 
         _calendarLoaded = true;
         IsRefreshing = false;
