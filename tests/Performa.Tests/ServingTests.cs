@@ -224,16 +224,49 @@ public class ServingTests
     [InlineData(false, false, false, "Rest")]
     public void A_message_lands_in_the_bucket_for_what_it_wants(
         bool actions, bool amounts, bool dates, string expected)
-        => Assert.Equal(expected, MailCard.BucketOf(actions, amounts, dates));
+        => Assert.Equal(expected, MailCard.BucketOf(actions, amounts, dates, isBulk: false));
 
     [Fact]
     public void A_message_that_is_several_things_at_once_is_only_filed_once()
     {
         // An invoice asking for something by Friday is an ask first. Filing it
         // under three headings means reading it three times.
-        Assert.Equal("Asks", MailCard.BucketOf(true, true, true));
-        Assert.Equal("Money", MailCard.BucketOf(false, true, true));
+        Assert.Equal("Asks", MailCard.BucketOf(true, true, true, false));
+        Assert.Equal("Money", MailCard.BucketOf(false, true, true, false));
     }
+
+    [Fact]
+    public void A_newsletter_is_never_asking_you_personally()
+    {
+        // The whole reason the Asks count read 5 against a mailbox with none.
+        Assert.NotEqual("Asks", MailCard.BucketOf(true, false, false, isBulk: true));
+    }
+
+    // --- what counts as a sentence asking something ---
+
+    [Theory]
+    [InlineData("by Kristin Nave")]
+    [InlineData("Residents displaced by the earthquake at a shelter in Cali yesterday.")]
+    [InlineData("Courses offered by other departments can be recognized as major electives.")]
+    [InlineData("The device can be controlled fully by voice instructions.")]
+    public void A_passive_sentence_or_a_byline_is_not_a_request(string sentence)
+        => Assert.Empty(GmailService.ExtractActions(sentence));
+
+    [Theory]
+    [InlineData("The new design is ready for you.")]        // "sign" inside "design"
+    [InlineData("Customer satisfaction rose again.")]        // "action" inside "satisfaction"
+    [InlineData("There were signs its popularity was growing.")]
+    public void A_cue_buried_inside_another_word_does_not_count(string sentence)
+        => Assert.Empty(GmailService.ExtractActions(sentence));
+
+    [Theory]
+    [InlineData("Please confirm your attendance before Friday.")]
+    [InlineData("Could you review the attached document?")]
+    [InlineData("The deadline for submission is next week.")]
+    [InlineData("This needs your approval to move forward.")]
+    [InlineData("Please submit the form no later than Monday.")]
+    public void A_real_request_still_gets_through(string sentence)
+        => Assert.Single(GmailService.ExtractActions(sentence));
 
     // --- sweeping finished work off the live list ---
 

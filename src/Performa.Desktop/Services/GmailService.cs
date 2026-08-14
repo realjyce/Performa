@@ -118,27 +118,41 @@ public sealed partial class GmailService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(8)];
 
-    /// <summary>Sentences that ask for something. Kept whole, never paraphrased.</summary>
-    private static IReadOnlyList<string> ExtractActions(string body)
+    /// <summary>
+    /// Sentences that ask for something. Kept whole, never paraphrased.
+    ///
+    /// Cues are matched on word boundaries, and "by" only ever as part of a
+    /// phrase. On its own it matched every byline and every passive sentence in
+    /// the language: "by Kristin Nave", "Residents displaced by the earthquake",
+    /// "Courses offered by other departments". Those made the Inbox report five
+    /// asks in a mailbox that contained none, and the count is now load-bearing
+    /// because Serving ranks against it.
+    ///
+    /// Short cues need boundaries for the same reason. Bare "sign" is inside
+    /// "design" and "significant"; "action" is inside "satisfaction".
+    /// </summary>
+    public static IReadOnlyList<string> ExtractActions(string body)
     {
-        string[] cues =
-        [
-            "please", "could you", "can you", "need", "required", "deadline", "due",
-            "by ", "confirm", "review", "sign", "rsvp", "reply", "submit", "action",
-        ];
-
         var sentences = SentenceRegex().Split(body);
         var hits = new List<string>();
         foreach (var raw in sentences)
         {
             var s = WhitespaceRegex().Replace(raw, " ").Trim();
             if (s.Length is < 12 or > 240) continue;
-            if (cues.Any(c => s.Contains(c, StringComparison.OrdinalIgnoreCase)))
-                hits.Add(s);
+            if (AskCueRegex().IsMatch(s)) hits.Add(s);
             if (hits.Count == 6) break;
         }
         return hits;
     }
+
+    [GeneratedRegex(
+        @"\b(please|could you|can you|would you|let me know|deadline|rsvp|action required"
+        + @"|reply|respond|confirm|review|submit|complete|approve|attend"
+        + @"|required|needs? (?:your|you to)"
+        + @"|due (?:by|on|date)|(?:by|before) (?:the )?(?:end of|close of|eod|cob)"
+        + @"|no later than|as soon as possible)\b",
+        RegexOptions.IgnoreCase)]
+    private static partial Regex AskCueRegex();
 
     private static string ExtractBody(JsonElement payload)
     {

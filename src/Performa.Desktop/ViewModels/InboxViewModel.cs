@@ -18,7 +18,10 @@ public sealed class MailCard : ObservableObject
         Actions = d.Actions;
         FullBody = d.FullBody;
         Html = d.Html;
+        IsBulk = d.IsBulk;
     }
+
+    public bool IsBulk { get; }
 
     public string From { get; }
     public string Subject { get; }
@@ -50,13 +53,16 @@ public sealed class MailCard : ObservableObject
     /// money is an ask first. Putting it in three buckets means reading it
     /// three times.
     /// </summary>
-    public static string BucketOf(bool hasActions, bool hasAmounts, bool hasDates)
-        => hasActions ? "Asks"
+    /// <param name="isBulk">A newsletter is never asking you personally,
+    /// however many imperatives it contains. Without this the Asks count is
+    /// mostly marketing, and Serving now ranks against that count.</param>
+    public static string BucketOf(bool hasActions, bool hasAmounts, bool hasDates, bool isBulk)
+        => hasActions && !isBulk ? "Asks"
             : hasAmounts ? "Money"
             : hasDates ? "Dated"
             : "Rest";
 
-    public string Bucket => BucketOf(HasActions, HasAmounts, HasDates);
+    public string Bucket => BucketOf(HasActions, HasAmounts, HasDates, IsBulk);
 
     private bool _visible = true;
     public bool Visible { get => _visible; set => SetProperty(ref _visible, value); }

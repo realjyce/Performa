@@ -69,6 +69,33 @@ if (args.Length > 1 && args[1] == "google")
     return;
 }
 
+// "harvest" mode: every extracted ask in the mailbox, with whether the filter
+// keeps it. The Inbox counting five asks while Daily suggests none is only
+// diagnosable against the actual sentences, not by reading the rules.
+if (args.Length > 1 && args[1] == "harvest")
+{
+    var engine = new Performa.Desktop.Services.PerformaEngine();
+    var auth = new Performa.Desktop.Services.GoogleAuthService();
+    var creds = Performa.Desktop.Services.GoogleCredentialStore.Load(engine.Prefs);
+    if (creds is null) { Console.WriteLine("no credentials"); return; }
+
+    var tok = await auth.GetAccessTokenAsync(creds.ClientId, creds.ClientSecret);
+    if (tok is null) { Console.WriteLine("no token"); return; }
+
+    var mail = await new Performa.Desktop.Services.GmailService().GetRecentAsync(tok);
+    foreach (var m in mail)
+    {
+        if (m.Actions.Count == 0) continue;
+        Console.WriteLine($"\n=== {(m.IsBulk ? "[BULK] " : "")}{m.From} | {m.Subject}");
+        foreach (var a in m.Actions)
+        {
+            var kept = Performa.Desktop.Services.AutomationService.LooksLikeARealAsk(a);
+            Console.WriteLine($"  [{(kept ? "KEEP" : "drop")}] ({a.Trim().Length}) {a.Trim()}");
+        }
+    }
+    return;
+}
+
 AppBuilder.Configure<App>()
     .UseSkia()
     .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
