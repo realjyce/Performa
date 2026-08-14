@@ -19,8 +19,12 @@ public sealed class GitHubRepoRow : ObservableObject
     public string Status { get => _status; set => SetProperty(ref _status, value); }
 }
 
-public sealed class SettingsViewModel : ObservableObject
+public sealed class SettingsViewModel : ObservableObject, IActivatablePage
 {
+    /// <summary>Settings is built once at startup, so the run log would
+    /// otherwise show whatever the loop had done by boot and never move.</summary>
+    public void OnActivated() => LoadRecentRuns();
+
     private readonly PerformaEngine _engine;
 
     public SettingsViewModel(PerformaEngine engine)
