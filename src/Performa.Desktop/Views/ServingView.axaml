@@ -7,10 +7,14 @@
   <ScrollViewer>
     <StackPanel Margin="34,26,34,34" Spacing="20">
 
-      <StackPanel Spacing="3">
-        <TextBlock Text="Serving" Classes="h1" />
-        <TextBlock Text="What to start, and how long you have." Classes="muted" />
-      </StackPanel>
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Spacing="3">
+          <TextBlock Text="Serving" Classes="h1" />
+          <TextBlock Text="Everything wanting you, most pressing first." Classes="muted" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="ghost" Content="Refresh" VerticalAlignment="Center"
+                Command="{Binding RefreshCommand}" />
+      </Grid>
 
       <!-- The answer, before the list. Someone opening this page wants to be
            told one thing, not handed a board to read. -->
@@ -52,21 +56,29 @@
                     <TextBlock Text="{Binding Text}" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextPrimaryBrush}" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
+                      <!-- Which stream this came from. Without it a meeting and
+                           a task look like the same kind of thing. -->
+                      <TextBlock Text="{Binding KindLabel}" Classes="label" FontSize="9.5"
+                                 VerticalAlignment="Center" />
                       <TextBlock Text="{Binding Why}" Classes="faint" FontSize="11" />
-                      <TextBlock Text="{Binding StaleNote}" Classes="faint" FontSize="11"
-                                 IsVisible="{Binding IsStale}"
-                                 Foreground="{DynamicResource WarningBrush}" />
                     </StackPanel>
                   </StackPanel>
 
                   <Button Grid.Column="2" Classes="ghost" Content="How?"
+                          IsVisible="{Binding IsTask}"
                           Command="{Binding $parent[ItemsControl].((vm:ServingViewModel)DataContext).HowCommand}"
                           CommandParameter="{Binding}" VerticalAlignment="Center" />
                   <Button Grid.Column="3" Classes="ghost" Content="Later"
+                          IsVisible="{Binding IsTask}"
                           Command="{Binding $parent[ItemsControl].((vm:ServingViewModel)DataContext).DeferCommand}"
                           CommandParameter="{Binding}" VerticalAlignment="Center" />
                   <Button Grid.Column="4" Classes="accent" Content="Done"
+                          IsVisible="{Binding IsTask}"
                           Command="{Binding $parent[ItemsControl].((vm:ServingViewModel)DataContext).DoneCommand}"
+                          CommandParameter="{Binding}" VerticalAlignment="Center" />
+                  <Button Grid.Column="4" Classes="ghost" Content="{Binding OpenLabel}"
+                          IsVisible="{Binding CanOpen}"
+                          Command="{Binding $parent[ItemsControl].((vm:ServingViewModel)DataContext).OpenCommand}"
                           CommandParameter="{Binding}" VerticalAlignment="Center" />
                 </Grid>
 
@@ -89,6 +101,33 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
+
+      <!-- A question about this page, answered on this page. The Assistant
+           answers about the repositories; this one has the ranked list and the
+           free time, so "what fits before the standup" is answerable. -->
+      <Border Classes="card" Padding="18,16" IsVisible="{Binding HasRows}">
+        <StackPanel Spacing="11">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <TextBox Grid.Column="0" Text="{Binding Ask}"
+                     PlaceholderText="What can I finish before my next meeting?">
+              <TextBox.KeyBindings>
+                <KeyBinding Gesture="Enter" Command="{Binding AskCommand}" />
+              </TextBox.KeyBindings>
+            </TextBox>
+            <Button Grid.Column="1" Classes="accent" Content="Ask"
+                    Command="{Binding AskCommand}" />
+          </Grid>
+
+          <TextBlock Text="Thinking…" Classes="faint" FontSize="11"
+                     IsVisible="{Binding Asking}" />
+
+          <Border Padding="14,12" CornerRadius="7" IsVisible="{Binding HasAnswer}"
+                  Background="{DynamicResource BgInsetBrush}">
+            <TextBlock Text="{Binding Answer}" TextWrapping="Wrap" LineHeight="21"
+                       Foreground="{DynamicResource TextMutedBrush}" />
+          </Border>
+        </StackPanel>
+      </Border>
 
     </StackPanel>
   </ScrollViewer>

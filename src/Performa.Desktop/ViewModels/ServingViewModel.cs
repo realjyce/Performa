@@ -6,27 +6,30 @@ namespace Performa.Desktop.ViewModels;
 
 /// <summary>One task as the Serving page presents it: the text, why it sits
 /// where it does, and whether it has been pushed often enough to say so.</summary>
-public sealed class ServingRow(DailyTask task, Urgency urgency) : ObservableObject
+public sealed class ServingRow(ServingCandidate item) : ObservableObject
 {
-    public DailyTask Task { get; } = task;
-    public string Text => Task.Text;
-    public Urgency Urgency { get; } = urgency;
+    public ServingCandidate Item { get; } = item;
+    public string Text => Item.Title;
+    public string Why => Item.Why;
+    public ItemKind Kind => Item.Kind;
 
-    public string Why => Urgency switch
+    /// <summary>Only the top band is worth colouring. Painting every row turns
+    /// the list into a ramp, and a ramp has no top.</summary>
+    public bool IsPressing => Item.Pressure <= 10;
+
+    public string KindLabel => Item.Kind switch
     {
-        Urgency.Overdue => Task.Due is null ? "overdue" : $"was due {Task.Due}",
-        Urgency.Today => "due today",
-        Urgency.Soon => $"due {Task.Due}",
-        _ => "no date",
+        ItemKind.Meeting => "MEETING",
+        ItemKind.Repo => "CODE",
+        ItemKind.Mail => "INBOX",
+        _ => "TASK",
     };
 
-    /// <summary>Only the overdue and today bands are worth colouring. Painting
-    /// every row by urgency turns the list into a value-ramp where nothing
-    /// stands out, which is the opposite of what a priority list is for.</summary>
-    public bool IsPressing => Urgency is Urgency.Overdue or Urgency.Today;
-
-    public bool IsStale => Serving.IsStale(Task);
-    public string StaleNote => $"pushed {Task.Deferred} times";
+    // Only tasks can be ticked, deferred or explained. A meeting happens
+    // whether or not you press anything, and Performa never pushes for you.
+    public bool IsTask => Item.Kind == ItemKind.Task;
+    public bool CanOpen => Item.Kind is ItemKind.Repo or ItemKind.Mail;
+    public string OpenLabel => Item.Kind == ItemKind.Repo ? "Open" : "Read";
 
     private string _steps = "";
     /// <summary>Concrete first moves for this task. Empty until asked for:
@@ -69,6 +72,7 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
     private readonly DailyStore _store = new();
     private readonly GoogleAuthService _auth = new();
     private readonly GoogleCalendarService _calendar = new();
+    private readonly GmailService _gmail = new();
     private readonly AiService _ai = new();
 
     public ObservableCollection<ServingRow> Rows { get; } = [];
@@ -79,18 +83,26 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
         DeferCommand = new RelayCommand<ServingRow>(Defer);
         DoneCommand = new RelayCommand<ServingRow>(MarkDone);
         HowCommand = new RelayCommand<ServingRow>(row => _ = HowAsync(row));
+        OpenCommand = new RelayCommand<ServingRow>(Open);
+        AskCommand = new RelayCommand(() => _ = AskAsync());
+        RefreshCommand = new RelayCommand(() => { Load(); _ = GatherAsync(); });
         engine.DailyChanged += Load;
 
         // This is the landing page, and MainViewModel seeds its selection by
         // assigning the field rather than the property, so OnActivated does not
-        // run for whichever page is first. Load here or the app opens on a
-        // blank version of the one screen meant to answer a question.
+        // run for whichever page is first. Draw the tasks here, then let the
+        // slower streams fill in, or the app opens on a blank version of the
+        // one screen meant to answer a question.
         Load();
+        _ = GatherAsync();
     }
 
     public RelayCommand<ServingRow> DeferCommand { get; }
     public RelayCommand<ServingRow> DoneCommand { get; }
     public RelayCommand<ServingRow> HowCommand { get; }
+    public RelayCommand<ServingRow> OpenCommand { get; }
+    public RelayCommand AskCommand { get; }
+    public RelayCommand RefreshCommand { get; }
 
     private string _headline = "";
     /// <summary>The one sentence at the top: what to start with, and why.</summary>
@@ -110,20 +122,31 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
     public void OnActivated()
     {
         Load();
-        _ = PhraseAsync();
+        _ = GatherAsync();
     }
 
-    private void Load()
+    /// <summary>
+    /// Draws instantly from the one cheap source: the task file. Repositories,
+    /// calendar and mail all arrive later and re-rank on their own.
+    ///
+    /// Deliberately does not scan the working trees. That shells out to git
+    /// once per repository, and doing it here would run it on the UI thread
+    /// during construction, so the window would not paint until every repo had
+    /// answered and a single slow one would hang the app before it opened.
+    /// </summary>
+    private void Load() => Compose(_store.Load().Tasks, _repos);
+
+    private List<CalendarEvent> _events = [];
+    private int _mailAsks;
+    private List<RepoState> _repos = [];
+
+    private void Compose(IEnumerable<DailyTask> tasks, List<RepoState> repos)
     {
-        var today = DateOnly.FromDateTime(DateTime.Now);
-        var data = _store.Load();
+        _repos = repos;
+        var items = Serving.Compose(tasks, _events, repos, _mailAsks, DateTimeOffset.Now);
 
         Rows.Clear();
-        foreach (var task in Serving.Rank(data.Tasks, today))
-        {
-            if (task.Done) continue;
-            Rows.Add(new ServingRow(task, Serving.UrgencyOf(task, today)));
-        }
+        foreach (var item in items) Rows.Add(new ServingRow(item));
 
         OnPropertyChanged(nameof(HasRows));
         Headline = PlainHeadline();
@@ -137,19 +160,16 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
     /// </summary>
     private string PlainHeadline()
     {
-        if (Rows.Count == 0) return "Nothing waiting. The list is clear.";
+        if (Rows.Count == 0) return "Nothing waiting. The day is clear.";
 
         var first = Rows[0];
-        if (first.IsStale)
-            return $"\"{first.Text}\" is still top of the list after {first.Task.Deferred} pushes. "
-                   + "Worth doing, dropping, or breaking into something smaller.";
-
-        var overdue = Rows.Count(r => r.Urgency == Urgency.Overdue);
-        var lead = overdue > 1
-            ? $"{overdue} things are overdue. Start with \"{first.Text}\"."
-            : $"Start with \"{first.Text}\" ({first.Why}).";
-
-        return lead;
+        return first.Kind switch
+        {
+            ItemKind.Meeting => $"\"{first.Text}\" {first.Why}. Anything you start now gets interrupted.",
+            ItemKind.Repo => $"{first.Text}: {first.Why}. Worth clearing before it grows.",
+            ItemKind.Mail => $"{first.Text} {first.Why}.",
+            _ => $"Start with \"{first.Text}\" ({first.Why}).",
+        };
     }
 
     /// <summary>
@@ -157,21 +177,43 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
     /// the facts and told to keep them; if it declines or errors, the plain
     /// sentence written by <see cref="PlainHeadline"/> stays on screen.
     /// </summary>
+    private async Task GatherAsync()
+    {
+        // Off the UI thread: this is git, once per repository.
+        var repos = await Task.Run(() =>
+        {
+            try
+            {
+                return _engine.BuildWorkspace().Repos
+                    .Select(r => new RepoState(r.Name, r.Path, r.Branch,
+                                               r.UncommittedFiles, r.UnpushedCommits))
+                    .ToList();
+            }
+            catch (Exception) { return []; }
+        });
+
+        await LoadStreamsAsync();
+        // Every stream can outrank what is already drawn, so the list is
+        // rebuilt rather than appended to.
+        Compose(_store.Load().Tasks, repos);
+        await PhraseAsync();
+    }
+
     private async Task PhraseAsync()
     {
-        await LoadWindowAsync();
         if (Rows.Count == 0) return;
 
         var key = AppCredentialStore.AiKey(_engine.Prefs, _engine.Prefs.AiProvider);
         if (!_engine.Prefs.AiEnabled || string.IsNullOrWhiteSpace(key)) return;
 
-        var list = string.Join("; ", Rows.Take(5).Select(r => $"{r.Text} ({r.Why})"));
+        var list = string.Join("; ", Rows.Take(6).Select(r => $"[{r.KindLabel}] {r.Text} ({r.Why})"));
         var answer = await _ai.AskAsync(_engine.Prefs,
             $"The user is {_engine.Prefs.UserName ?? "the developer"}. "
-            + $"Their tasks in priority order: {list}. "
+            + $"Everything wanting their attention, most pressing first: {list}. "
             + (Window.Length > 0 ? $"Clear time: {Window}. " : "No calendar data. "),
-            "In two sentences, tell them what to start with and why. Keep the order given, "
-            + "do not reorder or invent tasks, do not add encouragement. Calm and concrete.");
+            "In two sentences, tell them what to do first and why. Keep the order given, "
+            + "do not reorder or invent items, do not add encouragement. If a meeting is "
+            + "imminent, say what fits before it. Calm and concrete.");
 
         if (answer is null)
         {
@@ -257,7 +299,12 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
         }
     }
 
-    private async Task LoadWindowAsync()
+    /// <summary>
+    /// Pulls the two streams that need the network. Both are optional: a page
+    /// that will not draw without Google is a page that is blank whenever the
+    /// token has expired.
+    /// </summary>
+    private async Task LoadStreamsAsync()
     {
         if (!_auth.IsSignedIn) { Window = ""; return; }
         var creds = GoogleCredentialStore.Load(_engine.Prefs);
@@ -267,6 +314,17 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
         if (token is null) { Window = ""; return; }
 
         var events = await _calendar.GetUpcomingAsync(token, days: 1);
+        _events = events;
+
+        try
+        {
+            // Only mail that asks something. A newsletter is not a thing to do,
+            // and bulk mail never is however many verbs it contains.
+            var mail = await _gmail.GetRecentAsync(token);
+            _mailAsks = mail.Count(m => !m.IsBulk && m.Actions.Count > 0);
+        }
+        catch (Exception) { _mailAsks = 0; }
+
         var now = DateTimeOffset.Now;
         var endOfDay = new DateTimeOffset(now.Year, now.Month, now.Day, 18, 0, 0, now.Offset);
         if (endOfDay <= now) { Window = "The working day is done."; return; }
@@ -289,7 +347,7 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
     /// stops being a plan and becomes a pile.</summary>
     private void Defer(ServingRow? row)
     {
-        if (row is null) return;
+        if (row is null || !row.IsTask) return;
         var data = _store.Load();
         // ponytail: matched on text because DailyTask has no id; two tasks
         // worded identically would defer the first. Add an id if that bites.
@@ -307,14 +365,86 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
 
     private void MarkDone(ServingRow? row)
     {
-        if (row is null) return;
+        if (row is null || !row.IsTask) return;
         var data = _store.Load();
         var match = data.Tasks.FirstOrDefault(t => t.Text == row.Text && !t.Done);
         if (match is null) return;
 
         match.Done = true;
+        match.DoneAt = DateTimeOffset.Now.ToString("yyyy-MM-dd");
         _store.Save(data);
         _engine.NotifyDailyChanged();
         Load();
+    }
+
+    /// <summary>Acts on the row rather than describing it. A repo opens in the
+    /// editor; mail hands over to the Inbox page, which already groups by what
+    /// each message wants.</summary>
+    private void Open(ServingRow? row)
+    {
+        if (row is null) return;
+        if (row.Kind == ItemKind.Repo && row.Item.Payload.Length > 0)
+            Launcher.OpenRepo(row.Item.Payload, _engine.Prefs.EditorCommand);
+        else if (row.Kind == ItemKind.Mail)
+            GoToInbox?.Invoke();
+    }
+
+    /// <summary>Raised when the page wants the shell to navigate. Set by
+    /// MainViewModel, which owns the nav list; Serving does not reach into it.</summary>
+    public Action? GoToInbox;
+
+    // --- asking about the day, without leaving the page ---
+
+    private string _ask = "";
+    public string Ask { get => _ask; set => SetProperty(ref _ask, value); }
+
+    private string _answer = "";
+    public string Answer
+    {
+        get => _answer;
+        private set { if (SetProperty(ref _answer, value)) OnPropertyChanged(nameof(HasAnswer)); }
+    }
+
+    public bool HasAnswer => _answer.Length > 0;
+
+    private bool _asking;
+    public bool Asking { get => _asking; private set => SetProperty(ref _asking, value); }
+
+    /// <summary>
+    /// A question about what is on this page, answered on this page.
+    ///
+    /// Separate from the Assistant, which answers about the repositories. This
+    /// one is handed the ranked list and the free time, so "what can I finish
+    /// before the standup" is answerable without the model guessing at either.
+    /// </summary>
+    private async Task AskAsync()
+    {
+        var question = Ask.Trim();
+        if (question.Length == 0 || Asking) return;
+
+        var key = AppCredentialStore.AiKey(_engine.Prefs, _engine.Prefs.AiProvider);
+        if (!_engine.Prefs.AiEnabled || string.IsNullOrWhiteSpace(key))
+        {
+            Answer = "Turn on AI prose in Settings and add a key to ask here.";
+            return;
+        }
+
+        Asking = true;
+        Ask = "";
+        try
+        {
+            var list = string.Join("; ", Rows.Select(r => $"[{r.KindLabel}] {r.Text} ({r.Why})"));
+            var reply = await _ai.AskAsync(_engine.Prefs,
+                $"The user is {_engine.Prefs.UserName ?? "the developer"}. "
+                + $"On their plate, most pressing first: {list}. "
+                + (Window.Length > 0 ? $"Clear time today: {Window} " : "")
+                + "Performa can open repositories and mail but never pushes, sends or replies.",
+                $"{question}\n\nAnswer in two or three sentences using only what is listed. "
+                + "If the answer is not in there, say so rather than guessing.");
+
+            Answer = reply?.Text ?? "The model did not answer.";
+            Source = reply?.Model ?? "";
+        }
+        finally { Asking = false; }
     }
 }

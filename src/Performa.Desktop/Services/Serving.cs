@@ -11,6 +11,30 @@ public enum Urgency
     Done,
 }
 
+/// <summary>Which stream an item came from. Decides what can be done about it.</summary>
+public enum ItemKind
+{
+    Meeting,
+    Task,
+    Repo,
+    Mail,
+}
+
+/// <summary>
+/// One thing wanting attention, from any stream.
+/// </summary>
+/// <param name="Pressure">Lower is more pressing. A number rather than an
+/// enum because the ordering across streams is the whole point: an overdue
+/// task and a meeting in ten minutes have to be comparable, and "which enum
+/// member is more urgent" is not a question the type system answers.</param>
+public sealed record ServingCandidate(
+    ItemKind Kind, string Title, string Why, int Pressure, string Payload = "");
+
+/// <summary>What Serving needs to know about a repository. A narrow shape
+/// rather than RepoSnapshot so the ordering can be tested without building a
+/// working tree.</summary>
+public readonly record struct RepoState(string Name, string Path, string Branch, int Uncommitted, int Unpushed);
+
 /// <summary>A stretch of the day with nothing booked in it.</summary>
 public readonly record struct FreeBlock(DateTimeOffset Start, DateTimeOffset End)
 {
@@ -104,6 +128,111 @@ public static class Serving
     /// <summary>How many finished tasks to keep. Enough to answer "what did I
     /// get done recently" without the file growing for the life of the app.</summary>
     public const int ArchiveKeep = 200;
+
+    // Pressure bands. Spaced so a band can be split later without renumbering,
+    // and ordered by how little choice you have about when to deal with it: a
+    // meeting happens whether or not you are ready, unpushed work is a machine
+    // failure away from being gone, and a task with no date can wait by
+    // definition.
+    private const int MeetingImminent = 0;
+    private const int TaskOverdue = 10;
+    private const int MeetingSoon = 20;
+    private const int TaskToday = 30;
+    private const int RepoUnpushed = 40;
+    private const int RepoUncommitted = 50;
+    private const int TaskSoon = 60;
+    private const int MailAsks = 70;
+    private const int TaskSomeday = 80;
+
+    /// <summary>A meeting inside this window is the next thing you do.</summary>
+    public static readonly TimeSpan Imminent = TimeSpan.FromMinutes(30);
+
+    /// <summary>Beyond this a meeting is context rather than pressure.</summary>
+    public static readonly TimeSpan LaterToday = TimeSpan.FromHours(2);
+
+    /// <summary>
+    /// Everything wanting attention, from every stream, in one order.
+    ///
+    /// The point of ranking across streams rather than within them: a list of
+    /// tasks cannot tell you that the useful thing right now is pushing four
+    /// commits before a meeting starts. Kept a pure function of already
+    /// gathered facts so the ordering can be tested without a calendar, a
+    /// mailbox or a working tree.
+    /// </summary>
+    public static IReadOnlyList<ServingCandidate> Compose(
+        IEnumerable<DailyTask> tasks,
+        IEnumerable<CalendarEvent> events,
+        IEnumerable<RepoState> repos,
+        int mailAsks,
+        DateTimeOffset now)
+    {
+        var today = DateOnly.FromDateTime(now.Date);
+        var found = new List<ServingCandidate>();
+
+        foreach (var e in events)
+        {
+            if (e.AllDay || e.Start is not { } start) continue;
+            var until = start - now;
+            if (until < TimeSpan.Zero || until > LaterToday) continue;
+
+            found.Add(new ServingCandidate(
+                ItemKind.Meeting, e.Title,
+                until <= Imminent ? $"starts {Minutes(until)}" : $"at {start:HH:mm}",
+                until <= Imminent ? MeetingImminent : MeetingSoon));
+        }
+
+        foreach (var task in tasks)
+        {
+            if (task.Done) continue;
+            var urgency = UrgencyOf(task, today);
+            var pressure = urgency switch
+            {
+                Urgency.Overdue => TaskOverdue,
+                Urgency.Today => TaskToday,
+                Urgency.Soon => TaskSoon,
+                _ => TaskSomeday,
+            };
+            var why = urgency switch
+            {
+                Urgency.Overdue => task.Due is null ? "overdue" : $"was due {task.Due}",
+                Urgency.Today => "due today",
+                Urgency.Soon => $"due {task.Due}",
+                _ => IsStale(task) ? $"pushed {task.Deferred} times" : "no date",
+            };
+            found.Add(new ServingCandidate(ItemKind.Task, task.Text, why, pressure, task.Text));
+        }
+
+        foreach (var repo in repos)
+        {
+            // Unpushed first: uncommitted work is on your disk, unpushed work
+            // is on your disk and nowhere else.
+            if (repo.Unpushed > 0)
+                found.Add(new ServingCandidate(
+                    ItemKind.Repo, repo.Name,
+                    $"{repo.Unpushed} commit(s) only on this machine",
+                    RepoUnpushed, repo.Path));
+            else if (repo.Uncommitted > 0)
+                found.Add(new ServingCandidate(
+                    ItemKind.Repo, repo.Name,
+                    $"{repo.Uncommitted} uncommitted file(s) on {repo.Branch}",
+                    RepoUncommitted, repo.Path));
+        }
+
+        if (mailAsks > 0)
+            found.Add(new ServingCandidate(
+                ItemKind.Mail, $"{mailAsks} message(s) asking something",
+                "in the last three days", MailAsks));
+
+        // Stable inside a band so the list does not reshuffle between refreshes.
+        return [.. found
+            .Select((item, index) => (item, index))
+            .OrderBy(x => x.item.Pressure)
+            .ThenBy(x => x.index)
+            .Select(x => x.item)];
+    }
+
+    private static string Minutes(TimeSpan until)
+        => until.TotalMinutes < 1 ? "now" : $"in {(int)until.TotalMinutes} min";
 
     /// <summary>
     /// Splits finished work off the live list once the day it was finished on

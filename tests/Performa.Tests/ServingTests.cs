@@ -120,6 +120,100 @@ public class ServingTests
         Assert.Empty(free);
     }
 
+    // --- ranking across every stream at once ---
+
+    private static readonly DateTimeOffset Noon = new(2026, 8, 15, 12, 0, 0, TimeSpan.Zero);
+
+    private static CalendarEvent MeetingAt(int hour, int minute = 0)
+        => new("standup", new DateTimeOffset(2026, 8, 15, hour, minute, 0, TimeSpan.Zero),
+               new DateTimeOffset(2026, 8, 15, hour + 1, minute, 0, TimeSpan.Zero),
+               false, null, "#fff", "cal");
+
+    [Fact]
+    public void A_meeting_in_ten_minutes_outranks_everything_else()
+    {
+        // The point of ranking across streams: a task list alone cannot tell
+        // you that starting anything right now is a waste.
+        var items = Serving.Compose(
+            [Task("overdue thing", "2026-08-01")],
+            [MeetingAt(12, 10)],
+            [new RepoState("api", "C:/api", "main", 0, 4)],
+            mailAsks: 3, Noon);
+
+        Assert.Equal(ItemKind.Meeting, items[0].Kind);
+    }
+
+    [Fact]
+    public void A_meeting_hours_away_does_not_outrank_overdue_work()
+    {
+        var items = Serving.Compose(
+            [Task("overdue thing", "2026-08-01")], [MeetingAt(13, 30)], [], 0, Noon);
+
+        Assert.Equal(ItemKind.Task, items[0].Kind);
+        Assert.Equal(ItemKind.Meeting, items[1].Kind);
+    }
+
+    [Fact]
+    public void Unpushed_work_outranks_uncommitted_work()
+    {
+        // Uncommitted work is on your disk. Unpushed work is on your disk and
+        // nowhere else, which is a different kind of exposure.
+        var items = Serving.Compose([], [],
+            [new RepoState("dirty", "C:/d", "main", 9, 0),
+             new RepoState("ahead", "C:/a", "main", 0, 1)], 0, Noon);
+
+        Assert.Equal("ahead", items[0].Title);
+        Assert.Equal("dirty", items[1].Title);
+    }
+
+    [Fact]
+    public void A_repo_reports_its_worse_problem_once_not_both()
+    {
+        var items = Serving.Compose([], [],
+            [new RepoState("both", "C:/b", "main", 5, 2)], 0, Noon);
+
+        Assert.Single(items);
+        Assert.Contains("only on this machine", items[0].Why);
+    }
+
+    [Fact]
+    public void A_clean_repo_and_an_empty_mailbox_say_nothing()
+    {
+        var items = Serving.Compose([], [],
+            [new RepoState("clean", "C:/c", "main", 0, 0)], mailAsks: 0, Noon);
+
+        Assert.Empty(items);
+    }
+
+    [Fact]
+    public void An_all_day_entry_is_not_a_thing_starting_soon()
+    {
+        var birthday = new CalendarEvent("bday", Noon, Noon.AddHours(8), true, null, "#fff", "cal");
+        Assert.Empty(Serving.Compose([], [birthday], [], 0, Noon));
+    }
+
+    [Fact]
+    public void A_meeting_already_started_is_not_pressure_any_more()
+    {
+        // It is happening. Listing it as the next thing to do is noise.
+        Assert.Empty(Serving.Compose([], [MeetingAt(11)], [], 0, Noon));
+    }
+
+    [Fact]
+    public void Everything_lands_in_one_order_across_the_streams()
+    {
+        var items = Serving.Compose(
+            [Task("someday"), Task("overdue", "2026-08-01"), Task("today", "2026-08-15")],
+            [MeetingAt(13, 30)],
+            [new RepoState("api", "C:/api", "main", 0, 2)],
+            mailAsks: 4, Noon);
+
+        Assert.Equal(
+            [ItemKind.Task, ItemKind.Meeting, ItemKind.Task, ItemKind.Repo, ItemKind.Mail, ItemKind.Task],
+            items.Select(i => i.Kind));
+        Assert.Equal("overdue", items[0].Title);
+    }
+
     // --- what a message wants from you ---
 
     [Theory]

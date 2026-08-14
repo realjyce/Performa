@@ -233,6 +233,11 @@ public sealed class MainViewModel : ObservableObject
             _reportsNav,
             _looseNav,
         ];
+        // Wired after the list exists: Serving hands off to Inbox but has no
+        // business knowing the nav list itself.
+        var inboxNav = NavItems.First(n => n.Title == "Inbox");
+        serving.GoToInbox = () => Selected = inboxNav;
+
         _assistantNav = new NavItem("Assistant", "IconAssistant", assistant);
         UtilityItems = [new NavItem("Settings", "IconSettings", settings)];
 
