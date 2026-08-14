@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Performa.Desktop.ViewModels"
+             x:Class="Performa.Desktop.Views.ServingView"
+             x:DataType="vm:ServingViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="34,26,34,34" Spacing="20">
+
+      <StackPanel Spacing="3">
+        <TextBlock Text="Serving" Classes="h1" />
+        <TextBlock Text="What to start, and how long you have." Classes="muted" />
+      </StackPanel>
+
+      <!-- The answer, before the list. Someone opening this page wants to be
+           told one thing, not handed a board to read. -->
+      <Border Classes="card" Padding="22,20">
+        <StackPanel Spacing="10">
+          <TextBlock Text="{Binding Headline}" Classes="h2" TextWrapping="Wrap" LineHeight="27" />
+          <TextBlock Text="{Binding Window}" Classes="muted"
+                     IsVisible="{Binding Window, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <!-- Generated prose always says what generated it. -->
+          <TextBlock Text="{Binding Source}" Classes="faint mono" FontSize="11"
+                     IsVisible="{Binding Source, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card" IsVisible="{Binding !HasRows}" Padding="26">
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+          <Path Data="{DynamicResource IconCheck}" Fill="{DynamicResource PositiveBrush}"
+                Width="26" Height="26" Stretch="Uniform" HorizontalAlignment="Center" />
+          <TextBlock Text="Nothing waiting" Classes="h2" HorizontalAlignment="Center" />
+          <TextBlock Text="Add something on Daily and it will be ranked here."
+                     Classes="muted" HorizontalAlignment="Center" />
+        </StackPanel>
+      </Border>
+
+      <ItemsControl ItemsSource="{Binding Rows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ServingRow">
+            <Border Classes="card hover" Margin="0,0,0,10" Padding="16,13">
+              <Grid ColumnDefinitions="4,*,Auto,Auto" ColumnSpacing="14">
+
+                <!-- Only the pressing rows carry the accent. Colouring every
+                     row by urgency is a ramp, and a ramp has no top. -->
+                <Border Grid.Column="0" CornerRadius="2"
+                        Background="{DynamicResource AccentBrush}"
+                        IsVisible="{Binding IsPressing}" />
+
+                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Text}" TextWrapping="Wrap"
+                             Foreground="{DynamicResource TextPrimaryBrush}" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding Why}" Classes="faint" FontSize="11" />
+                    <TextBlock Text="{Binding StaleNote}" Classes="faint" FontSize="11"
+                               IsVisible="{Binding IsStale}"
+                               Foreground="{DynamicResource WarningBrush}" />
+                  </StackPanel>
+                </StackPanel>
+
+                <Button Grid.Column="2" Classes="ghost" Content="Later"
+                        Command="{Binding $parent[ItemsControl].((vm:ServingViewModel)DataContext).DeferCommand}"
+                        CommandParameter="{Binding}" VerticalAlignment="Center" />
+                <Button Grid.Column="3" Classes="accent" Content="Done"
+                        Command="{Binding $parent[ItemsControl].((vm:ServingViewModel)DataContext).DoneCommand}"
+                        CommandParameter="{Binding}" VerticalAlignment="Center" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

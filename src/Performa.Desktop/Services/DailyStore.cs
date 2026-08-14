@@ -6,6 +6,17 @@ public sealed class DailyTask
 {
     public string Text { get; set; } = "";
     public bool Done { get; set; }
+
+    /// <summary>yyyy-MM-dd, or null for "sometime". Null is the honest default:
+    /// most tasks genuinely have no deadline, and inventing one to make sorting
+    /// easier would make the ranking a lie.</summary>
+    public string? Due { get; set; }
+
+    /// <summary>How many times this has been pushed to another day. Not used to
+    /// sort, only to say so: a task deferred four times is not urgent, it is
+    /// something the user does not want to do, and the wording should admit
+    /// that rather than keep presenting it as next.</summary>
+    public int Deferred { get; set; }
 }
 
 public sealed class DailyData

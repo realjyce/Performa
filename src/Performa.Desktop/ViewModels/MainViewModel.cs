@@ -206,6 +206,7 @@ public sealed class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(WorkspaceFull));
         };
 
+        var serving = new ServingViewModel(Engine);
         var dashboard = new DashboardViewModel(Engine, HandleQuickAction);
         var daily = new DailyViewModel(Engine);
         var activity = new ActivityViewModel(Engine);
@@ -221,6 +222,9 @@ public sealed class MainViewModel : ObservableObject
 
         NavItems =
         [
+            // First, and the landing page: it is the only screen that answers
+            // "what now" rather than showing you something to interpret.
+            new NavItem("Serving", "IconStreams", serving),
             new NavItem("Dashboard", "IconDashboard", dashboard),
             new NavItem("Daily", "IconDaily", daily),
             new NavItem("Inbox", "IconMail", inbox),
