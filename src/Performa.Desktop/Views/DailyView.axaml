@@ -76,16 +76,25 @@
             <ItemsControl ItemsSource="{Binding Tasks}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:TaskRow">
-                  <CheckBox IsChecked="{Binding Done}" Margin="0,3">
-                    <StackPanel Orientation="Horizontal" Spacing="9">
-                      <TextBlock Text="{Binding Text}" Foreground="{DynamicResource TextPrimaryBrush}"
-                                 VerticalAlignment="Center" TextWrapping="Wrap" />
-                      <!-- Serving sorts on this, so Daily has to show it or the
-                           order over there looks arbitrary from here. -->
-                      <TextBlock Text="{Binding DueLabel}" Classes="faint" FontSize="11"
-                                 VerticalAlignment="Center" IsVisible="{Binding HasDue}" />
-                    </StackPanel>
-                  </CheckBox>
+                  <Grid ColumnDefinitions="*,Auto" Margin="0,3">
+                    <CheckBox Grid.Column="0" IsChecked="{Binding Done}">
+                      <StackPanel Orientation="Horizontal" Spacing="9">
+                        <TextBlock Text="{Binding Text}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center" TextWrapping="Wrap" />
+                        <!-- Serving sorts on this, so Daily has to show it or the
+                             order over there looks arbitrary from here. -->
+                        <TextBlock Text="{Binding DueLabel}" Classes="faint" FontSize="11"
+                                   VerticalAlignment="Center" IsVisible="{Binding HasDue}" />
+                      </StackPanel>
+                    </CheckBox>
+                    <!-- Distinct from ticking: done is work that happened,
+                         delete is work that will not. Conflating them makes the
+                         close-out count things nobody did. -->
+                    <Button Grid.Column="1" Classes="ghost" Content="✕" FontSize="11"
+                            Padding="7,2" VerticalAlignment="Center"
+                            Command="{Binding $parent[ItemsControl].((vm:DailyViewModel)DataContext).DeleteTaskCommand}"
+                            CommandParameter="{Binding}" />
+                  </Grid>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>

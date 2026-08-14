@@ -119,6 +119,53 @@ public class ServingTests
         Assert.Empty(free);
     }
 
+    // --- sweeping finished work off the live list ---
+
+    private static DailyTask Finished(string text, string doneAt)
+        => new() { Text = text, Done = true, DoneAt = doneAt };
+
+    [Fact]
+    public void Todays_finished_work_stays_where_it_was_ticked()
+    {
+        // Ticking something and watching it vanish reads as having lost it,
+        // and the progress meter counts today's completions.
+        var (live, archived) = Serving.Sweep([Finished("shipped", "2026-08-15")], Today);
+
+        Assert.Single(live);
+        Assert.Empty(archived);
+    }
+
+    [Fact]
+    public void Yesterdays_finished_work_moves_off_the_list()
+    {
+        var (live, archived) = Serving.Sweep(
+            [Finished("shipped", "2026-08-14"), Task("still open")], Today);
+
+        Assert.Equal(["still open"], live.Select(t => t.Text));
+        Assert.Equal(["shipped"], archived.Select(t => t.Text));
+    }
+
+    [Fact]
+    public void An_open_task_is_never_swept_however_old_its_due_date()
+    {
+        var (live, archived) = Serving.Sweep([Task("ancient", "2020-01-01")], Today);
+
+        Assert.Single(live);
+        Assert.Empty(archived);
+    }
+
+    [Fact]
+    public void A_done_task_with_no_stamp_is_left_alone_rather_than_guessed_at()
+    {
+        // Written before DoneAt existed. Sweeping it would file work under a
+        // day it may not have happened on, so it stays until it is ticked again.
+        var (live, archived) = Serving.Sweep(
+            [new DailyTask { Text = "legacy", Done = true }], Today);
+
+        Assert.Single(live);
+        Assert.Empty(archived);
+    }
+
     // --- reading a due date out of what was typed ---
     // Today is Saturday 15 August 2026 in these.
 

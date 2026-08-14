@@ -14,7 +14,25 @@ public sealed class TaskRow : ObservableObject
     public bool Done
     {
         get => _done;
-        set { if (SetProperty(ref _done, value)) Changed?.Invoke(); }
+        set
+        {
+            if (!SetProperty(ref _done, value)) return;
+            // Stamped on the tick, cleared on the untick: an archived task has
+            // to know which day it belongs to, and a task un-ticked by mistake
+            // must not keep yesterday's date and vanish on the next open.
+            DoneAt = value ? DateTimeOffset.Now.ToString("yyyy-MM-dd") : null;
+            Changed?.Invoke();
+        }
+    }
+
+    public string? DoneAt { get; private set; }
+
+    /// <summary>Puts a saved row back exactly as it was stored, without the
+    /// stamping the setter does for a real tick.</summary>
+    public void Restore(bool done, string? doneAt)
+    {
+        _done = done;
+        DoneAt = doneAt;
     }
 
     /// <summary>Carried through untouched so that saving from Daily does not
@@ -79,10 +97,24 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
     {
         _engine = engine;
         AddTaskCommand = new RelayCommand(AddTask);
+        DeleteTaskCommand = new RelayCommand<TaskRow>(DeleteTask);
         RefreshCalendarCommand = new RelayCommand(() => _ = LoadCalendarAsync(force: true));
 
         var data = _store.Load();
-        foreach (var t in data.Tasks) Tasks.Add(Wrap(t.Text, t.Done, t.Due, t.Deferred));
+
+        // Yesterday's finished work moves off the list before it is drawn, so
+        // the page opens on what is left rather than a log of what is not.
+        var (live, archived) = Serving.Sweep(data.Tasks, DateOnly.FromDateTime(DateTime.Now));
+        if (archived.Count > 0)
+        {
+            data.Completed.AddRange(archived);
+            if (data.Completed.Count > Serving.ArchiveKeep)
+                data.Completed.RemoveRange(0, data.Completed.Count - Serving.ArchiveKeep);
+            data.Tasks = live;
+            _store.Save(data);
+        }
+
+        foreach (var t in live) Tasks.Add(Wrap(t.Text, t.Done, t.Due, t.Deferred, t.DoneAt));
         _notes = data.Notes;
         Today = DateTimeOffset.Now.ToString("dddd, d MMMM");
         _loaded = true;
@@ -327,6 +359,7 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
     public bool GoogleConnected { get => _googleConnected; set => SetProperty(ref _googleConnected, value); }
 
     public RelayCommand AddTaskCommand { get; }
+    public RelayCommand<TaskRow> DeleteTaskCommand { get; }
     public RelayCommand RefreshCalendarCommand { get; }
 
     /// <summary>Navigating here re-checks sign-in, so the calendar fills itself in.</summary>
@@ -338,11 +371,22 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         else if (!HasBrief) _ = BuildBriefAsync();
     }
 
-    private TaskRow Wrap(string text, bool done, string? due = null, int deferred = 0)
+    private TaskRow Wrap(string text, bool done, string? due = null, int deferred = 0,
+                         string? doneAt = null)
     {
-        var row = new TaskRow { Text = text, Done = done, Due = due, Deferred = deferred };
+        var row = new TaskRow { Text = text, Due = due, Deferred = deferred };
+        // Seeded before Changed is attached, so restoring a saved row does not
+        // restamp DoneAt with today and save on the way in.
+        row.Restore(done, doneAt);
         row.Changed = Save;
         return row;
+    }
+
+    private void DeleteTask(TaskRow? row)
+    {
+        if (row is null) return;
+        Tasks.Remove(row);
+        Save();
     }
 
     private void AddTask()
@@ -379,6 +423,7 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
             // the moment a checkbox moved.
             Due = t.Due,
             Deferred = t.Deferred,
+            DoneAt = t.DoneAt,
         })];
         data.Notes = Notes;
         _store.Save(data);

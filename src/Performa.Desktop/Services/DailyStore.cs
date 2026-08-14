@@ -12,6 +12,11 @@ public sealed class DailyTask
     /// easier would make the ranking a lie.</summary>
     public string? Due { get; set; }
 
+    /// <summary>yyyy-MM-dd the task was ticked, or null while it is open.
+    /// Without it "yesterday's finished work" is unanswerable: Done alone says
+    /// that it happened, never when.</summary>
+    public string? DoneAt { get; set; }
+
     /// <summary>How many times this has been pushed to another day. Not used to
     /// sort, only to say so: a task deferred four times is not urgent, it is
     /// something the user does not want to do, and the wording should admit
@@ -38,6 +43,11 @@ public sealed class DailyData
     /// Dismissals are remembered so a suggestion never comes back.</summary>
     public List<string> Suggested { get; set; } = [];
     public List<string> Dismissed { get; set; } = [];
+
+    /// <summary>Tasks finished on an earlier day, moved off the live list so it
+    /// stays a list of what is left. Kept rather than deleted: the close-out
+    /// counts them, and "what did I get done last week" is a fair question.</summary>
+    public List<DailyTask> Completed { get; set; } = [];
 }
 
 /// <summary>Local, on-disk store for the Daily module. No network, just JSON in %APPDATA%.</summary>

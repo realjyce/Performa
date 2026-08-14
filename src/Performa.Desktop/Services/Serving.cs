@@ -101,6 +101,33 @@ public static class Serving
         return [.. free.Where(b => b.Length >= TimeSpan.FromMinutes(15))];
     }
 
+    /// <summary>How many finished tasks to keep. Enough to answer "what did I
+    /// get done recently" without the file growing for the life of the app.</summary>
+    public const int ArchiveKeep = 200;
+
+    /// <summary>
+    /// Splits finished work off the live list once the day it was finished on
+    /// has passed.
+    ///
+    /// Today's completions stay put, because ticking something and watching it
+    /// vanish reads as having lost it, and the progress meter counts them. Only
+    /// yesterday's move, so the list you open in the morning is what is left
+    /// rather than a record of what already happened.
+    /// </summary>
+    public static (List<DailyTask> Live, List<DailyTask> Archived) Sweep(
+        IEnumerable<DailyTask> tasks, DateOnly today)
+    {
+        List<DailyTask> live = [], archived = [];
+        foreach (var task in tasks)
+        {
+            var stale = task.Done
+                && DateOnly.TryParse(task.DoneAt, out var at)
+                && at < today;
+            (stale ? archived : live).Add(task);
+        }
+        return (live, archived);
+    }
+
     /// <summary>
     /// Lifts a due date out of what someone typed and hands back the task
     /// without it.
