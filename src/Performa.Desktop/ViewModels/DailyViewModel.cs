@@ -17,6 +17,17 @@ public sealed class TaskRow : ObservableObject
         set { if (SetProperty(ref _done, value)) Changed?.Invoke(); }
     }
 
+    /// <summary>Carried through untouched so that saving from Daily does not
+    /// erase what Serving sorts on. Daily does not show either of these; it
+    /// only has to avoid destroying them.</summary>
+    public string? Due { get; init; }
+    public int Deferred { get; init; }
+
+    /// <summary>When there is a date, say so on the row. A task that sorts to
+    /// the top of Serving for a reason invisible on Daily reads as arbitrary.</summary>
+    public string DueLabel => Due is null ? "" : $"due {Due}";
+    public bool HasDue => Due is not null;
+
     public Action? Changed;
 }
 
@@ -71,7 +82,7 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         RefreshCalendarCommand = new RelayCommand(() => _ = LoadCalendarAsync(force: true));
 
         var data = _store.Load();
-        foreach (var t in data.Tasks) Tasks.Add(Wrap(t.Text, t.Done));
+        foreach (var t in data.Tasks) Tasks.Add(Wrap(t.Text, t.Done, t.Due, t.Deferred));
         _notes = data.Notes;
         Today = DateTimeOffset.Now.ToString("dddd, d MMMM");
         _loaded = true;
@@ -327,18 +338,25 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
         else if (!HasBrief) _ = BuildBriefAsync();
     }
 
-    private TaskRow Wrap(string text, bool done)
+    private TaskRow Wrap(string text, bool done, string? due = null, int deferred = 0)
     {
-        var row = new TaskRow { Text = text, Done = done };
+        var row = new TaskRow { Text = text, Done = done, Due = due, Deferred = deferred };
         row.Changed = Save;
         return row;
     }
 
     private void AddTask()
     {
-        var text = NewTaskText.Trim();
+        var raw = NewTaskText.Trim();
+        if (raw.Length == 0) return;
+
+        // The date is read out of what was typed rather than picked from a
+        // control: you are already writing the sentence, and "friday" is
+        // fewer moves than opening a calendar to find Friday.
+        var (text, due) = Serving.SplitDue(raw, DateOnly.FromDateTime(DateTime.Now));
         if (text.Length == 0) return;
-        Tasks.Add(Wrap(text, false));
+
+        Tasks.Add(Wrap(text, false, due));
         NewTaskText = "";
         Save();
     }
@@ -352,7 +370,16 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
     private void Save()
     {
         var data = _store.Load();
-        data.Tasks = [.. Tasks.Select(t => new DailyTask { Text = t.Text, Done = t.Done })];
+        data.Tasks = [.. Tasks.Select(t => new DailyTask
+        {
+            Text = t.Text,
+            Done = t.Done,
+            // Daily does not edit these, so it has no business dropping them.
+            // Rebuilding the row from Text and Done alone erased every due date
+            // the moment a checkbox moved.
+            Due = t.Due,
+            Deferred = t.Deferred,
+        })];
         data.Notes = Notes;
         _store.Save(data);
         RefreshTaskMeter();

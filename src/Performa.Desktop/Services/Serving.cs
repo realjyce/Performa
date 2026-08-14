@@ -102,6 +102,72 @@ public static class Serving
     }
 
     /// <summary>
+    /// Lifts a due date out of what someone typed and hands back the task
+    /// without it.
+    ///
+    /// A date picker is three moves for something already being written, so
+    /// "ship the readme friday" becomes "ship the readme" due that Friday. Only
+    /// the trailing phrase is read: a date in the middle of a sentence is
+    /// usually part of the task ("move the 3pm standup") rather than its
+    /// deadline, and cutting it would mangle the text.
+    ///
+    /// Deliberately small. It knows the handful of forms people actually type
+    /// and leaves everything else alone, because a parser that guesses wrong
+    /// silently reschedules work.
+    /// </summary>
+    public static (string Text, string? Due) SplitDue(string raw, DateOnly today)
+    {
+        var text = raw.TrimEnd();
+        foreach (var (phrase, resolve) in TrailingDates(today))
+        {
+            if (!text.EndsWith(phrase, StringComparison.OrdinalIgnoreCase)) continue;
+
+            var head = text[..^phrase.Length].TrimEnd();
+            // "friday" alone is a task called friday, not an undated nothing.
+            if (head.Length == 0) continue;
+
+            // Strip a trailing "by"/"on"/"due" so "ship it by friday" reads
+            // "ship it" rather than "ship it by".
+            foreach (var filler in (string[])[" by", " on", " due", " for"])
+                if (head.EndsWith(filler, StringComparison.OrdinalIgnoreCase))
+                {
+                    head = head[..^filler.Length].TrimEnd();
+                    break;
+                }
+
+            return head.Length == 0 ? (text, null) : (head, resolve().ToString("yyyy-MM-dd"));
+        }
+
+        return (text, null);
+    }
+
+    private static IEnumerable<(string Phrase, Func<DateOnly> Resolve)> TrailingDates(DateOnly today)
+    {
+        yield return ("today", () => today);
+        yield return ("tomorrow", () => today.AddDays(1));
+        yield return ("next week", () => today.AddDays(7));
+
+        // Longest first so "next monday" is not eaten by "monday".
+        for (var day = 0; day < 7; day++)
+        {
+            var name = ((DayOfWeek)day).ToString();
+            yield return ($"next {name}", () => NextWeekday(today, (DayOfWeek)day, skipThisWeek: true));
+            yield return (name, () => NextWeekday(today, (DayOfWeek)day, skipThisWeek: false));
+        }
+    }
+
+    /// <summary>The next date falling on a weekday. Naming today's weekday means
+    /// next week rather than now: "ship it friday" said on a Friday is about the
+    /// one coming, since a deadline already passed is not a deadline.</summary>
+    private static DateOnly NextWeekday(DateOnly from, DayOfWeek target, bool skipThisWeek)
+    {
+        var ahead = ((int)target - (int)from.DayOfWeek + 7) % 7;
+        if (ahead == 0) ahead = 7;
+        if (skipThisWeek && ahead < 7) ahead += 7;
+        return from.AddDays(ahead);
+    }
+
+    /// <summary>
     /// Whether a task is talking about a given repository.
     ///
     /// Substring, but not blindly: a repo called "a" or "ui" appears inside

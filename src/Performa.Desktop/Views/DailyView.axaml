@@ -65,7 +65,7 @@
             </Grid>
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
               <TextBox Grid.Column="0" Text="{Binding NewTaskText}"
-                       PlaceholderText="Add a task and press Enter…">
+                       PlaceholderText="Add a task, or &quot;ship the readme friday&quot;…">
                 <TextBox.KeyBindings>
                   <KeyBinding Gesture="Enter" Command="{Binding AddTaskCommand}" />
                 </TextBox.KeyBindings>
@@ -77,8 +77,14 @@
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:TaskRow">
                   <CheckBox IsChecked="{Binding Done}" Margin="0,3">
-                    <TextBlock Text="{Binding Text}" Foreground="{DynamicResource TextPrimaryBrush}"
-                               VerticalAlignment="Center" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="9">
+                      <TextBlock Text="{Binding Text}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                 VerticalAlignment="Center" TextWrapping="Wrap" />
+                      <!-- Serving sorts on this, so Daily has to show it or the
+                           order over there looks arbitrary from here. -->
+                      <TextBlock Text="{Binding DueLabel}" Classes="faint" FontSize="11"
+                                 VerticalAlignment="Center" IsVisible="{Binding HasDue}" />
+                    </StackPanel>
                   </CheckBox>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>

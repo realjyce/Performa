@@ -119,6 +119,62 @@ public class ServingTests
         Assert.Empty(free);
     }
 
+    // --- reading a due date out of what was typed ---
+    // Today is Saturday 15 August 2026 in these.
+
+    [Theory]
+    [InlineData("ship the readme today", "ship the readme", "2026-08-15")]
+    [InlineData("ship the readme tomorrow", "ship the readme", "2026-08-16")]
+    [InlineData("ship the readme next week", "ship the readme", "2026-08-22")]
+    [InlineData("ship the readme monday", "ship the readme", "2026-08-17")]
+    [InlineData("ship the readme by friday", "ship the readme", "2026-08-21")]
+    [InlineData("ship the readme on Tuesday", "ship the readme", "2026-08-18")]
+    public void A_trailing_date_is_lifted_out_and_the_task_reads_clean(
+        string raw, string text, string due)
+    {
+        var (gotText, gotDue) = Serving.SplitDue(raw, Today);
+        Assert.Equal(text, gotText);
+        Assert.Equal(due, gotDue);
+    }
+
+    [Fact]
+    public void Naming_todays_weekday_means_the_one_coming_not_this_morning()
+    {
+        // Said on a Saturday. A deadline that has already passed is not one.
+        var (_, due) = Serving.SplitDue("ship the readme saturday", Today);
+        Assert.Equal("2026-08-22", due);
+    }
+
+    [Fact]
+    public void Next_monday_is_a_week_past_monday()
+    {
+        var (_, plain) = Serving.SplitDue("ship it monday", Today);
+        var (_, next) = Serving.SplitDue("ship it next monday", Today);
+        Assert.Equal("2026-08-17", plain);
+        Assert.Equal("2026-08-24", next);
+    }
+
+    [Theory]
+    [InlineData("move the friday standup earlier")]  // date is mid-sentence, part of the task
+    [InlineData("write the parser")]
+    [InlineData("")]
+    public void Text_with_no_trailing_date_is_left_exactly_as_written(string raw)
+    {
+        var (text, due) = Serving.SplitDue(raw, Today);
+        Assert.Equal(raw, text);
+        Assert.Null(due);
+    }
+
+    [Fact]
+    public void A_task_that_is_only_a_date_stays_a_task()
+    {
+        // Someone writing just "friday" means a task called friday, not an
+        // empty task filed under Friday.
+        var (text, due) = Serving.SplitDue("friday", Today);
+        Assert.Equal("friday", text);
+        Assert.Null(due);
+    }
+
     // --- grounding the "how do I start this" answer ---
 
     [Theory]
