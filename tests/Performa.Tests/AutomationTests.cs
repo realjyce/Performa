@@ -1,4 +1,5 @@
 using Performa.Desktop.Services;
+using Performa.Desktop.ViewModels;
 using Xunit;
 
 namespace Performa.Tests;
@@ -40,29 +41,38 @@ public class AutomationTests
     }
 
     [Theory]
-    [InlineData(9, 9)]    // exactly on the hour
-    [InlineData(10, 9)]   // machine booted an hour late
-    [InlineData(12, 9)]   // last hour of the catch-up window
-    public void The_brief_fires_at_its_hour_and_catches_up_through_the_morning(
-        int nowHour, int briefHour)
-        => Assert.True(AutomationService.IsWithinBriefWindow(nowHour, briefHour));
+    [InlineData(9, 9, 18)]    // exactly on the hour
+    [InlineData(10, 9, 18)]   // machine booted an hour late
+    [InlineData(13, 9, 18)]   // the case two weeks of logs turned up: a first
+    [InlineData(17, 9, 18)]   // launch past lunch used to get no brief at all
+    public void The_brief_catches_up_whenever_the_day_actually_starts(
+        int nowHour, int briefHour, int closeoutHour)
+        => Assert.True(AutomationService.IsWithinBriefWindow(nowHour, briefHour, closeoutHour));
 
     [Theory]
-    [InlineData(8, 9)]    // before its hour
-    [InlineData(13, 9)]   // window closed
-    [InlineData(22, 9)]   // the bug this pins: no "Good morning" at 22:00
-    public void A_brief_never_arrives_outside_the_morning_it_describes(
-        int nowHour, int briefHour)
-        => Assert.False(AutomationService.IsWithinBriefWindow(nowHour, briefHour));
+    [InlineData(8, 9, 18)]    // before its hour
+    [InlineData(18, 9, 18)]   // the close-out owns the evening from here
+    [InlineData(22, 9, 18)]   // the bug this still pins: no brief at 22:00
+    public void The_brief_stops_where_the_closeout_takes_over(
+        int nowHour, int briefHour, int closeoutHour)
+        => Assert.False(AutomationService.IsWithinBriefWindow(nowHour, briefHour, closeoutHour));
 
     [Fact]
-    public void A_late_night_brief_hour_still_has_a_window()
+    public void A_brief_hour_past_the_closeout_never_opens()
     {
-        // 23:00 + 4 would run past midnight; the window simply ends at the day
-        // boundary rather than wrapping into the next morning's brief.
-        Assert.True(AutomationService.IsWithinBriefWindow(23, 23));
-        Assert.False(AutomationService.IsWithinBriefWindow(1, 23));
+        // Nonsense config rather than a real schedule, but it must not wrap
+        // into the small hours looking for a window.
+        Assert.False(AutomationService.IsWithinBriefWindow(23, 23, 18));
+        Assert.False(AutomationService.IsWithinBriefWindow(1, 23, 18));
     }
+
+    [Theory]
+    [InlineData(9, "Good morning")]
+    [InlineData(12, "Good afternoon")]   // 8 of 14 real briefs landed after noon
+    [InlineData(19, "Good evening")]
+    [InlineData(3, "Up late")]
+    public void The_brief_greets_by_the_clock_not_by_its_name(int hour, string expected)
+        => Assert.StartsWith(expected, DailyViewModel.Greeting(hour, null));
 
     // Every one of these was actually proposed as a task by the first build.
     [Theory]

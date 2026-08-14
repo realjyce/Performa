@@ -180,10 +180,16 @@ public sealed class AutomationService
     /// "Good morning". A late brief is worse than no brief, because it is wrong
     /// about the day it claims to describe.
     /// </summary>
-    public const int BriefWindowHours = 4;
-
-    public static bool IsWithinBriefWindow(int nowHour, int briefHour)
-        => nowHour >= briefHour && nowHour < briefHour + BriefWindowHours;
+    /// <summary>
+    /// The brief is offered from its hour until the close-out takes over. It
+    /// used to close four hours after its hour, which meant a machine first
+    /// opened after 13:00 never got one at all: over two weeks of real logs the
+    /// brief fired on 8 days of 14, and only once at the hour it was set to.
+    /// The nudge and the close-out have no upper bound, so they always catch
+    /// up; the brief was the only rule that could miss the day entirely.
+    /// </summary>
+    public static bool IsWithinBriefWindow(int nowHour, int briefHour, int closeoutHour)
+        => nowHour >= briefHour && nowHour < closeoutHour;
 
     private async Task TickAsync()
     {
@@ -200,7 +206,7 @@ public sealed class AutomationService
                 await RunRuleAsync("meetings", () => RemindMeetingsAsync(now));
 
             if (prefs.AutoBrief && !FiredToday("brief")
-                && IsWithinBriefWindow(now.Hour, prefs.BriefHour))
+                && IsWithinBriefWindow(now.Hour, prefs.BriefHour, prefs.CloseoutHour))
                 await RunRuleAsync("brief", MorningBriefAsync);
             if (prefs.AutoNudgeUnpushed && now.Hour >= 17 && !FiredToday("nudge"))
                 await RunRuleAsync("nudge", NudgeUnpushedAsync);
@@ -289,10 +295,13 @@ public sealed class AutomationService
         if (tasks > 0) bits.Add($"{tasks} open task(s)");
         if (commits.Count > 0) bits.Add($"{commits.Count} commit(s) already");
 
+        // Greeted by the clock rather than by the rule's name: the brief is
+        // often first opened at lunchtime, and "Good morning" at 12:54 is the
+        // app saying something untrue.
         ToastService.Show(
-            $"Good morning{(_engine.Prefs.UserName is { Length: > 0 } n ? ", " + n : "")}",
+            ViewModels.DailyViewModel.Greeting(DateTimeOffset.Now.Hour, _engine.Prefs.UserName),
             $"Today: {string.Join(", ", bits)}. Your brief is ready in Performa.");
-        MarkFired("brief");
+        MarkFired("brief", $"{today.Count} meeting(s), {tasks} task(s)");
     }
 
     private async Task NudgeUnpushedAsync()

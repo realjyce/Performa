@@ -102,23 +102,21 @@ public sealed class DailyViewModel : ObservableObject, IActivatablePage
 
     public string Today { get; }
 
-    /// <summary>Greets by clock, not a canned string.</summary>
-    public string Salutation
+    /// <summary>Greets by clock, not a canned string. Static so the brief can
+    /// greet the same way rather than keeping its own copy of the hours.</summary>
+    public static string Greeting(int hour, string? name)
     {
-        get
+        var part = hour switch
         {
-            var hour = DateTimeOffset.Now.Hour;
-            var name = _engine.Prefs.UserName;
-            var part = hour switch
-            {
-                < 5 => "Up late",
-                < 12 => "Good morning",
-                < 18 => "Good afternoon",
-                _ => "Good evening",
-            };
-            return string.IsNullOrWhiteSpace(name) ? part : $"{part}, {name}";
-        }
+            < 5 => "Up late",
+            < 12 => "Good morning",
+            < 18 => "Good afternoon",
+            _ => "Good evening",
+        };
+        return string.IsNullOrWhiteSpace(name) ? part : $"{part}, {name}";
     }
+
+    public string Salutation => Greeting(DateTimeOffset.Now.Hour, _engine.Prefs.UserName);
 
     public ObservableCollection<string> Suggestions { get; } = [];
 
