@@ -86,8 +86,10 @@ public sealed class Preferences
     /// <summary>Evening close-out written automatically at the end of the day.</summary>
     public bool AutoCloseout { get; set; } = true;
 
-    /// <summary>Hour (0-23) the close-out is written.</summary>
-    public int CloseoutHour { get; set; } = 18;
+    /// <summary>Hour (0-23) the close-out is written. 17 rather than 18: two
+    /// weeks of run logs had it firing on 4 days of 14, because the app is
+    /// usually open around 17:00 and shut again before 18:00 came round.</summary>
+    public int CloseoutHour { get; set; } = 17;
 
     /// <summary>Harvest email asks into suggested tasks on Daily.</summary>
     public bool AutoHarvestTasks { get; set; } = true;

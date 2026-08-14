@@ -180,6 +180,9 @@ public sealed class AutomationService
     /// "Good morning". A late brief is worse than no brief, because it is wrong
     /// about the day it claims to describe.
     /// </summary>
+    /// <summary>Earliest hour the unpushed-work nudge will fire.</summary>
+    public const int NudgeHour = 16;
+
     /// <summary>
     /// The brief is offered from its hour until the close-out takes over. It
     /// used to close four hours after its hour, which meant a machine first
@@ -208,7 +211,9 @@ public sealed class AutomationService
             if (prefs.AutoBrief && !FiredToday("brief")
                 && IsWithinBriefWindow(now.Hour, prefs.BriefHour, prefs.CloseoutHour))
                 await RunRuleAsync("brief", MorningBriefAsync);
-            if (prefs.AutoNudgeUnpushed && now.Hour >= 17 && !FiredToday("nudge"))
+            // An hour ahead of the close-out so the two never land together:
+            // push your work, then read what the day came to.
+            if (prefs.AutoNudgeUnpushed && now.Hour >= NudgeHour && !FiredToday("nudge"))
                 await RunRuleAsync("nudge", NudgeUnpushedAsync);
             if (prefs.AutoCloseout && now.Hour >= prefs.CloseoutHour && !FiredToday("closeout"))
                 await RunRuleAsync("closeout", CloseoutAsync);
