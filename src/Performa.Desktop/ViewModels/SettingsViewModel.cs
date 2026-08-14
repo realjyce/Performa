@@ -32,6 +32,7 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
         _engine = engine;
         LoadRecentRuns();
         _userName = engine.Prefs.UserName ?? "";
+        _editorCommand = engine.Prefs.EditorCommand;
         _geminiKey = engine.Prefs.GeminiApiKey ?? "";
         _anthropicKey = engine.Prefs.AnthropicApiKey ?? "";
         _openAiKey = engine.Prefs.OpenAiApiKey ?? "";
@@ -346,6 +347,16 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
     private string _userName;
     public string UserName { get => _userName; set => SetProperty(ref _userName, value); }
 
+    private string _editorCommand;
+    public string EditorCommand { get => _editorCommand; set => SetProperty(ref _editorCommand, value); }
+
+    /// <summary>What Open would launch right now, so the field can say what it
+    /// found rather than leaving the placeholder to be guessed at.</summary>
+    public string EditorDetected
+        => Services.Launcher.Editor(null) is { } found
+            ? $"Detected {found} on your PATH."
+            : "Nothing detected; Open will show the folder instead.";
+
     private string _geminiKey;
     public string GeminiKey { get => _geminiKey; set => SetProperty(ref _geminiKey, value); }
 
@@ -544,6 +555,7 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
     private void Save()
     {
         _engine.Prefs.UserName = string.IsNullOrWhiteSpace(UserName) ? null : UserName.Trim();
+        _engine.Prefs.EditorCommand = EditorCommand.Trim();
         _engine.Prefs.GeminiApiKey = string.IsNullOrWhiteSpace(GeminiKey) ? null : GeminiKey.Trim();
         _engine.Prefs.AnthropicApiKey =
             string.IsNullOrWhiteSpace(AnthropicKey) ? null : AnthropicKey.Trim();

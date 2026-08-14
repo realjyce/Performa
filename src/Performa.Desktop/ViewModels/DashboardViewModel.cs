@@ -30,6 +30,17 @@ public sealed class RepoCard : ObservableObject
     private string _remoteText = "";
     public string RemoteText { get => _remoteText; set => SetProperty(ref _remoteText, value); }
 
+    private string _webUrl = "";
+    /// <summary>The repo's page on GitHub, empty when the remote is not GitHub
+    /// or there is no remote at all.</summary>
+    public string WebUrl
+    {
+        get => _webUrl;
+        set { if (SetProperty(ref _webUrl, value)) OnPropertyChanged(nameof(HasWebUrl)); }
+    }
+
+    public bool HasWebUrl => _webUrl.Length > 0;
+
     private bool _hasRemote;
     public bool HasRemote { get => _hasRemote; set => SetProperty(ref _hasRemote, value); }
 
@@ -82,6 +93,10 @@ public sealed class DashboardViewModel : ObservableObject
         _engine = engine;
         _onQuickAction = onQuickAction;
         QuickCommand = new RelayCommand<string>(c => { if (c is not null) _onQuickAction(c); });
+        OpenRepoCommand = new RelayCommand<RepoCard>(
+            card => { if (card is not null) Launcher.OpenRepo(card.Path, _engine.Prefs.EditorCommand); });
+        OpenWebCommand = new RelayCommand<RepoCard>(
+            card => { if (card is { HasWebUrl: true }) Launcher.OpenUrl(card.WebUrl); });
         RescanCommand = new RelayCommand(() => _ = LoadAsync());
         DetectCommand = new RelayCommand(Detect);
         engine.WorkspaceChanged += () => _ = LoadAsync();
@@ -106,6 +121,8 @@ public sealed class DashboardViewModel : ObservableObject
     ];
 
     public RelayCommand<string> QuickCommand { get; }
+    public RelayCommand<RepoCard> OpenRepoCommand { get; }
+    public RelayCommand<RepoCard> OpenWebCommand { get; }
     public RelayCommand RescanCommand { get; }
     public RelayCommand DetectCommand { get; }
 
@@ -168,7 +185,14 @@ public sealed class DashboardViewModel : ObservableObject
 
         Repos.Clear();
         foreach (var snap in facts.Repos)
-            Repos.Add(new RepoCard(snap));
+        {
+            var card = new RepoCard(snap);
+            // Resolved once here rather than per click: it shells out to git,
+            // and the dashboard already has the repo open.
+            if (_engine.RemoteSlug(snap.Path) is { } slug)
+                card.WebUrl = $"https://github.com/{slug.Owner}/{slug.Name}";
+            Repos.Add(card);
+        }
 
         WorkspaceName = facts.Root;
         RepoCount = facts.Repos.Count.ToString();

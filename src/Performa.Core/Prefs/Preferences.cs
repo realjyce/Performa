@@ -93,6 +93,10 @@ public sealed class Preferences
 
     /// <summary>Harvest email asks into suggested tasks on Daily.</summary>
     public bool AutoHarvestTasks { get; set; } = true;
+
+    /// <summary>Command used to open a repository, e.g. "idea64" or "code".
+    /// Empty means detect one, and open the folder if none is found.</summary>
+    public string EditorCommand { get; set; } = "";
 }
 
 public sealed class StateFile

@@ -45,6 +45,12 @@
                     Command="{Binding AutoDetectCommand}" />
           </Grid>
           <TextBlock Text="{Binding LocalNote}" Classes="faint" TextWrapping="Wrap" />
+
+          <Border Height="1" Background="{DynamicResource BorderSoftBrush}" Margin="0,6" />
+
+          <TextBlock Text="OPEN REPOSITORIES WITH" Classes="label" />
+          <TextBox Text="{Binding EditorCommand}" PlaceholderText="idea64, code, subl…" />
+          <TextBlock Text="{Binding EditorDetected}" Classes="faint" TextWrapping="Wrap" />
         </StackPanel>
       </Border>
 
