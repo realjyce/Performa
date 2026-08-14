@@ -107,7 +107,13 @@ public class PreferencesTests
         Assert.True(fresh.AutoCloseout);
         Assert.True(fresh.AutoHarvestTasks);
         Assert.Equal(9, fresh.BriefHour);
-        Assert.Equal(18, fresh.CloseoutHour);
+        Assert.Equal(17, fresh.CloseoutHour);
+
+        // The ordering matters more than the numbers. The nudge has to stay
+        // clear of the close-out or the day ends with two toasts in the same
+        // minute, and the brief needs somewhere to live before both.
+        Assert.True(Performa.Desktop.Services.AutomationService.NudgeHour < fresh.CloseoutHour);
+        Assert.True(fresh.BriefHour < Performa.Desktop.Services.AutomationService.NudgeHour);
     }
 
     [Fact]
