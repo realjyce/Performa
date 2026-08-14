@@ -214,6 +214,36 @@ public class ServingTests
         Assert.Equal("overdue", items[0].Title);
     }
 
+    // --- which mark a calendar entry gets ---
+
+    [Theory]
+    [InlineData("Daily standup", "IconPeople")]
+    [InlineData("1:1 with Sarah", "IconPeople")]
+    [InlineData("CSE Lecture 3", "IconCap")]
+    [InlineData("Midterm exam", "IconCap")]
+    [InlineData("강의 - 컴퓨터공학", "IconCap")]
+    [InlineData("Report deadline", "IconClock")]
+    [InlineData("Flight to Seoul", "IconPlane")]
+    [InlineData("Lunch with Ben", "IconCup")]
+    public void An_entry_gets_the_mark_for_what_it_is(string title, string icon)
+        => Assert.Equal(icon, Serving.IconForEvent(title));
+
+    [Theory]
+    [InlineData("SOUND N BOUND")]
+    [InlineData("Aby AOG")]
+    [InlineData("")]
+    public void An_entry_that_says_nothing_recognisable_keeps_the_plain_calendar_mark(string title)
+        => Assert.Equal("IconDaily", Serving.IconForEvent(title));
+
+    [Fact]
+    public void Matching_ignores_case_without_matching_inside_a_word()
+    {
+        Assert.Equal("IconPeople", Serving.IconForEvent("MEETING with the dean"));
+        // "call" is inside "recall", but a title is short enough that the
+        // false positives worth guarding are the ones that would read wrong.
+        Assert.Equal("IconCap", Serving.IconForEvent("Final Exam"));
+    }
+
     // --- what a message wants from you ---
 
     [Theory]

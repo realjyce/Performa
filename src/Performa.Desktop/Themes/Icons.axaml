@@ -15,6 +15,18 @@
   <StreamGeometry x:Key="IconPlus">M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z</StreamGeometry>
   <StreamGeometry x:Key="IconTerminal">M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V8h16v10zM6.5 10.5l2.5 2-2.5 2L7.9 15.9l3.6-2.9-3.6-2.9zM12 15h5v1.5h-5z</StreamGeometry>
   <StreamGeometry x:Key="IconFolder">M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z</StreamGeometry>
+
+  <!-- The GitHub mark. The remote button said "GitHub" in words, which is the
+       one label on the card that has a universally known shape instead. -->
+  <StreamGeometry x:Key="IconGitHub">M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.6.3 2.8.1 3.2.8.8 1.3 1.9 1.3 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.2v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3z</StreamGeometry>
+
+  <!-- Calendar entry kinds. A colour alone says which Google calendar an event
+       came from, never what it is; these say what it is. -->
+  <StreamGeometry x:Key="IconPeople">M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8 13c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4zm8 0c-.3 0-.7 0-1 .1 1.3.9 2 2.1 2 3.9v2h7v-2c0-2.7-5.3-4-8-4z</StreamGeometry>
+  <StreamGeometry x:Key="IconCap">M12 3 1 9l11 6 9-4.9V17h2V9L12 3zM5 13.2V17c0 1.7 3.1 3 7 3s7-1.3 7-3v-3.8l-7 3.8-7-3.8z</StreamGeometry>
+  <StreamGeometry x:Key="IconClock">M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7z</StreamGeometry>
+  <StreamGeometry x:Key="IconPlane">M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z</StreamGeometry>
+  <StreamGeometry x:Key="IconCup">M18 8h-2V5H4v10a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4v-3h2a2 2 0 0 0 0-4zm0 2v0h-2v-2h2a1 1 0 0 1 0 2zM2 21h16v2H2z</StreamGeometry>
   <!-- Two opposing arrows: reads as sync, and spins smoothly because the shape
        has 180-degree rotational symmetry, so a full turn shows the same
        silhouette twice. -->

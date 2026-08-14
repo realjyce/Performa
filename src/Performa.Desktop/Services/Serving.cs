@@ -324,6 +324,43 @@ public static class Serving
     }
 
     /// <summary>
+    /// Which icon an entry gets, read from its title.
+    ///
+    /// A Google colour says which calendar an event came from, never what it
+    /// is. Two entries in the same colour can be a lecture and a flight, and
+    /// nothing on the row distinguishes them.
+    ///
+    /// Read rather than asked. A model could classify these, but it would be a
+    /// call per event on every refresh, it would need the network to draw a
+    /// calendar Performa already has, and it would answer differently on
+    /// different days for the same entry. The cost of a miss here is the wrong
+    /// small glyph, so certainty and speed are worth more than coverage.
+    /// Anything unmatched keeps the plain calendar mark.
+    /// </summary>
+    public static string IconForEvent(string title)
+    {
+        var t = title.ToLowerInvariant();
+
+        if (Any(t, "flight", "airport", "depart", "arrive", "boarding", "terminal"))
+            return "IconPlane";
+        if (Any(t, "lecture", "class", "exam", "quiz", "course", "seminar", "tutorial",
+                   "lab ", "midterm", "final", "수업", "강의", "시험"))
+            return "IconCap";
+        if (Any(t, "deadline", "due", "submit", "hand in", "expires", "cutoff"))
+            return "IconClock";
+        if (Any(t, "lunch", "dinner", "breakfast", "coffee", "brunch", "drinks"))
+            return "IconCup";
+        if (Any(t, "meet", "standup", "stand-up", "sync", "call", "1:1", "one to one",
+                   "interview", "review", "catch up", "huddle", "retro"))
+            return "IconPeople";
+
+        return "IconDaily";
+    }
+
+    private static bool Any(string haystack, params string[] needles)
+        => needles.Any(n => haystack.Contains(n, StringComparison.Ordinal));
+
+    /// <summary>
     /// Whether a task is talking about a given repository.
     ///
     /// Substring, but not blindly: a repo called "a" or "ui" appears inside

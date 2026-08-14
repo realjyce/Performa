@@ -150,8 +150,11 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9"
                             VerticalAlignment="Center">
                   <TextBlock Text="SCHEDULE" Classes="label" VerticalAlignment="Center" />
+                  <!-- Trims rather than pushing into the refresh stamp beside
+                       it: the card is narrow and this line grows with the day. -->
                   <TextBlock Text="{Binding FocusNote}" Classes="label" VerticalAlignment="Center"
                              IsVisible="{Binding HasFocusNote}"
+                             TextTrimming="CharacterEllipsis"
                              Foreground="{DynamicResource AccentBrightBrush}" />
                 </StackPanel>
                 <TextBlock Grid.Column="1" Text="{Binding LastRefreshed}" Classes="faint"
@@ -189,9 +192,16 @@
                       <!-- colour node from your own Google palette -->
                       <Border Grid.Column="0" Background="{Binding Colour}" CornerRadius="2" />
                       <StackPanel Grid.Column="1" Spacing="2" Margin="11,0,0,0">
-                        <TextBlock Text="{Binding Title}"
-                                   Foreground="{DynamicResource TextPrimaryBrush}"
-                                   FontSize="13" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                          <!-- What the entry is, beside the colour saying which
+                               calendar it came from. Different questions. -->
+                          <Path Data="{Binding Icon}" Width="12" Height="12" Stretch="Uniform"
+                                VerticalAlignment="Center"
+                                Fill="{DynamicResource TextFaintBrush}" />
+                          <TextBlock Text="{Binding Title}"
+                                     Foreground="{DynamicResource TextPrimaryBrush}"
+                                     FontSize="13" TextWrapping="Wrap" />
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" Spacing="7">
                           <TextBlock Text="{Binding Day}" Classes="faint" FontSize="11" />
                           <TextBlock Text="{Binding Time}" Classes="mono" FontSize="11" />

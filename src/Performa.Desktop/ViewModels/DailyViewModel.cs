@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;
 using Avalonia.Threading;
@@ -85,6 +86,14 @@ public sealed class EventCard(CalendarEvent e)
     public string GapBefore { get; set; } = "";
 
     public bool HasGap => GapBefore.Length > 0;
+
+    /// <summary>A mark for what the entry is, beside the colour saying which
+    /// calendar it came from. The two answer different questions.</summary>
+    public Geometry? Icon { get; } =
+        Application.Current?.Resources.TryGetResource(
+            Serving.IconForEvent(e.Title), null, out var icon) == true
+            ? icon as Geometry
+            : null;
 }
 
 /// <summary>

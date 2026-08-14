@@ -217,13 +217,27 @@
                   <!-- Two buttons rather than one click with a hidden modifier:
                        nobody discovers a modifier they were not told about. -->
                   <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
-                    <Button Classes="ghost" Content="Open" FontSize="12" Padding="11,6"
+                    <Button Classes="ghost" FontSize="12" Padding="11,6"
                             Command="{Binding $parent[ItemsControl].((vm:DashboardViewModel)DataContext).OpenRepoCommand}"
-                            CommandParameter="{Binding}" />
-                    <Button Classes="ghost" Content="GitHub" FontSize="12" Padding="11,6"
+                            CommandParameter="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Path Data="{DynamicResource IconFolder}" Width="13" Height="13"
+                              Stretch="Uniform" VerticalAlignment="Center"
+                              Fill="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Text="Open" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Button>
+                    <Button Classes="ghost" FontSize="12" Padding="11,6"
                             IsVisible="{Binding HasWebUrl}"
                             Command="{Binding $parent[ItemsControl].((vm:DashboardViewModel)DataContext).OpenWebCommand}"
-                            CommandParameter="{Binding}" />
+                            CommandParameter="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Path Data="{DynamicResource IconGitHub}" Width="13" Height="13"
+                              Stretch="Uniform" VerticalAlignment="Center"
+                              Fill="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Text="GitHub" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Button>
                   </StackPanel>
                 </StackPanel>
               </Border>
