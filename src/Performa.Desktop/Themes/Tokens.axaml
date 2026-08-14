@@ -110,6 +110,19 @@
       <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#ECEDF0" />
       <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#ECEDF0" />
       <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#ECEDF0" />
+
+      <!--
+        Shadows belong to the theme. One hardcoded black served both, which on
+        a dark surface is nearly invisible and on a white one is a grey smear.
+        It also hid a second fault: a blur reaches past the card, so wherever a
+        parent clips its bounds the shadow ends in a straight cut. Nobody saw
+        that until Paper made the shadow dark enough to notice.
+
+        Kept tight on both, so the blur stays well inside the margins around a
+        card and the clip has nothing left to cut.
+      -->
+      <BoxShadows x:Key="CardShadow">0 1 4 0 #33000000</BoxShadows>
+      <BoxShadows x:Key="CardShadowRaised">0 3 10 0 #40000000</BoxShadows>
     </ResourceDictionary>
 
     <!-- ================= PAPER (light) ================= -->
@@ -207,6 +220,11 @@
       <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#1A1C22" />
       <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#1A1C22" />
       <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#1A1C22" />
+
+      <!-- Far lighter than Carbon's. A shadow that reads as depth on a dark
+           surface reads as dirt on a white one. -->
+      <BoxShadows x:Key="CardShadow">0 1 3 0 #14000000</BoxShadows>
+      <BoxShadows x:Key="CardShadowRaised">0 2 8 0 #1F000000</BoxShadows>
     </ResourceDictionary>
 
   </ResourceDictionary.ThemeDictionaries>
