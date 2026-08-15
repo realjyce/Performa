@@ -228,6 +228,18 @@ if (args.Length > 5 && args[5].StartsWith("navto:"))
     else vm.Selected = vm.NavItems.Concat(vm.UtilityItems).ElementAt(int.Parse(target));
 }
 
+// Optional: "dirty" edits a field so the floating save bar is on screen. It is
+// only ever raised by typing, which a headless run cannot do, and a bar that is
+// invisible in every shot is a bar nobody has ever actually looked at.
+//
+// After navto, not before: the page has to be the current one for the cast to
+// hit, and reading the failure as "the bar does not render" wasted a round.
+if (args.Length > 4 && args[4] == "dirty" && vm.Selected.Page is SettingsViewModel dirtySettings)
+{
+    dirtySettings.UserName += " ";
+    Dispatcher.UIThread.RunJobs();
+}
+
 // Optional: "combo" opens the first dropdown so the popup itself can be checked.
 if (args.Length > 4 && args[4] == "combo")
 {

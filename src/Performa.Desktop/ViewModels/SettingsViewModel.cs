@@ -38,6 +38,7 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
         // save on the spot and were never pending.
         PropertyChanged += (_, e) =>
         {
+            if (_restoring) return;
             if (e.PropertyName is { } name && Deferred.Contains(name)) Dirty = true;
         };
 
@@ -54,6 +55,7 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
         _grouping = engine.Prefs.Grouping.ToString();
         _tone = engine.Prefs.Tone.ToString();
         SaveCommand = new RelayCommand(Save);
+        DiscardCommand = new RelayCommand(Discard);
         _launchAtStartup = StartupService.IsEnabled();
         ScanGitHubCommand = new RelayCommand(() => _ = ScanGitHubAsync());
         AutoDetectCommand = new RelayCommand(AutoDetectLocal);
@@ -387,6 +389,43 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
     private bool _nudge;
     public bool Nudge { get => _nudge; private set => SetProperty(ref _nudge, value); }
 
+    /// <summary>Set while fields are being put back from Prefs, so the dirty
+    /// hook does not read a revert as a fresh edit and refuse to go clean.</summary>
+    private bool _restoring;
+
+    /// <summary>
+    /// Puts every deferred field back to what is actually saved.
+    ///
+    /// Goes through the properties rather than the backing fields so the
+    /// controls update; the constructor can assign fields directly because
+    /// nothing is bound yet when it runs.
+    /// </summary>
+    private void Discard()
+    {
+        _restoring = true;
+        try
+        {
+            UserName = _engine.Prefs.UserName ?? "";
+            EditorCommand = _engine.Prefs.EditorCommand;
+            GeminiKey = _engine.Prefs.GeminiApiKey ?? "";
+            AnthropicKey = _engine.Prefs.AnthropicApiKey ?? "";
+            OpenAiKey = _engine.Prefs.OpenAiApiKey ?? "";
+            AiProvider = _engine.Prefs.AiProvider.ToString();
+            AiEnabled = _engine.Prefs.AiEnabled;
+            WorkspacePath = _engine.WorkspacePath ?? "";
+            GitHubToken = _engine.Prefs.GitHubToken ?? "";
+            GitHubClientId = _engine.Prefs.GitHubClientId ?? "";
+            Verbosity = _engine.Prefs.Verbosity.ToString();
+            Grouping = _engine.Prefs.Grouping.ToString();
+            Tone = _engine.Prefs.Tone.ToString();
+        }
+        finally { _restoring = false; }
+
+        Dirty = false;
+        Nudge = false;
+        SavedNote = "Changes discarded.";
+    }
+
     private string _editorCommand;
     public string EditorCommand { get => _editorCommand; set => SetProperty(ref _editorCommand, value); }
 
@@ -576,6 +615,7 @@ public sealed class SettingsViewModel : ObservableObject, IActivatablePage
     public string SavedNote { get => _savedNote; set => SetProperty(ref _savedNote, value); }
 
     public RelayCommand SaveCommand { get; }
+    public RelayCommand DiscardCommand { get; }
 
     /// <summary>Applies a picked folder immediately and reloads the pages.</summary>
     public void ApplyWorkspace(string path)

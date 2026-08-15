@@ -4,12 +4,23 @@
              x:Class="Performa.Desktop.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
-  <ScrollViewer>
-    <StackPanel Margin="34,26,34,34" Spacing="18" MaxWidth="640" HorizontalAlignment="Left">
+  <!-- The save bar floats over the page rather than sitting at the end of it.
+       Settings is long enough that the button was several screens below
+       whatever you had just typed, so the one control that makes an edit real
+       was the hardest thing on the page to reach. -->
+  <Panel>
+    <ScrollViewer>
+      <!-- Bottom padding leaves the last card clear of the floating bar. -->
+      <StackPanel Margin="34,26,34,104" Spacing="18" MaxWidth="640" HorizontalAlignment="Left">
 
       <StackPanel Spacing="3">
         <TextBlock Text="Settings" Classes="h1" />
         <TextBlock Text="Where your repos come from and how reports read." Classes="muted" />
+        <!-- Confirmation lives up here, not in the bar: the bar is gone the
+             moment a save succeeds, so it cannot be where the result is read. -->
+        <TextBlock Text="{Binding SavedNote}" Classes="muted" Margin="0,2,0,0"
+                   Foreground="{DynamicResource PositiveBrush}"
+                   IsVisible="{Binding SavedNote, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
       </StackPanel>
 
       <Border Classes="card">
@@ -338,26 +349,34 @@
         </StackPanel>
       </Border>
 
-      <!-- Says the field you just typed into is not in effect yet, which is
-           otherwise invisible on a page where the switches apply themselves. -->
-      <Border Classes="nudge" Classes.shake="{Binding Nudge}" IsVisible="{Binding Dirty}"
-              CornerRadius="9" Padding="15,12"
-              Background="{DynamicResource AccentSoftBrush}"
-              BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
-        <StackPanel Orientation="Horizontal" Spacing="10">
-          <Path Data="{DynamicResource IconLoose}" Width="14" Height="14" Stretch="Uniform"
-                VerticalAlignment="Center" Fill="{DynamicResource AccentBrightBrush}" />
-          <TextBlock Text="Unsaved changes. The switches above apply themselves; these do not."
-                     VerticalAlignment="Center" TextWrapping="Wrap"
-                     Foreground="{DynamicResource AccentBrightBrush}" />
-        </StackPanel>
-      </Border>
-
-      <StackPanel Orientation="Horizontal" Spacing="14">
-        <Button Classes="accent" Content="Save preferences" Command="{Binding SaveCommand}" />
-        <TextBlock Text="{Binding SavedNote}" Classes="muted" VerticalAlignment="Center" />
       </StackPanel>
+    </ScrollViewer>
 
-    </StackPanel>
-  </ScrollViewer>
+    <!-- Rises into view when something is pending, and leaves when it is not.
+         A permanent bar spends a strip of every screen on a button that is
+         usually a no-op. -->
+    <Border Classes="savebar" Classes.shake="{Binding Nudge}" IsVisible="{Binding Dirty}"
+            VerticalAlignment="Bottom" HorizontalAlignment="Left"
+            Margin="34,0,34,22" CornerRadius="11" Padding="18,14"
+            Background="{DynamicResource BgCardBrush}"
+            BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1"
+            BoxShadow="{DynamicResource CardShadowRaised}"
+            Width="640">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+        <Path Grid.Column="0" Data="{DynamicResource IconLoose}" Width="15" Height="15"
+              Stretch="Uniform" VerticalAlignment="Center"
+              Fill="{DynamicResource AccentBrightBrush}" />
+        <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+          <TextBlock Text="Unsaved changes"
+                     Foreground="{DynamicResource TextPrimaryBrush}" />
+          <TextBlock Text="The switches apply themselves. These wait for you."
+                     Classes="faint" FontSize="11" TextWrapping="Wrap" />
+        </StackPanel>
+        <Button Grid.Column="2" Classes="ghost" Content="Discard"
+                Command="{Binding DiscardCommand}" VerticalAlignment="Center" />
+        <Button Grid.Column="3" Classes="accent" Content="Save"
+                Command="{Binding SaveCommand}" VerticalAlignment="Center" />
+      </Grid>
+    </Border>
+  </Panel>
 </UserControl>

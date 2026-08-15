@@ -152,27 +152,44 @@
   </Style>
 
   <!--
-    The unsaved-changes prompt. A short shake on arrival, because it appears
-    below the fold of a long page and a banner that fades in where nobody is
-    looking is a banner nobody reads. Small and once: this is a reminder, not
-    an alarm, and anything longer would be the app nagging.
+    The floating save bar. It rises into view when something is pending and
+    leaves when it is not, so the control that makes an edit real is never
+    several screens below the field that was edited.
   -->
-  <Style Selector="Border.nudge">
+  <Style Selector="Border.savebar">
     <Setter Property="RenderTransformOrigin" Value="50%,50%" />
   </Style>
-  <!-- Keyframes on TranslateTransform.X, not on RenderTransform. Avalonia has
-       no animator for the latter and throws while applying the style, which
-       takes the whole window down before it paints. The bar chart next door
-       animates ScaleTransform.ScaleY for the same reason. -->
-  <Style Selector="Border.nudge.shake">
+  <!--
+    Rise, then a short settle. The rise is the arrival; the wobble is what makes
+    it register as new when it was already up for a previous edit, which a pure
+    fade cannot do because there is nothing to fade from.
+
+    Keyframes on TranslateTransform, never on RenderTransform: Avalonia has no
+    animator for that property and throws while applying the style, which takes
+    the window down before it paints. The bar chart animates
+    ScaleTransform.ScaleY for the same reason.
+  -->
+  <Style Selector="Border.savebar.shake">
     <Style.Animations>
-      <Animation Duration="0:0:0.42" IterationCount="1" Easing="CubicEaseOut">
-        <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="0" /></KeyFrame>
-        <KeyFrame Cue="20%"><Setter Property="TranslateTransform.X" Value="-7" /></KeyFrame>
-        <KeyFrame Cue="40%"><Setter Property="TranslateTransform.X" Value="6" /></KeyFrame>
-        <KeyFrame Cue="60%"><Setter Property="TranslateTransform.X" Value="-4" /></KeyFrame>
-        <KeyFrame Cue="80%"><Setter Property="TranslateTransform.X" Value="2" /></KeyFrame>
-        <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="0" /></KeyFrame>
+      <Animation Duration="0:0:0.5" IterationCount="1" Easing="CubicEaseOut">
+        <KeyFrame Cue="0%">
+          <Setter Property="TranslateTransform.Y" Value="22" />
+          <Setter Property="TranslateTransform.X" Value="0" />
+          <Setter Property="Opacity" Value="0" />
+        </KeyFrame>
+        <KeyFrame Cue="38%">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+          <Setter Property="TranslateTransform.X" Value="0" />
+          <Setter Property="Opacity" Value="1" />
+        </KeyFrame>
+        <KeyFrame Cue="55%"><Setter Property="TranslateTransform.X" Value="-6" /></KeyFrame>
+        <KeyFrame Cue="72%"><Setter Property="TranslateTransform.X" Value="5" /></KeyFrame>
+        <KeyFrame Cue="87%"><Setter Property="TranslateTransform.X" Value="-2" /></KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="TranslateTransform.X" Value="0" />
+          <Setter Property="TranslateTransform.Y" Value="0" />
+          <Setter Property="Opacity" Value="1" />
+        </KeyFrame>
       </Animation>
     </Style.Animations>
   </Style>
