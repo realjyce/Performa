@@ -34,6 +34,47 @@ All you lose is the prose wrapped around them.
 
 ## What it does
 
+### One list, everything on it
+
+Performa opens on Serving, which answers "what now" rather than showing you
+something to interpret. Meetings, tasks, uncommitted work and mail that wants
+something all compete in a single order, ranked by how little choice you have
+about when to deal with them.
+
+That last part is why it is one list rather than four panels. A task list on its
+own cannot tell you the useful thing right now is pushing four commits before a
+call starts. Unpushed work outranks uncommitted work, because uncommitted work
+is on your disk and unpushed work is on your disk and nowhere else.
+
+**The ordering is computed, never guessed.** A model is handed the finished
+order and asked to say it in a sentence, with instructions not to reorder or
+invent. Ranking a list by asking a model what matters produces a confident guess
+about someone's day, which is worse than no suggestion at all.
+
+Rows carry actions, not advice. A repository opens in your editor, mail hands
+off to the Inbox. Tasks have **Done**, **Later**, and a **How?** that asks for
+two or three concrete first moves, grounded in the repositories the task names.
+Meetings get no buttons, because they happen whether or not you press anything.
+
+Deferring is a first-class action next to finishing. A list you can only add to
+stops being a plan and becomes a pile, and something pushed three times is not
+urgent, it is unwanted. Serving says so instead of offering it again.
+
+### It acts without being asked
+
+Five rules run on one clock. A morning brief when your day actually starts, a
+reminder ten minutes before each meeting that also tells you if code is sitting
+uncommitted, a nudge when work is only on this machine, an evening close-out
+that writes itself, and email asks turned into suggested tasks you approve.
+
+Every rule has a switch in Settings, every artifact it writes is stamped as
+automated, and **nothing outbound ever fires**. It reads, prepares and notifies.
+It never sends, pushes, or replies on your behalf.
+
+It also keeps a record. Each rule appends what it did, or why it failed, to a
+run log that Settings shows. A rule that throws is never marked as done, so it
+retries rather than silently burning the day's slot on work it did not do.
+
 ### The day, in one place
 
 Tasks and notes on the left, your calendar and today's commits on the right. Not
@@ -101,9 +142,13 @@ over. That's enforced by tests, not just intent.
 
 ## Getting started
 
-Grab `Performa.exe` from [releases](https://github.com/realjyce/Performa/releases)
-and run it. One file, no installer, no .NET runtime needed. Windows 10 or 11,
+Grab `PerformaSetup.exe` from [releases](https://github.com/realjyce/Performa/releases)
+and run it. It installs per-user, so it never asks for admin. No .NET runtime
+needed; the whole app is one self-contained binary inside. Windows 10 or 11,
 64-bit.
+
+Building it yourself is `pwsh ./publish.ps1`, and `-Portable` leaves the bare
+`Performa.exe` in `build/` if you would rather not install anything.
 
 Windows SmartScreen will warn you on first run because the binary isn't
 code-signed. That's expected.

@@ -104,13 +104,11 @@ public sealed class ServingViewModel : ObservableObject, IActivatablePage
         RefreshCommand = new RelayCommand(() => { Load(); _ = GatherAsync(); });
         engine.DailyChanged += Load;
 
-        // This is the landing page, and MainViewModel seeds its selection by
-        // assigning the field rather than the property, so OnActivated does not
-        // run for whichever page is first. Draw the tasks here, then let the
-        // slower streams fill in, or the app opens on a blank version of the
-        // one screen meant to answer a question.
+        // Tasks are one small file, so the page has content the instant it is
+        // built. Everything slower waits for OnActivated: a constructor that
+        // starts network work has no way to be awaited, cancelled or observed,
+        // and it fires whether or not the page is ever looked at.
         Load();
-        _ = GatherAsync();
     }
 
     public RelayCommand<ServingRow> DeferCommand { get; }

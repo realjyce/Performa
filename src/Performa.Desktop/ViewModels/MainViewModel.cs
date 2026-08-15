@@ -242,6 +242,11 @@ public sealed class MainViewModel : ObservableObject
         UtilityItems = [new NavItem("Settings", "IconSettings", settings)];
 
         _selected = NavItems[0];
+        // Seeded through the field, so the property setter that normally does
+        // this never ran. Without it the landing page is the only page that is
+        // never activated, and whichever page sits first has had to work around
+        // that itself.
+        (_selected.Page as IActivatablePage)?.OnActivated();
     }
 
     private void HandleQuickAction(string command)
